@@ -38,40 +38,43 @@ import org.springframework.core.style.ToStringCreator;
  */
 @Entity
 @Table(name = "owners")
-public class Owners {
+public class Owner {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     @NotFound(action = NotFoundAction.IGNORE)
-    private Integer id;
+    public Integer id;
 
     @Column(name = "first_name")
     @NotFound(action = NotFoundAction.IGNORE)
-    private String firstName;
+    public String firstName;
 
     @Column(name = "last_name")
     @NotFound(action = NotFoundAction.IGNORE)
-    private String lastName;
+    public String lastName;
 
     @Column(name = "address")
     @NotFound(action = NotFoundAction.IGNORE)
-    private String address;
+    public String address;
 
     @Column(name = "telephone")
     @NotFound(action = NotFoundAction.IGNORE)
-    private String telephone;
+    public String telephone;
 
-    public Owners(){
-        
-    }
+    @Column(name = "pets")
+    @NotFound(action = NotFoundAction.IGNORE)
+    public Integer[] pet_ids;
 
-    public Owners(int id, String firstName, String lastName, String address, String telephone){
+
+    public Owner() {}
+    public Owner(int id, String firstName, String lastName, String address, String telephone, Integer[] pets){
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.address = address;
         this.telephone = telephone;
+        this.pet_ids = pets;
     }
 
     public Integer getId() {
@@ -126,6 +129,10 @@ public class Owners {
             .append("lastName", this.getLastName())
             .append("firstName", this.getFirstName())
             .append("address", this.address)
-            .append("telephone", this.telephone).toString();
+            .append("telephone", this.telephone)
+            .append("pets", this.pet_ids)
+        .toString();
     }
+
+
 }

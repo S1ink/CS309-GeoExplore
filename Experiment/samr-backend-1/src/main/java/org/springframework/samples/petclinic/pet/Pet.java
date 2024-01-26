@@ -1,7 +1,6 @@
 package org.springframework.samples.petclinic.pet;
 
 import org.springframework.core.style.ToStringCreator;
-import org.springframework.samples.petclinic.owner.Owners;
 import org.hibernate.annotations.*;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
@@ -15,27 +14,27 @@ public class Pet {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
 	@NotFound(action = NotFoundAction.IGNORE)
-	protected Integer id;
+	public Integer id;
 
 	@Column(name = "name")
 	@NotFound(action = NotFoundAction.IGNORE)
-	protected String name;
+	public String name;
 
 	@Column(name = "nickname")
 	@NotFound(action = NotFoundAction.IGNORE)
-	protected String nickname;
+	public String nickname;
 
 	@Column(name = "type")
 	@NotFound(action = NotFoundAction.IGNORE)
-	protected String type;
+	public String type;
 
 	@Column(name = "age")
 	@NotFound(action = NotFoundAction.IGNORE)
-	protected Integer age;
+	public Integer age;
 
 	@Column(name = "owner_id")
 	@NotFound(action = NotFoundAction.IGNORE)
-	protected Integer owner_id;
+	public Integer owner_id;
 
 
 	public Pet() {}
