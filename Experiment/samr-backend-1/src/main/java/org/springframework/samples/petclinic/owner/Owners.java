@@ -121,12 +121,11 @@ public class Owners {
     @Override
     public String toString() {
         return new ToStringCreator(this)
-
-                .append("id", this.getId())
-                .append("new", this.isNew())
-                .append("lastName", this.getLastName())
-                .append("firstName", this.getFirstName())
-                .append("address", this.address)
-                .append("telephone", this.telephone).toString();
+            .append("id", this.getId())
+            .append("new", this.isNew())
+            .append("lastName", this.getLastName())
+            .append("firstName", this.getFirstName())
+            .append("address", this.address)
+            .append("telephone", this.telephone).toString();
     }
 }
