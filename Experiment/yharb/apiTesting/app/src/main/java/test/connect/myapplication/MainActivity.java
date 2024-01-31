@@ -1,5 +1,6 @@
 package test.connect.myapplication;
 
+import static test.connect.myapplication.api.ApiClientFactory.GetPhotoApi;
 import static test.connect.myapplication.api.ApiClientFactory.GetPostApi;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,6 +16,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.GET;
 import test.connect.myapplication.api.SlimCallback;
+import test.connect.myapplication.model.Photo;
 import test.connect.myapplication.model.Post;
 
 public class MainActivity extends AppCompatActivity {
@@ -28,12 +30,12 @@ public class MainActivity extends AppCompatActivity {
         TextView apiText1 = findViewById(R.id.activity_main_testView1);
 
 
-        GetPostApi().getFirstPost().enqueue(new SlimCallback<Post>(response -> {
-            String result = "ID:  " + response.getId()
-        +"\n  Title:    " + response.getTitle()
-        +"\n  Body:   "  + response.getBigText();
-        apiText1.setText(result);
-        }, "CustomTagForFirstApi"));
+        //Gets first photo from remote website and prints the values on display
+        
+//        GetPhotoApi().getFirstPhoto().enqueue(new SlimCallback<Photo>(responsePhoto -> {
+//            apiText1.setText(responsePhoto.printable());
+//        }));
+
 
     }
 }

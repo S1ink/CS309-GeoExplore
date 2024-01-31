@@ -50,4 +50,13 @@ public class Photo {
     public void setThumbnailUrl(String thumbnailUrl) {
         this.thumbnailUrl = thumbnailUrl;
     }
+
+
+    public String printable(){
+        return "\nalbumId" + this.albumId
+                + "\nid" + this.id
+                + "\ntitle" + this.title
+                + "\nurl" + this.url
+                + "\nthumbnailUrl" + this.thumbnailUrl + "\n";
+    }
 }
