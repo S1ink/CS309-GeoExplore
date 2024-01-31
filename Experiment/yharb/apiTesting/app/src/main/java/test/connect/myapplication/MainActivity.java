@@ -36,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
         TextView apiText1 = findViewById(R.id.activity_main_testView1);
         apiText1.setMovementMethod(new ScrollingMovementMethod());
 
+        Button photoButton = findViewById(R.id.activity_main_button_for_photo);
+        EditText photoNumInput = findViewById(R.id.activity_main_photoNum_input);
 
         //Gets first photo from remote website and prints the values on display
 
@@ -43,8 +45,7 @@ public class MainActivity extends AppCompatActivity {
 //            apiText1.setText(responsePhoto.printable());
 //        }));
 
-        Button photoButton = findViewById(R.id.activity_main_button_for_photo);
-        EditText photoNumInput = findViewById(R.id.activity_main_photoNum_input);
+
 
 
 
