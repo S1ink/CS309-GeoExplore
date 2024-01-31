@@ -16,4 +16,29 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <EditText
+        android:id="@+id/activity_main_photoNum_input"
+        android:layout_width="128dp"
+        android:layout_height="42dp"
+        android:ems="10"
+        android:hint="photoNum"
+        android:inputType="text"
+        app:layout_constraintBottom_toTopOf="@+id/activity_main_testView1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/activity_main_button_for_photo"
+        android:layout_width="214dp"
+        android:layout_height="83dp"
+        android:text="Get photo "
+        android:textSize="34sp"
+        app:layout_constraintBottom_toTopOf="@+id/activity_main_testView1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/activity_main_photoNum_input"
+        app:layout_constraintVertical_bias="0.649" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
