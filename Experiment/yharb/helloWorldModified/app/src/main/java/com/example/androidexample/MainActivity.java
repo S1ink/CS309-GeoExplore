@@ -23,9 +23,18 @@ public class MainActivity extends AppCompatActivity {
         /* initialize UI elements */
         messageText = findViewById(R.id.main_msg_txt);      // link to message textview in the Main activity XML
         nextButton = findViewById(R.id.main_next_button);
+
+
+        nextButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this,secondPage.class);
+                startActivity(intent);
+            }
+        });
         
 
 
-        messageText.setText("Hello World");
+        messageText.setText("COM S 309");
     }
 }
