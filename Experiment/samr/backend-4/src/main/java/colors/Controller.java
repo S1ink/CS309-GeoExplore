@@ -28,7 +28,6 @@ public class Controller {
 	public @ResponseBody String createColorPage(@PathVariable String color) {
 		return formatHtmlPageColor(color);
 	}
-
 	@GetMapping(path = "/random")
 	public @ResponseBody String getRandomColorPage() {
 		final Random r = new Random();
@@ -38,7 +37,6 @@ public class Controller {
 			r.nextInt(255)
 		);
 	}
-
 	@GetMapping(path = "/saved/{id}")
 	public @ResponseBody String getStoredPage(@PathVariable Integer id) {
 		if(this.pages.containsKey(id)) {
@@ -53,11 +51,27 @@ public class Controller {
 	}
 	@PostMapping(path = "/{color}")
 	public @ResponseBody String saveColoredPage(@PathVariable String color, @RequestBody Integer id) {
-		if(id == null) {
+		if(id == null || this.pages.containsKey(id)) {
 			return "failed to save page -- invalid id :(";
 		}
+		this.pages.putIfAbsent(id, color);
+		return formatHtmlPageColor(color, String.format("saved page color to id %d! :)", id));
+	}
+	@PutMapping(path = "/{color}")
+	public @ResponseBody String updateIdMapping(@PathVariable String color, @RequestBody Integer id) {
+		if(id == null) {
+			return "failed to save page -- id could not be parsed :(";
+		}
 		this.pages.put(id, color);
-		return formatHtmlPageColor(color, String.format("saved page color to id %d", id));
+		return formatHtmlPageColor(color, String.format("updated page color for id %d! :)", id));
+	}
+	@DeleteMapping(path = "/saved/{id}")
+	public @ResponseBody String deleteStoredPage(@PathVariable Integer id) {
+		if(id != null && this.pages.containsKey(id)) {
+			String color = this.pages.remove(id);
+			return formatHtmlPageColor(color, String.format("successfully deleted page for id %d.", id));
+		}
+		return "falied to delete page -- id not valid.";
 	}
 
 
