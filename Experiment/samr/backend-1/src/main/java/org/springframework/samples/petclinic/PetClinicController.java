@@ -22,6 +22,14 @@ public class PetClinicController {
 	protected HashMap<Integer, HashSet<Pet>> owners_to_pets = new HashMap<>();
 
 
+	protected void addOwner(Owner o) {
+		if(o != null) {
+			this.owners_to_pets.put(
+				this.owners_repo.save(o).id,
+				new HashSet<>()
+			);
+		}
+	}
 
 /** Owners */
 
@@ -30,15 +38,16 @@ public class PetClinicController {
 	public @ResponseBody String saveOwner(Owner owner) {
 		if(owner == null) return "Failed to add owner -- invalid object!";
 		Owner n = owners_repo.save(owner);
+		owners_to_pets.put(n.id, new HashSet<>());
 		return String.format("Successfully saved owner %s to id %d!", n.firstName, n.id);
 	}
 	/** Saves pre-generated dummy owners to the repo */
 	@GetMapping(path = "/owners/generate")
 	public @ResponseBody String createDummyData() {
-		owners_repo.save( new Owner(0, "John", "Doe", "404 Not found", "some numbers") );
-		owners_repo.save( new Owner(0, "Jane", "Doe", "Its a secret", "you wish") );
-		owners_repo.save( new Owner(0, "Some", "Pleb", "Right next to the Library", "515-345-41213") );
-		owners_repo.save( new Owner(0, "Chad", "Champion", "Reddit memes corner", "420-420-4200") );
+		this.addOwner( new Owner(0, "John", "Doe", "404 Not found", "some numbers") );
+		this.addOwner( new Owner(0, "Jane", "Doe", "Its a secret", "you wish") );
+		this.addOwner( new Owner(0, "Some", "Pleb", "Right next to the Library", "515-345-41213") );
+		this.addOwner( new Owner(0, "Chad", "Champion", "Reddit memes corner", "420-420-4200") );
 		return "Successfully saved dummy data!";
 	}
 
@@ -100,7 +109,7 @@ public class PetClinicController {
 		if(id != null) {
 			Optional<Pet> pet = pets_repo.findById(id);
 			if(pet.isPresent()) {
-				return this.findOwnerById(pet.get().id);
+				return this.findOwnerById(pet.get().owner_id);
 			}
 		}
 		return Optional.empty();
