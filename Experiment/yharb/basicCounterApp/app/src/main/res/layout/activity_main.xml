@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/grey"
     tools:context=".MainActivity">
 
     <TextView
@@ -11,6 +12,7 @@
         android:layout_width="291dp"
         android:layout_height="108dp"
         android:text="Counting App"
+        android:textColor="#FFFFFF"
         android:textSize="48sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -23,6 +25,7 @@
         android:id="@+id/activity_main_button_to_counter"
         android:layout_width="347dp"
         android:layout_height="141dp"
+        android:backgroundTint="#114093"
         android:text="Counter"
         android:textSize="60sp"
         app:layout_constraintBottom_toBottomOf="parent"

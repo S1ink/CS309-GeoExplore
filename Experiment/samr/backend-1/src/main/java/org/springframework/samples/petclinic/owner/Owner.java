@@ -62,19 +62,14 @@ public class Owner {
     @NotFound(action = NotFoundAction.IGNORE)
     public String telephone;
 
-    @Column(name = "pets")
-    @NotFound(action = NotFoundAction.IGNORE)
-    public Integer[] pet_ids;
-
 
     public Owner() {}
-    public Owner(int id, String firstName, String lastName, String address, String telephone, Integer[] pets){
+    public Owner(int id, String firstName, String lastName, String address, String telephone){
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.address = address;
         this.telephone = telephone;
-        this.pet_ids = pets;
     }
 
     public Integer getId() {
@@ -130,7 +125,6 @@ public class Owner {
             .append("firstName", this.getFirstName())
             .append("address", this.address)
             .append("telephone", this.telephone)
-            .append("pets", this.pet_ids)
         .toString();
     }
 

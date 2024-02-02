@@ -47,6 +47,19 @@ public class Pet {
 		this.owner_id = owner_id;
 	}
 
+	public Integer getId() { return this.id; }
+	public void setId(Integer id) { this.id = id; }
+	public String getName() { return this.name; }
+	public void setName(String n) { this.name = n; }
+	public String getNickname() { return this.nickname; }
+	public void setNickname(String nn) { this.nickname = nn; }
+	public String getType() { return this.type; }
+	public void setType(String type) { this.type = type; }
+	public Integer getAge() { return this.age; }
+	public void setAge(Integer age) { this.age = age; }
+	public Integer getOwnerId() { return this.owner_id; }
+	public void setOwnerId(Integer oi) { this.owner_id = oi; }
+
 	@Override
 	public String toString() {
 		return new ToStringCreator(this)

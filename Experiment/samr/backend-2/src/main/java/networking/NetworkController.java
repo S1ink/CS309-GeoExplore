@@ -1,8 +1,6 @@
 package networking;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -11,46 +9,43 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping(value = "/network")
 public class NetworkController {
-	
-	@Autowired
-	NodeRepository node_repo;
+
+	HashMap<String, User> users = new HashMap<>();
+	Graph.DirectedGraph<User> user_graph = new Graph.DirectedGraph<>();
 
 
-	@GetMapping(path = "/nodes")
-	public List<Node> getNodes() {
-		return this.node_repo.findAll();
+	/** List the currently registered users. */
+	@GetMapping(path = "/users")
+	public @ResponseBody Collection<User> getUsers() {
+		return this.users.values();
 	}
-	@GetMapping(path = "/node/{id}")
-	public Optional<Node> getNode(@PathVariable("id") Integer id) {
-		return this.node_repo.findById(id);
+	/** Get a user's data by their username -- null if username is not valid. */
+	@GetMapping(path = "/users/{uname}")
+	public @ResponseBody User getUserByName(@PathVariable String uname) {
+		return this.users.get(uname);
 	}
-
-	@PostMapping(path = "/add")
-	public Integer addNode(@RequestBody Node n) {
-		if(this.node_repo.findById(n.id).isEmpty()) {
-			this.node_repo.save(n);
-			return n.id;
+	/** Get the user's secret message by logging in. */
+	@PostMapping(path = "users/{uname}/login")
+	public @ResponseBody String getUserSecret(@PathVariable String uname, @RequestBody String password) {
+		if(password != null && uname != null && this.users.containsKey(uname)) {
+			final User u = this.users.get(uname);
+			if(u.password.equals(password)) {
+				return u.secret;
+			}
 		}
-		return null;
+		return "Unable to access secret.";
 	}
-	// @PostMapping(path = "/node/{id}/link")
-	// public Integer linkNewNode(@RequestBody Node n) {
-	// 	Optional<Node> node = this.node_repo.findById(n.id);
-	// 	if(node.isEmpty()) {
-	// 		this.node_repo.save(n);
-	// 	}
-	// }
 
-	@PostMapping(path = "/dummy")
-	public void acceptDummy(@RequestBody String txt) {
-		System.out.println("recieved text input!: " + txt);
-	}
-	@PostMapping(path = "/generate")
-	public void genRandom() {
-		Random r = new Random();
-		for(int i = 0; i < 10; i++) {
-			this.node_repo.save(new Node(r.nextInt(100)));
+	/** Add a user to the system. */
+	@PostMapping(path = "/users")
+	public @ResponseBody String addUser(@RequestBody User user) {
+		if(user == null || user.username == null || user.username.isBlank() || this.users.containsKey(user.username)) {
+			return String.format("Cannot add user with username [%s] : invalid or already present!", user.username);
 		}
+		// user.id = this.users.size() + 1;
+		this.users.put(user.username, user);
+		this.user_graph.add(user);
+		return String.format("Successfully added user [%s]!", user.username);
 	}
 
 

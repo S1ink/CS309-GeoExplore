@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/beige"
     tools:context=".Counter">
 
     <TextView
@@ -22,8 +23,9 @@
 
     <Button
         android:id="@+id/counter_increment_button"
-        android:layout_width="249dp"
-        android:layout_height="123dp"
+        android:layout_width="215dp"
+        android:layout_height="100dp"
+        android:backgroundTint="#0BBA1D"
         android:text="Increment"
         android:textSize="34sp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -35,10 +37,24 @@
         android:id="@+id/counter_back_button"
         android:layout_width="129dp"
         android:layout_height="71dp"
+        android:backgroundTint="#0E19D1"
         android:text="Back"
         android:textSize="34sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/counter_increment_button" />
+
+    <Button
+        android:id="@+id/counter_decrement_button"
+        android:layout_width="217dp"
+        android:layout_height="100dp"
+        android:backgroundTint="#E61212"
+        android:text="Decrement"
+        android:textSize="34sp"
+        app:layout_constraintBottom_toTopOf="@+id/counter_back_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/counter_increment_button" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
