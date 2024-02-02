@@ -1,6 +1,6 @@
 package colors;
 
-import java.util.Random;
+import java.util.*;
 
 import org.springframework.web.bind.annotation.*;
 
@@ -9,9 +9,13 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/generator")
 public class Controller {
 
-	protected static String formatHtmlPageColor(String color) {
-		return String.format("<!DOCTYPE html><html><body style=\"background-color:%s;\"></body></html>", color);
+	HashMap<Integer, String> pages = new HashMap<>();
+
+
+	protected static String formatHtmlPageColor(String color, String innertext) {
+		return String.format("<!DOCTYPE html><html><body style=\"background-color:%s;\">%s</body></html>", color, innertext);
 	}
+	protected static String formatHtmlPageColor(String color) { return formatHtmlPageColor(color, ""); }
 	protected static String formatHtmlPageColor(int r, int g, int b) {
 		r %= 255;
 		g %= 255;
@@ -34,5 +38,24 @@ public class Controller {
 			r.nextInt(255)
 		);
 	}
+
+	@GetMapping(path = "/saved/{id}")
+	public @ResponseBody String getStoredPage(@PathVariable Integer id) {
+		if(this.pages.containsKey(id)) {
+			return formatHtmlPageColor(this.pages.get(id));
+		}
+		return "page id is not valie :(";
+	}
+
+	@PostMapping(path = "/{color}")
+	public @ResponseBody String saveColoredPage(@PathVariable String color, @RequestBody Integer id) {
+		if(id == null) {
+			System.out.println("error :(");
+		}
+		this.pages.put(id, color);
+		return formatHtmlPageColor(color, String.format("saved page color to id %d", id));
+	}
+
+
 
 }
