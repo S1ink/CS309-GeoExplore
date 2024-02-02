@@ -44,13 +44,17 @@ public class Controller {
 		if(this.pages.containsKey(id)) {
 			return formatHtmlPageColor(this.pages.get(id));
 		}
-		return "page id is not valie :(";
+		return "page id is not valid :(";
 	}
 
+	@GetMapping(path = "/{color}/save")
+	public @ResponseBody String saveColoredPage(@PathVariable String color) {
+		return this.saveColoredPage(color, color.hashCode());
+	}
 	@PostMapping(path = "/{color}")
 	public @ResponseBody String saveColoredPage(@PathVariable String color, @RequestBody Integer id) {
 		if(id == null) {
-			System.out.println("error :(");
+			return "failed to save page -- invalid id :(";
 		}
 		this.pages.put(id, color);
 		return formatHtmlPageColor(color, String.format("saved page color to id %d", id));
