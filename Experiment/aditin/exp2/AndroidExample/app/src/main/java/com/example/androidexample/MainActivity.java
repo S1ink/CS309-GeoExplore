@@ -95,10 +95,10 @@ public class MainActivity extends AppCompatActivity {
 
         List<String> categoryCountry=new ArrayList<>();
         categoryCountry.add("Select Country");
-        categoryCountry.add("UNITED States");
+        categoryCountry.add("United States");
         categoryCountry.add("Canada");
         categoryCountry.add("UAE");
-        categoryCountry.add("TURKEY");
+        categoryCountry.add("India");
         categoryCountry.add("Germany");
         ArrayAdapter<String> arrayAdapter;
         arrayAdapter=new ArrayAdapter<>(this,android.R.layout.simple_spinner_item,categoryCountry);
@@ -107,15 +107,14 @@ public class MainActivity extends AppCompatActivity {
         sp.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long l) {
-                if(parent.getItemAtPosition(position).equals("Select Country")){
+                if(!parent.getItemAtPosition(position).equals("Select Country")){
                     //Do Nothing
-
-                }
-                else{
                     String item=parent.getItemAtPosition(position).toString();
                     Colector+=item+"\n";
                     Toast.makeText(MainActivity.this, "Selected Country: "+item, Toast.LENGTH_SHORT).show();
+
                 }
+
             }
 
             @Override
