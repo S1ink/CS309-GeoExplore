@@ -198,7 +198,7 @@
         android:layout_height="wrap_content"
         android:text="Click To Submit"
         android:textColor="#F5FBF6"
-        android:background="#B71C1C"
+        android:background="#FFB6C1"
         android:layout_marginTop="10dp"/>
 
 </LinearLayout>

@@ -12,13 +12,13 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.Toast; // for pop up messages
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    Spinner sp;
+    Spinner sp; // for drop down
     boolean invalid = false;
     String Colector="";
     TextView txtalertName;
