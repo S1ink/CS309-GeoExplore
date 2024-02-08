@@ -1,0 +1,6 @@
+pom.xml:
+- Dependencies included:
+	Spring Boot Web
+	H2 Database
+	[DISABLED] MySQL Connector -- enable when we use MySQL
+	JPA Hibernate

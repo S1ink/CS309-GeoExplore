@@ -12,27 +12,43 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.1.4</version>
+    <version>3.2.2</version>
   </parent>
 
+  <!-- Our project! -->
   <name>geoexplore</name>
 
   <properties>
-
     <!-- Generic properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
+    <!-- <java.version>11</java.version> -->
   </properties>
 
+  <!-- All the dependencies that maven will pull -->
   <dependencies>
-
     <!-- Spring Boot Web dependencies -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
-
+    <!-- The H2 database dependency -->
+    <dependency>
+        <groupId>com.h2database</groupId>
+        <artifactId>h2</artifactId>
+        <version>1.4.200</version>
+        <scope>runtime</scope>
+    </dependency>
+    <!-- MYSQL dependencies .. enable when we use MySQL! -->
+    <!-- <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+    </dependency> -->
+    <!-- The ORM JPA specs/hibernate impl -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
   </dependencies>
 
 
