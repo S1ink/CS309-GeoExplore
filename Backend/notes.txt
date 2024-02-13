@@ -4,3 +4,6 @@ pom.xml:
 	H2 Database
 	[DISABLED] MySQL Connector -- enable when we use MySQL
 	JPA Hibernate
+
+Hibernate Spatial looks like what we need (works with MySQL):
+	- https://www.baeldung.com/hibernate-spatial

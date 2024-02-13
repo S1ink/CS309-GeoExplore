@@ -49,6 +49,17 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-jpa</artifactId>
     </dependency>
+    <!-- hibernate-spatial -->
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-core</artifactId>
+      <version>6.4.4.Final</version>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-spatial</artifactId>
+      <version>6.4.4.Final</version>
+    </dependency>
   </dependencies>
 
 
