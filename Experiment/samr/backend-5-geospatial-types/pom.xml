@@ -25,6 +25,22 @@
     <!-- <java.version>11</java.version> -->
   </properties>
 
+  <!-- Additional maven repositories -->
+  <repositories>
+    <!-- <repository>
+      <id>OSGEO GeoTools repo</id>
+      <url>http://download.osgeo.org/webdav/geotools</url>
+    </repository>
+    <repository>
+      <id>Hibernate Spatial repo</id>
+      <url>http://www.hibernatespatial.org/repository</url>
+    </repository> -->
+    <repository>
+      <id>GeoSolutions</id>
+      <url>	https://maven.geo-solutions.it</url>
+    </repository>
+  </repositories>
+
   <!-- All the dependencies that maven will pull -->
   <dependencies>
     <!-- Spring Boot Web dependencies -->
@@ -34,10 +50,9 @@
     </dependency>
     <!-- The H2 database dependency -->
     <dependency>
-        <groupId>com.h2database</groupId>
-        <artifactId>h2</artifactId>
-        <version>1.4.200</version>
-        <scope>runtime</scope>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>2.2.224</version>
     </dependency>
     <!-- MYSQL dependencies .. enable when we use MySQL! -->
     <!-- <dependency>
@@ -59,6 +74,19 @@
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-spatial</artifactId>
       <version>6.4.4.Final</version>
+    </dependency>
+    <!-- geoDB for H2 server https://mvnrepository.com/artifact/org.opengeo/geodb -->
+    <!-- https://mvnrepository.com/artifact/org.opengeo/geodb -->
+    <dependency>
+      <groupId>org.opengeo</groupId>
+      <artifactId>geodb</artifactId>
+      <version>0.9</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.hibernatespatial/hibernate-spatial-h2-geodb -->
+    <dependency>
+        <groupId>org.hibernatespatial</groupId>
+        <artifactId>hibernate-spatial-h2-geodb</artifactId>
+        <version>1.1.3.2</version>
     </dependency>
     <!-- better JTS? -->
     <dependency>

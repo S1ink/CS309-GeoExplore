@@ -61,6 +61,7 @@ public class GeospatialController {
 		final PointEntity current = val.get();
 		try {
 			current.updatePoint( (Point)getGeometry(wkt_pt) );
+			geo_repo.save(current);
 			return Optional.of(current);
 		} catch(ParseException e) {
 			System.out.println("[PointRepository.updatePointById()]: Failed to udpate point - exception occured!: " + e.getMessage());
@@ -82,7 +83,16 @@ public class GeospatialController {
 
 
 
-	
+	@GetMapping(path = "points/boundedby")
+	public @ResponseBody List<PointEntity> getWithinBounds(@RequestBody String wkt_geom) {
+		System.out.println(wkt_geom);
+		try {
+			return this.geo_repo.findWithin( getGeometry(wkt_geom) );
+		} catch(ParseException e) {
+			System.out.println("[PointRepository.getWithinBounds()]: Failed to compute intersections - exception occured!: " + e.getMessage());
+			return null;
+		}
+	}
 
 
 }
