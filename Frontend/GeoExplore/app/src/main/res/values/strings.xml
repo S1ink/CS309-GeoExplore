@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">GeoExplore</string>
+    <string name="title_activity_main_map">MainMap</string>
+</resources>
