@@ -7,3 +7,4 @@ pom.xml:
 
 Hibernate Spatial looks like what we need (works with MySQL):
 	- https://www.baeldung.com/hibernate-spatial
+	- https://docs.jboss.org/hibernate/orm/5.3/userguide/html_single/Hibernate_User_Guide.html#spatial-overview
