@@ -8,7 +8,17 @@ import jakarta.persistence.*;
 @Table(name = "geomap_events")
 public class ObservationEntity extends LocationBase {
 	
+	public static class JsonFormat {
 
+		public long
+			id;
+		public double
+			latitude,
+			longitude;
+		public String
+			title;
+
+	}
 
 
 }
