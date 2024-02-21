@@ -23,6 +23,7 @@ public class User {
         this.emailId = emailId;
         this.password = password;
         this.ifActive = true;
+        encryptPassword();
     }
 
     public User() {
@@ -79,9 +80,9 @@ public class User {
 
     @Override
     public String toString(){
-        return "Name" + name +
-                "\nusername" + emailId +
-                "\nPassword" + encryptedPassword +
+        return "Name: " + name +
+                "\nusername: " + emailId +
+                "\nPassword: " + encryptedPassword +
                 "\nSuccessfully created";
     }
 }
