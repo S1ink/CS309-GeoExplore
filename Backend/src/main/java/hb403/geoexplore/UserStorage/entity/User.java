@@ -2,6 +2,8 @@ package hb403.geoexplore.UserStorage.entity;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
+
 @Entity
 public class User {
 
@@ -12,6 +14,7 @@ public class User {
     private String emailId;
 
     private String password;
+    private String encryptedPassword;
     private boolean ifActive;
 
     public User(String name, String emailId, String password) {
@@ -57,6 +60,14 @@ public class User {
         this.password = password;
     }
 
+    public void encryptPassword(){
+        ArrayList<Character> encryption = new ArrayList<Character>();
+        for (int i = 0; i < password.length();i++){
+            encryption.add('*');
+        }
+        encryptedPassword = encryption.toString();
+    }
+
 
     public boolean getIsActive(){
         return ifActive;
@@ -66,5 +77,11 @@ public class User {
         this.ifActive = ifActive;
     }
 
-
+    @Override
+    public String toString(){
+        return "Name" + name +
+                "\nusername" + emailId +
+                "\nPassword" + encryptedPassword +
+                "\nSuccessfully created";
+    }
 }
