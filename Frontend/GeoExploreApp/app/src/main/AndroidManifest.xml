@@ -28,13 +28,20 @@
             android:exported="false"
             android:label="@string/title_activity_maps" />
         <activity
-            android:name=".MainActivity"
+            android:name=".LoginSignUpActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <!-- Define MainActivity -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <!-- Intent filters for MainActivity if needed -->
         </activity>
     </application>
 
