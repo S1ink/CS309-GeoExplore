@@ -7,6 +7,8 @@ public class ReportMarker {
     private double longitude;
 
     private double latitude;
+    private String reportTitle;
+
 
     public ReportMarker() {
     }
@@ -33,5 +35,13 @@ public class ReportMarker {
 
     public void setLatitude(double latitude) {
         this.latitude = latitude;
+    }
+
+    public String getReportTitle() {
+        return reportTitle;
+    }
+
+    public void setReportTitle(String reportTitle) {
+        this.reportTitle = reportTitle;
     }
 }
