@@ -2,22 +2,23 @@ package test.connect.geoexploreapp.model;
 
 public class ReportMarker {
 
-    private int id;
+    private long id;
 
     private double longitude;
 
     private double latitude;
+
     private String reportTitle;
 
 
     public ReportMarker() {
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

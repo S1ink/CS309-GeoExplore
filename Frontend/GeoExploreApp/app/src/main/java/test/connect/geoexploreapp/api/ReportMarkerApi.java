@@ -1,53 +1,69 @@
 package test.connect.geoexploreapp.api;
 
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.http.GET;
+import retrofit2.http.POST;
+import test.connect.geoexploreapp.model.ReportMarker;
+
 public interface ReportMarkerApi {
 
-    //@GET("/points/id/{pt_id}")
+    @GET("geomap/reports")
+    Call<List<ReportMarker>> GetAllReportMarker();
+
+//    @POST("geomap/reports/add")
+//    Call<ReportMarker> PostReportMarker()
+
+
 }
 
 /*
 
     Backends CRUDL
 
-	@PostMapping(path = "/points/add")
-	public @ResponseBody PointEntity savePoint(@RequestBody String wkt_pt) {
-		System.out.println(wkt_pt);
-		try {
-			final PointEntity saved = geo_repo.save(new PointEntity( (Point)getGeometry(wkt_pt) ));
-			return saved;
-		} catch(ParseException e) {
-			System.out.println("[PointRepository.savePoint()]: Failed to save point - exception occured!: " + e.getMessage());
-			return null;
+	@PostMapping(path = "geomap/reports/add")
+	public @ResponseBody ReportEntity.JsonFormat saveReport(@RequestBody ReportEntity.JsonFormat report_json) {
+		if(report_json != null) {
+			// successful parse --> convert and insert to repo (DB)
+			final ReportEntity saved = db_reports.save(ReportEntity.fromJson(report_json));
+			return ReportEntity.formatJson(saved);
 		}
+		return null;
 	}
-	@GetMapping(path = "/points/id/{pt_id}")
-	public @ResponseBody Optional<PointEntity> getPointById(@PathVariable Long pt_id) {
-		if(pt_id == null) return Optional.empty();
-		return geo_repo.findById(pt_id);
-	}
-	@PutMapping(path = "points/id/{pt_id}")		// i don't know how to actually update the backer repository
-	public @ResponseBody Optional<PointEntity> updatePointById(@PathVariable Long pt_id, @RequestBody String wkt_pt) {
-		if(pt_id == null) return Optional.empty();
-		final Optional<PointEntity> val = this.getPointById(pt_id);
-		if(val.isEmpty()) return Optional.empty();
-		final PointEntity current = val.get();
-		try {
-			current.updatePoint( (Point)getGeometry(wkt_pt) );
-			geo_repo.save(current);
-			return Optional.of(current);
-		} catch(ParseException e) {
-			System.out.println("[PointRepository.updatePointById()]: Failed to udpate point - exception occured!: " + e.getMessage());
-			return Optional.empty();
+
+	@GetMapping(path = "geomap/reports/{id}")
+	public @ResponseBody ReportEntity.JsonFormat getReportById(@PathVariable Long id) {
+		if(id != null) {
+			try {
+				return ReportEntity.formatJson(this.db_reports.findById(id).get());
+			} catch(Exception e) {
+				// continue >>>
+			}
 		}
+		return null;
 	}
-	@DeleteMapping(path = "points/id/{pt_id}")
-	public @ResponseBody Optional<PointEntity> deletePointById(@PathVariable Long pt_id) {
-		if(pt_id == null) return Optional.empty();
-		final Optional<PointEntity> val = this.geo_repo.findById(pt_id);
-		if(val.isEmpty()) return Optional.empty();
-		this.geo_repo.deleteById(pt_id);
-		return val;
+
+	@PutMapping(path = "geomap/reports/{id}/update")
+	public @ResponseBody ReportEntity.JsonFormat updateReportById(@PathVariable Long id, @RequestBody ReportEntity.JsonFormat report_json) {
+		// custom query? :|
+		return null;
 	}
+
+	@DeleteMapping(path = "geomap/reports/{id}/delete")
+	public @ResponseBody ReportEntity.JsonFormat deleteReportById(@PathVariable Long id) {
+		if(id != null) {
+			try {
+				final ReportEntity.JsonFormat ref = this.getReportById(id);
+				this.db_reports.deleteById(id);
+				return ref;
+			} catch(Exception e) {
+				// continue >>>
+			}
+		}
+		return null;
+	}
+
 	@GetMapping(path = "/points")
 	public @ResponseBody List<PointEntity> getPoints() {
 		return geo_repo.findAll();
@@ -55,14 +71,14 @@ public interface ReportMarkerApi {
 
 
 
-	@GetMapping(path = "points/boundedby")
-	public @ResponseBody List<PointEntity> getWithinBounds(@RequestBody String wkt_geom) {
-		System.out.println(wkt_geom);
-		try {
-			return this.geo_repo.findWithin( getGeometry(wkt_geom) );
-		} catch(ParseException e) {
-			System.out.println("[PointRepository.getWithinBounds()]: Failed to compute intersections - exception occured!: " + e.getMessage());
-			return null;
+	@GetMapping(path = "geomap/reports")
+	public @ResponseBody List<ReportEntity.JsonFormat> getAllReports() {
+		final List<ReportEntity> reports = db_reports.findAll();
+		final ArrayList<ReportEntity.JsonFormat> formatted_list = new ArrayList<>();
+		for(ReportEntity r : reports) {
+			formatted_list.add(ReportEntity.formatJson(r));
 		}
+		return formatted_list;
 	}
+
  */
