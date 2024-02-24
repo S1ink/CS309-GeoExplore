@@ -45,4 +45,7 @@ public class ReportMarker {
     public void setReportTitle(String reportTitle) {
         this.reportTitle = reportTitle;
     }
+
+
+
 }

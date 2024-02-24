@@ -3,8 +3,10 @@ package test.connect.geoexploreapp.api;
 import java.util.List;
 
 import retrofit2.Call;
+import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Path;
 import test.connect.geoexploreapp.model.ReportMarker;
 
 public interface ReportMarkerApi {
@@ -12,8 +14,13 @@ public interface ReportMarkerApi {
     @GET("geomap/reports")
     Call<List<ReportMarker>> GetAllReportMarker();
 
-//    @POST("geomap/reports/add")
-//    Call<ReportMarker> PostReportMarker()
+    @GET("geomap/reports/{id}")
+    Call<ReportMarker> getReportById(@Path("id") Long id);
+
+    @POST("geomap/reports/add")
+    Call<ReportMarker> addReport(@Body ReportMarker reportMarker);
+
+
 
 
 }
