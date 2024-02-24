@@ -5,7 +5,11 @@ import jakarta.persistence.*;
 import java.util.ArrayList;
 
 @Entity
+@Table(name = "user", schema = "testDB")
 public class User {
+    //todo as of saturday, Work on this to be finished and start the observation request using this as a
+    // framework but start outside of git so it won't be too annoying
+    @Basic
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -13,16 +17,20 @@ public class User {
     private String name;
     private String emailId;
 
+
     private String password;
     private String encryptedPassword;
-    private boolean ifActive;
+    private boolean ifAdmin;
 
     public User(String name, String emailId, String password) {
 //        this.id = id;
         this.name = name;
         this.emailId = emailId;
         this.password = password;
-        this.ifActive = true;
+        if (1==1){
+
+        }
+        this.ifAdmin = true;
         encryptPassword();
     }
 
@@ -70,19 +78,20 @@ public class User {
     }
 
 
-    public boolean getIsActive(){
-        return ifActive;
+    public boolean getIsAdmin(){
+        return ifAdmin;
     }
 
-    public void setIfActive(boolean ifActive){
-        this.ifActive = ifActive;
+    public void setIfAdmin(boolean ifAdmin){
+        this.ifAdmin = ifAdmin;
     }
+
 
     @Override
     public String toString(){
-        return "Name: " + name +
-                "\nusername: " + emailId +
-                "\nPassword: " + encryptedPassword +
+        return "Name: " + this.name +
+                "\nusername: " + this.emailId +
+                "\nPassword: " + this.encryptedPassword +
                 "\nSuccessfully created";
     }
 }
