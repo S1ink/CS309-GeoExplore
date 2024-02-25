@@ -27,7 +27,7 @@ public interface ReportMarkerApi {
 
 /*
 
-    Backends CRUDL
+    Backend operations to reference
 
 	@PostMapping(path = "geomap/reports/add")
 	public @ResponseBody ReportEntity.JsonFormat saveReport(@RequestBody ReportEntity.JsonFormat report_json) {
