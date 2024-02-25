@@ -9,17 +9,42 @@
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent" />
+
+    <TextView
+        android:id="@+id/activity_maps_info_text_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#55000000"
+        android:textColor="#FFFFFF"
+        android:textAlignment="center"
+        android:padding="16dp"
+        android:text="Tap on the map to select the location for your report"
+        android:visibility="gone"
+        android:layout_marginTop="16dp"/>
+
 
     <Button
-        android:id="@+id/activity_maps_report_button"
+        android:id="@+id/activity_maps_create_report_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Show Reports"
+        android:layout_alignParentStart="true"
+        android:layout_above="@id/activity_maps_show_report_button"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="5dp"
+        android:backgroundTint="#FF5722"
+        android:text="Create Report" />
+
+    <Button
+        android:id="@+id/activity_maps_show_report_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginBottom="16dp"
-        android:layout_marginEnd="16dp"/>
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="5dp"
+        android:backgroundTint="#0B30F3"
+        android:text="Show Reports" />
 
 </RelativeLayout>
 
