@@ -1,6 +1,8 @@
-package hb403.geoexplore.datatype;
+package hb403.geoexplore.test;
 
 import org.springframework.stereotype.Repository;
+
+import hb403.geoexplore.datatype.LocatableRepository;
 
 
 @Repository

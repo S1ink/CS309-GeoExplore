@@ -1,6 +1,6 @@
-package hb403.geoexplore;
+package hb403.geoexplore.test;
 
-import hb403.geoexplore.datatype.*;
+// import hb403.geoexplore.datatype.*;
 import hb403.geoexplore.util.*;
 
 import java.util.List;
@@ -13,6 +13,7 @@ import org.locationtech.jts.geom.*;
 import org.locationtech.jts.io.ParseException;
 
 
+// THIS IS A TEST CONTROLLER -- NOT FOR USE IN THE ACTUAL PROGRAM!!!
 @RestController
 public class GeospatialController {
 

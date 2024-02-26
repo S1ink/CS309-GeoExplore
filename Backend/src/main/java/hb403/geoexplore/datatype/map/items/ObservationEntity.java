@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 
 
 @Entity
-@Table(name = "geomap_events")
+@Table(name = "geomap_observations")
 public class ObservationEntity extends LocationBase {
 	
 	public static class JsonFormat {

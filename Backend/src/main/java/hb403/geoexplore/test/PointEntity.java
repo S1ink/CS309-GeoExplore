@@ -1,6 +1,8 @@
-package hb403.geoexplore.datatype;
+package hb403.geoexplore.test;
 
 import org.locationtech.jts.geom.Point;
+
+import hb403.geoexplore.datatype.LocationBase;
 import jakarta.persistence.*;
 
 
