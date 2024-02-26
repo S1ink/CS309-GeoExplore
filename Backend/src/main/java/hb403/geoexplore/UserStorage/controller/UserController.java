@@ -17,34 +17,36 @@ public class UserController {
     @Autowired
     UserRepository userRepository;
 
-
-
-    @GetMapping(path = "/userinfo")
-    List<User> getAllUsers() {
-        return userRepository.findAll();
+    //C of Crudl
+    @PostMapping(path = "/user/create")
+    public @ResponseBody String UserCreate(@RequestBody User newUser){
+        //User newUser = new User(name, username, password);
+        userRepository.save(newUser);
+        return newUser.toString();
     }
 
+
+    //R of Crudl
     @GetMapping(path = "/user/{id}")
     Optional<User> getUser(@PathVariable Integer id){
         return userRepository.findById(id);
     }
 
+    //U of Crudl
+    @PutMapping(path = "/user/{id}/update")
+    public @ResponseBody User updateUser(@PathVariable Integer id){
+        User updater =  userRepository.findById(id).get();
 
-
-    @PostMapping(path = "/user/create")
-    public String UserCreate(@RequestBody User newUser){
-        //User newUser = new User(name, username, password);
-        ArrayList<String> adminList = new ArrayList<>();
-        adminList.add("emessmer@iastate.edu");
-        adminList.add("aditin@iastate.edu");
-        adminList.add("yharb@iastate.edu");
-        adminList.add("samr888@iastate.edu");
-
-        if (!adminList.contains(newUser.getEmailId())){
-            newUser.setIfAdmin(false);
-        }
-        userRepository.save(newUser);
-        return newUser.toString();
+        return new User();
     }
+
+
+    @DeleteMapping(path = "/user/{id}/")
+
+    @GetMapping(path = "/userinfo")
+    @ResponseBody List<User>  getAllUsers() {
+        return userRepository.findAll();
+    }
+
 
 }

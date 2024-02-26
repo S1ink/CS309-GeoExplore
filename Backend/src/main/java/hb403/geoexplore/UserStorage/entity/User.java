@@ -17,6 +17,8 @@ public class User {
     private String name;
     private String emailId;
 
+    //String[] adminList = {"emessmer@iastate.edu","aditin@iastate.edu" ,"samr888@iastate.edu","yharb@iastate.edu"};
+
 
     private String password;
     private String encryptedPassword;
@@ -27,15 +29,13 @@ public class User {
         this.name = name;
         this.emailId = emailId;
         this.password = password;
-        if (1==1){
-
-        }
-        this.ifAdmin = true;
         encryptPassword();
     }
 
     public User() {
+
     }
+
 
     public int getId(){
         return id;
