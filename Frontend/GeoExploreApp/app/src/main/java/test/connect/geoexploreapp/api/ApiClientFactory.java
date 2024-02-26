@@ -10,7 +10,7 @@ public class ApiClientFactory {
     static Retrofit GetApiClientSeed(){
         if(apiClientSeed == null){
             apiClientSeed = new Retrofit.Builder()
-                    .baseUrl("https://67d7f572-57ac-492a-8502-49174d854116.mock.pstmn.io/")
+                    .baseUrl("https://67d7f572-57ac-492a-8502-49174d854116.mock.pstmn.io/") // Server url here with / at the end
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
         }
