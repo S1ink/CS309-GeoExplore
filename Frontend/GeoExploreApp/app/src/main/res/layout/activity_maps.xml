@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".MapsActivity">
 
     <fragment
@@ -23,28 +24,17 @@
         android:visibility="gone"
         android:layout_marginTop="16dp"/>
 
-
-    <Button
-        android:id="@+id/activity_maps_create_report_button"
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_main"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_above="@id/activity_maps_show_report_button"
-        android:layout_marginStart="8dp"
-        android:layout_marginBottom="5dp"
-        android:backgroundTint="#FF5722"
-        android:text="Create Report" />
+        android:layout_margin="16dp"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_anchor="@id/map"
+        app:layout_anchorGravity="bottom|end"
+        android:src="@drawable/baseline_add_location_24" />
 
-    <Button
-        android:id="@+id/activity_maps_show_report_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginStart="8dp"
-        android:layout_marginBottom="5dp"
-        android:backgroundTint="#0B30F3"
-        android:text="Show Reports" />
 
 </RelativeLayout>
 
