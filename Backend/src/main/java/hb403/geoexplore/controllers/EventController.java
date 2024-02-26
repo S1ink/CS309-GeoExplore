@@ -5,6 +5,7 @@ import java.util.List;
 
 import hb403.geoexplore.datatype.map.items.EventEntity;
 import hb403.geoexplore.datatype.map.items.EventRepository;
+import hb403.geoexplore.datatype.map.items.ReportEntity;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -18,11 +19,13 @@ public class EventController {
 
 
 	/** [C]rudl - Add a new event to the database */
-	@PostMapping(path = "geomap/events/add")
+	@PostMapping(path = "geomap/events")
 	public @ResponseBody EventEntity.JsonFormat saveEvent(@RequestBody EventEntity.JsonFormat event_json) {
 		if(event_json != null) {
 			// successful parse --> convert and insert to repo (DB)
-			final EventEntity saved = this.db_events.save(EventEntity.fromJson(event_json));
+			EventEntity e = EventEntity.fromJson(event_json);
+			e.nullId();
+			final EventEntity saved = this.db_events.save(e);
 			return EventEntity.formatJson(saved);
 		}
 		return null;
@@ -34,19 +37,23 @@ public class EventController {
 			try {
 				return EventEntity.formatJson(this.db_events.findById(id).get());
 			} catch(Exception e) {
-				// continue >>>
+				// continue >>> (return null)
 			}
 		}
 		return null;
 	}
 	/** cr[U]dl - Update an event already in the database by it's id */
-	@PutMapping(path = "geomap/events/{id}/update")
+	@PutMapping(path = "geomap/events/{id}")
 	public @ResponseBody EventEntity.JsonFormat updateEventById(@PathVariable Long id, @RequestBody EventEntity.JsonFormat event_json) {
-		// may have to create a custom query for this :|
+		if(id != null && event_json != null) {
+			final EventEntity e = EventEntity.fromJson(event_json);
+			e.setId(id);	// repository will overwrite whatever entity already exists with this id --> optionally enforce only updating entities that already exist?
+			return EventEntity.formatJson(this.db_events.save(e));
+		}
 		return null;
 	}
 	/** cru[D]l - Delete an event in the database by it's id */
-	@DeleteMapping(path = "geomap/events/{id}/delete")
+	@DeleteMapping(path = "geomap/events/{id}")
 	public @ResponseBody EventEntity.JsonFormat deleteEventById(@PathVariable Long id) {
 		if(id != null) {
 			try {
@@ -54,7 +61,7 @@ public class EventController {
 				this.db_events.deleteById(id);
 				return ref;
 			} catch(Exception e) {
-				// continue >>>
+				// continue >>> (return null)
 			}
 		}
 		return null;

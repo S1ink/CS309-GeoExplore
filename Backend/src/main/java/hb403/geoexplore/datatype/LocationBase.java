@@ -27,6 +27,11 @@ public abstract class LocationBase {
 
 
 
+	public long getId() { return this.id; }
+	public void nullId() { this.id = (long)-1; }
+	public void setId(long id) { this.id = id; }
+
+
 	@Override
 	public String toString() {
 		return new ToStringCreator(this)
