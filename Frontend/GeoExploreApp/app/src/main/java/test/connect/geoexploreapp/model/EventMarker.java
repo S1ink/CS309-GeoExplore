@@ -4,7 +4,7 @@ public class EventMarker {
     private long id;
     private double latitude;
     private double longitude;
-    private String eventTitle;
+    private String title;
 
     public EventMarker() {
     }
@@ -34,11 +34,11 @@ public class EventMarker {
     }
 
     public String getEventTitle() {
-        return eventTitle;
+        return title;
     }
 
     public void setEventTitle(String eventTitle) {
-        this.eventTitle = eventTitle;
+        this.title = eventTitle;
     }
 
 

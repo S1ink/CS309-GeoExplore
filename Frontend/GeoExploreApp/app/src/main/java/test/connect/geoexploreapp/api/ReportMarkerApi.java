@@ -4,30 +4,34 @@ import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import test.connect.geoexploreapp.model.ReportMarker;
 
 public interface ReportMarkerApi {
 
-// crud[L] - Get a list of all the events in the database 
-    @GET("geomap/reports")
-    Call<List<ReportMarker>> GetAllReportMarker();
+    //[C]rudl - Add a new event to the database
+    @POST("geomap/reports/add")
+    Call<ReportMarker> addReport(@Body ReportMarker reportMarker);
 
     // c[R]udl - Get an event from the database by its id
     @GET("geomap/reports/{id}")
     Call<ReportMarker> getReportById(@Path("id") Long id);
 
-    //[C]rudl - Add a new event to the database
-    @POST("geomap/reports/add")
-    Call<ReportMarker> addReport(@Body ReportMarker reportMarker);
+    // cr[U]dl - Update an event already in the database by it's id
+    @PUT("geomap/reports/{id}/update")
+    Call<ReportMarker> updateReportById(@Path("id") Long id, @Body ReportMarker reportMarker);
 
-    // TODO cr[U]dl - Update an event already in the database by it's id
+    // cru[D]l - Delete an event in the database by it's id
+    @DELETE("geomap/reports/{id}")
+    Call<Void> deleteReportById(@Path("id") Long id);
 
-    //TODO cru[D]l - Delete an event in the database by it's id
-
-
+    // crud[L] - Get a list of all the events in the database
+    @GET("geomap/reports")
+    Call<List<ReportMarker>> GetAllReportMarker();
 }
 
 /*
