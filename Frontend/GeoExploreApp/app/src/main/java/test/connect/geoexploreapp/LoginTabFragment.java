@@ -58,12 +58,7 @@ public class LoginTabFragment extends Fragment {
                         }
                     }
                 });
-//                if (isValidCredentials(email, passcode)) {
-//                    // Start MainActivity if login is successful
-//                    startMainActivity();
-//                } else {
-//                    showAlert("Invalid Credentials!");
-//                }
+
             }
         });
     }

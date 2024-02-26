@@ -1,7 +1,10 @@
 package test.connect.geoexploreapp;
 
+import static test.connect.geoexploreapp.api.ApiClientFactory.GetUserApi;
+
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +16,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+
+import test.connect.geoexploreapp.api.SlimCallback;
+import test.connect.geoexploreapp.model.User;
 
 
 public class SignupTabFragment extends Fragment {
@@ -39,30 +45,29 @@ public class SignupTabFragment extends Fragment {
         IsAdmin = (CheckBox) view.findViewById(R.id.is_admin);
 
 
-
         // Set the click listener for the button
         signinSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String firstName = FirstName.getText().toString();
-                String lastName = LastName.getText().toString();
+                String fullName = FirstName.getText().toString() + " " + LastName.getText().toString();
                 String email = UserEmail.getText().toString();
                 String password = UserPassword.getText().toString();
                 String confirmPassword = ConfirmPassword.getText().toString();
                 boolean isAdmin = IsAdmin.isChecked();
-                // Perform your actions here
-                // For example, show an alert dialog
-                //showAlert("Login Attempted!");
-                if (isValidCredentials(firstName, lastName, email, password, confirmPassword)) {
-                    // Start MainActivity if login is successful
-                    startMainActivity();
-                } else {
-                    showAlert("Invalid Credentials!");
-                }
+
+                isValidCredentials(fullName, email, password, confirmPassword, isAdmin, new CredentialsCallback(){
+                    @Override
+                    public void onResult(boolean isValid) {
+                        if (isValid) {
+                            startMainActivity();
+                        } else {
+                            showAlert("Invalid Credentials!");
+                        }
+                    }
+                });
             }
         });
     }
-
     private void showAlert(String message) {
         // Context should be getActivity() since you're in a fragment
         new AlertDialog.Builder(getActivity())
@@ -72,14 +77,36 @@ public class SignupTabFragment extends Fragment {
                 .create()
                 .show();
     }
-    private boolean isValidCredentials(String firstName, String lastName, String email, String password, String confirmPassword) {
+    private void isValidCredentials(String fullName, String email, String password, String confirmPassword, boolean isAdmin, CredentialsCallback callback) {
         // CHECK IF USER EXISTS HERE
-        if (firstName.isEmpty() || lastName.isEmpty() ||  email.isEmpty() ||  password.isEmpty() ||  confirmPassword.isEmpty()){
-          return false;
+        if (fullName.isEmpty() ||  email.isEmpty() ||  password.isEmpty() ||  confirmPassword.isEmpty()){
+            callback.onResult(false);
+            return;
         }else if (password.equals(confirmPassword)==false){
-            return false;
+            callback.onResult(false);
+            return;
+        }else{
+
+            User newUser = new User();
+            newUser.setName(fullName);
+            newUser.setEmailId(email);
+            newUser.isIfAdmin(isAdmin);
+            newUser.setPassword(password);
+            newUser.setEncryptedPassword(null);
+
+            Log.d("LoginCheck", "CHecking user " + newUser.getName());
+            Log.d("LoginCheck", "CHecking user " + newUser.getEmailId());
+            Log.d("LoginCheck", "CHecking user " + newUser.getPassword());
+            Log.d("LoginCheck", "CHecking user " + newUser.isIfAdmin(isAdmin));
+         //   Log.d("LoginCheck", "CHecking user " + newUser.);
+            GetUserApi().UserCreate(newUser).enqueue(new SlimCallback<String>(user->{
+
+                boolean isSuccess = user != null;
+                callback.onResult(isSuccess);
+
+            }));
         }
-        return true;
+
     }
     private void startMainActivity() {
         Intent intent = new Intent(getActivity(), MainActivity.class);

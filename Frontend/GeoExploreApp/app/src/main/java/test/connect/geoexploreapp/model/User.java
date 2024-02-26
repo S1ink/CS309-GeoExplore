@@ -51,7 +51,7 @@ public class User {
         this.encryptedPassword = encryptedPassword;
     }
 
-    public boolean isIfAdmin() {
+    public boolean isIfAdmin(boolean isAdmin) {
         return ifAdmin;
     }
 

@@ -18,7 +18,7 @@ public interface UserApi {
     @GET("/user/{id}")
     Call<Optional<User>> getUser(@Path("id") Integer id);
     @POST("/user/create")
-    Call<User> UserCreate(@Body User newUser);
+    Call<String> UserCreate(@Body User newUser);
 
 }
 
