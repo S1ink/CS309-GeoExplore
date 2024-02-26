@@ -1,18 +1,25 @@
 package test.connect.geoexploreapp;
 
+import static test.connect.geoexploreapp.api.ApiClientFactory.GetUserApi;
+
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+
+import java.util.List;
+
+import test.connect.geoexploreapp.api.SlimCallback;
+import test.connect.geoexploreapp.model.User;
 
 
 public class LoginTabFragment extends Fragment {
@@ -35,17 +42,28 @@ public class LoginTabFragment extends Fragment {
         loginSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String email = UserEmail.getText().toString();
+                String email = UserEmail.getText().toString().toLowerCase().trim();
                 String passcode = UserPassword.getText().toString();
                 // Perform your actions here
                 // For example, show an alert dialog
                 //showAlert("Login Attempted!");
-                if (isValidCredentials(email, passcode)) {
-                    // Start MainActivity if login is successful
-                    startMainActivity();
-                } else {
-                    showAlert("Invalid Credentials!");
-                }
+
+                isValidCredentials(email, passcode, new CredentialsCallback() {
+                    @Override
+                    public void onResult(boolean isValid) {
+                        if (isValid) {
+                            startMainActivity();
+                        } else {
+                            showAlert("Invalid Credentials!");
+                        }
+                    }
+                });
+//                if (isValidCredentials(email, passcode)) {
+//                    // Start MainActivity if login is successful
+//                    startMainActivity();
+//                } else {
+//                    showAlert("Invalid Credentials!");
+//                }
             }
         });
     }
@@ -59,9 +77,32 @@ public class LoginTabFragment extends Fragment {
                 .create()
                 .show();
     }
-    private boolean isValidCredentials(String email, String password) {
+
+    private void isValidCredentials(String email, String password, CredentialsCallback callback) {
         // CHECK IF USER EXISTS HERE
-        return !email.isEmpty() && !password.isEmpty();
+        if (email.isEmpty() || password.isEmpty()) {
+            // Immediate feedback for empty fields
+            callback.onResult(false);
+            return;
+        }
+
+        GetUserApi().getAllUsers().enqueue(new SlimCallback<List<User>>(users->{
+
+            for(int i = 0; i<users.size(); i++){
+                User temp = users.get(i);
+                Log.d("LoginCheck", "Checking user: " + temp.getEmailId() + ", " + temp.getPassword());
+                boolean emailMatch = email != null && email.equals(temp.getEmailId());
+                boolean passwordMatch = password != null && password.equals(temp.getPassword());
+                if (emailMatch && passwordMatch) {
+                    Log.d("LoginCheck", "Match found");
+                    callback.onResult(true);
+                    return;
+                }
+            }
+            Log.d("LoginCheck", "No match found");
+            callback.onResult(false);
+
+        }, "getAllUsers"));
     }
     private void startMainActivity() {
         Intent intent = new Intent(getActivity(), MainActivity.class);
@@ -69,3 +110,4 @@ public class LoginTabFragment extends Fragment {
         getActivity().finish(); // Call finish on the Activity, not the Fragment
     }
 }
+

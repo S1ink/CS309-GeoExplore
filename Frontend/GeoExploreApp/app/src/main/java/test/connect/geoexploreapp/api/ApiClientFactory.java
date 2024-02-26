@@ -11,15 +11,16 @@ public class ApiClientFactory {
 
         if(apiClientSeed==null) {
             apiClientSeed = new Retrofit.Builder()
-                    .baseUrl("https://jsonplaceholder.typicode.com/")
+                    .baseUrl("https://bdabeac2-f13b-4e71-b97d-9c7c1bab23c5.mock.pstmn.io")
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
         }
         return apiClientSeed;
     }
 
-    public static PostApi GetPostApi(){
-        return GetApiClientSeed().create(PostApi.class);
+
+    public static UserApi GetUserApi(){
+        return GetApiClientSeed().create(UserApi.class);
     }
 
 

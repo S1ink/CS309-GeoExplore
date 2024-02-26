@@ -58,4 +58,5 @@ public class User {
     public void setIfAdmin(boolean ifAdmin) {
         this.ifAdmin = ifAdmin;
     }
+
 }
