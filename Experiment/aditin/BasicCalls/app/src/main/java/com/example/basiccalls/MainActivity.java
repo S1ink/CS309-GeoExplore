@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
             String result = response.getId() + "\n Title: " + response.getTitle() + "\nBody: " + response.getBody();
             apiText1.setText(result);
 
-        }));
+        }, "CustomTagForFirstApi"));
 
     }
 

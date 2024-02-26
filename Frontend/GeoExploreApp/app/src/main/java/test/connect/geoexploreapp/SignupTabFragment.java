@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 
 import androidx.annotation.NonNull;
@@ -16,6 +17,7 @@ import androidx.fragment.app.Fragment;
 
 public class SignupTabFragment extends Fragment {
     EditText UserEmail,UserPassword, FirstName, LastName, ConfirmPassword;
+    CheckBox IsAdmin;
     Button signinSubmit;
 
     @Override
@@ -34,6 +36,8 @@ public class SignupTabFragment extends Fragment {
         UserPassword=view.findViewById(R.id.signup_password);
         ConfirmPassword=view.findViewById(R.id.signup_confirm);
         signinSubmit = view.findViewById(R.id.signup_button);
+        IsAdmin = (CheckBox) view.findViewById(R.id.is_admin);
+
 
 
         // Set the click listener for the button
@@ -45,6 +49,7 @@ public class SignupTabFragment extends Fragment {
                 String email = UserEmail.getText().toString();
                 String password = UserPassword.getText().toString();
                 String confirmPassword = ConfirmPassword.getText().toString();
+                boolean isAdmin = IsAdmin.isChecked();
                 // Perform your actions here
                 // For example, show an alert dialog
                 //showAlert("Login Attempted!");
