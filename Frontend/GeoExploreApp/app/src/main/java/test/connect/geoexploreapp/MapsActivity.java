@@ -28,8 +28,10 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import test.connect.geoexploreapp.api.ApiClientFactory;
+import test.connect.geoexploreapp.api.EventMarkerApi;
 import test.connect.geoexploreapp.api.ReportMarkerApi;
 import test.connect.geoexploreapp.api.SlimCallback;
+import test.connect.geoexploreapp.model.EventMarker;
 import test.connect.geoexploreapp.model.ReportMarker;
 
 public class MapsActivity extends Fragment implements OnMapReadyCallback {
@@ -150,6 +152,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
         });
         btnEventList.setOnClickListener(v -> {
 
+            displayAllEvents();
             bottomSheetDialog.dismiss();
         });
 
@@ -158,7 +161,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
     }
 
 
-
+    // Report CRUDL
     private void displayAllReports() {
         ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
 
@@ -174,9 +177,17 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
     private void createNewReport(final LatLng latLng){
 
     }
+    private void displayReportByID(Long id) {
+        ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
 
-    private void displayReportByID(Long id){
-
+        reportMarkerApi.getReportById(id).enqueue(new SlimCallback<>(reportMarker -> {
+            if (reportMarker != null) {
+                LatLng position = new LatLng(reportMarker.getLatitude(), reportMarker.getLongitude());
+                mMap.clear();
+                mMap.addMarker(new MarkerOptions().position(position).title(reportMarker.getReportTitle()));
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 10));
+            }
+        }, "getReportByID"));
     }
 
     private void updateExistingReport(){
@@ -184,6 +195,36 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
     }
 
     private void deleteReport(){
+
+    }
+
+
+    // Event CRUDL
+    private void displayAllEvents() {
+        EventMarkerApi eventMarkerApi = ApiClientFactory.getEventMarkerApi();
+
+        eventMarkerApi.GetAllEventMarker().enqueue(new SlimCallback<>(eventMarkers -> {
+            mMap.clear();
+            for (EventMarker eventMarker : eventMarkers) {
+                LatLng position = new LatLng(eventMarker.getLatitude(), eventMarker.getLongitude());
+                mMap.addMarker(new MarkerOptions().position(position).title(eventMarker.getEventTitle()));
+            }
+        }, "GetAllEvents"));
+    }
+
+    private void createNewEvent(final LatLng latLng){
+
+    }
+
+    private void displayEventByID(Long id){
+
+    }
+
+    private void updateExistingEvent(){
+
+    }
+
+    private void deleteEvent(){
 
     }
 
