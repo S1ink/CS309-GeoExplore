@@ -1,21 +1,21 @@
 package test.connect.geoexploreapp.model;
 
 public class User {
-    private int id;
+    private Long id;
     private String name;
     private String emailId;
     private String password;
     private String encryptedPassword;
-    private boolean ifAdmin;
+    private boolean isAdmin;
 
     public User() {
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -51,12 +51,22 @@ public class User {
         this.encryptedPassword = encryptedPassword;
     }
 
-    public boolean isIfAdmin(boolean isAdmin) {
-        return ifAdmin;
+    public boolean getIsAdmin() {
+        return isAdmin;
     }
 
-    public void setIfAdmin(boolean ifAdmin) {
-        this.ifAdmin = ifAdmin;
+    public void setIsAdmin(boolean isAdmin) {
+
+        this.isAdmin = isAdmin;
     }
+
+    @Override
+    public String toString(){
+        return "{ name: " + this.name +
+                "\nemailId: " + this.emailId +
+                "\nPassword: " + this.password +
+                "\nisAdmin: " + this.getIsAdmin();
+    }
+
 
 }

@@ -17,9 +17,13 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
-import test.connect.geoexploreapp.api.SlimCallback;
-import test.connect.geoexploreapp.model.User;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import test.connect.geoexploreapp.api.SlimCallback;
+import test.connect.geoexploreapp.api.UserApi;
+import test.connect.geoexploreapp.model.User;
 
 public class SignupTabFragment extends Fragment {
     EditText UserEmail,UserPassword, FirstName, LastName, ConfirmPassword;
@@ -55,16 +59,22 @@ public class SignupTabFragment extends Fragment {
                 String confirmPassword = ConfirmPassword.getText().toString();
                 boolean isAdmin = IsAdmin.isChecked();
 
-                isValidCredentials(fullName, email, password, confirmPassword, isAdmin, new CredentialsCallback(){
-                    @Override
-                    public void onResult(boolean isValid) {
-                        if (isValid) {
-                            startMainActivity();
-                        } else {
-                            showAlert("Invalid Credentials!");
-                        }
-                    }
-                });
+                if (fullName.isEmpty() ||  email.isEmpty() ||  password.isEmpty() ||  confirmPassword.isEmpty()){
+                    showAlert("Invalid Credentials!");
+
+                }else if (password.equals(confirmPassword)==false){
+                    showAlert("Invalid Credentials!");
+
+                }else {
+                    User newUser = new User();
+                    newUser.setName(fullName);
+                    newUser.setEmailId(email);
+                    newUser.setIsAdmin(isAdmin);
+                    newUser.setPassword(password);
+
+                    createUser(newUser);
+                }
+
             }
         });
     }
@@ -77,37 +87,31 @@ public class SignupTabFragment extends Fragment {
                 .create()
                 .show();
     }
-    private void isValidCredentials(String fullName, String email, String password, String confirmPassword, boolean isAdmin, CredentialsCallback callback) {
-        // CHECK IF USER EXISTS HERE
-        if (fullName.isEmpty() ||  email.isEmpty() ||  password.isEmpty() ||  confirmPassword.isEmpty()){
-            callback.onResult(false);
-            return;
-        }else if (password.equals(confirmPassword)==false){
-            callback.onResult(false);
-            return;
-        }else{
 
-            User newUser = new User();
-            newUser.setName(fullName);
-            newUser.setEmailId(email);
-            newUser.isIfAdmin(isAdmin);
-            newUser.setPassword(password);
-            newUser.setEncryptedPassword(null);
 
-            Log.d("LoginCheck", "CHecking user " + newUser.getName());
-            Log.d("LoginCheck", "CHecking user " + newUser.getEmailId());
-            Log.d("LoginCheck", "CHecking user " + newUser.getPassword());
-            Log.d("LoginCheck", "CHecking user " + newUser.isIfAdmin(isAdmin));
-         //   Log.d("LoginCheck", "CHecking user " + newUser.);
-            GetUserApi().UserCreate(newUser).enqueue(new SlimCallback<String>(user->{
+    public void createUser(User newUser){
+        Log.d("LoginCheck", "Checking user " + newUser.toString());
 
-                boolean isSuccess = user != null;
-                callback.onResult(isSuccess);
+        GetUserApi().UserCreate(newUser).enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                if (response.isSuccessful()) {
+                    User createdUser = response.body();
+                    Log.d("API_SUCCESS", "User created: " + createdUser.toString());
+                    startMainActivity();
+                } else {
+                    Log.e("API_FAILURE", "Response not successful: " + response.code());
+                }
+            }
 
-            }));
-        }
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                Log.e("API_FAILURE", "Call failed", t);
+            }
+        });
 
     }
+
     private void startMainActivity() {
         Intent intent = new Intent(getActivity(), MainActivity.class);
         startActivity(intent);
