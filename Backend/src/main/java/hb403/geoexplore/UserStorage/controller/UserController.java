@@ -19,30 +19,45 @@ public class UserController {
 
     //C of Crudl
     @PostMapping(path = "/user/create")
-    public @ResponseBody String UserCreate(@RequestBody User newUser){
+    public @ResponseBody User UserCreate(@RequestBody User newUser){
         //User newUser = new User(name, username, password);
         userRepository.save(newUser);
-        return newUser.toString();
+        return newUser;
     }
 
 
     //R of Crudl
     @GetMapping(path = "/user/{id}")
-    Optional<User> getUser(@PathVariable Integer id){
+    Optional<User> getUser(@PathVariable Long id){
         return userRepository.findById(id);
     }
 
     //U of Crudl
     @PutMapping(path = "/user/{id}/update")
-    public @ResponseBody User updateUser(@PathVariable Integer id){
-        User updater =  userRepository.findById(id).get();
-
-        return new User();
+    public @ResponseBody User updateUser(@PathVariable Long id, @RequestBody User updated){
+        userRepository.deleteById(id);
+        User updater = new User(id, updated.getName(), updated.getEmailId(), updated.getPassword());
+        userRepository.save(updater);
+        return updater;
     }
 
 
-    @DeleteMapping(path = "/user/{id}/")
+    @DeleteMapping(path = "/user/{id}/delete")
+    public @ResponseBody String deleteUser(@PathVariable Long id){
+        User deleted = userRepository.findById(id).get();
+        userRepository.deleteById(id);
+        return "Successfully deleted: \n" + deleted.toString();
+    }
 
+    @DeleteMapping(path = "user/delete/all")
+    public @ResponseBody String deleteAll(){
+        userRepository.deleteAll();
+        return "Successfully deleted all users";
+    }
+
+
+
+    //L of Crudl
     @GetMapping(path = "/userinfo")
     @ResponseBody List<User>  getAllUsers() {
         return userRepository.findAll();

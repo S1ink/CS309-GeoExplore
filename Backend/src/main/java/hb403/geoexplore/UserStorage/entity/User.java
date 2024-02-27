@@ -9,11 +9,24 @@ import java.util.ArrayList;
 public class User {
     //todo as of saturday, Work on this to be finished and start the observation request using this as a
     // framework but start outside of git so it won't be too annoying
+    /*
+    Input for creating user {
+
+        "name": "Ethan",
+        "emailId": "emessmer@iastate.edu",
+        "password": "password"
+
+    }
+     */
+
+
+
+
     @Basic
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
     private String name;
     private String emailId;
 
@@ -23,12 +36,40 @@ public class User {
     private String password;
     private String encryptedPassword;
     private boolean ifAdmin;
+    public User(Long id, String name, String emailId, String password) {
+        this.id = id;
+        this.name = name;
+        this.emailId = emailId;
+        this.password = password;
+        ArrayList<String> adminList = new ArrayList<>();
+        adminList.add("emessmer@iastate.edu");
+        adminList.add("samr888@iastate.edu");
+        adminList.add("aditin@iastate.edu");
+        adminList.add("yharb@iastate.edu");
+        for (int i = 0; i < adminList.size();i++){
+            if (emailId.equals(adminList.get(i))){
+                setIsAdmin(true);
+            }
+        }
+        encryptPassword();
+    }
 
     public User(String name, String emailId, String password) {
 //        this.id = id;
         this.name = name;
         this.emailId = emailId;
         this.password = password;
+        ArrayList<String> adminList = new ArrayList<>();
+        adminList.add("emessmer@iastate.edu");
+        adminList.add("samr888@iastate.edu");
+        adminList.add("aditin@iastate.edu");
+        adminList.add("yharb@iastate.edu");
+        for (int i = 0; i < adminList.size();i++){
+            if (emailId.equals(adminList.get(i))){
+                setIsAdmin(true);
+            }
+        }
+
         encryptPassword();
     }
 
@@ -37,11 +78,11 @@ public class User {
     }
 
 
-    public int getId(){
+    public Long getId(){
         return id;
     }
 
-    public void setId(int id){
+    public void setId(Long id){
         this.id = id;
     }
 
@@ -82,7 +123,7 @@ public class User {
         return ifAdmin;
     }
 
-    public void setIfAdmin(boolean ifAdmin){
+    public void setIsAdmin(boolean ifAdmin){
         this.ifAdmin = ifAdmin;
     }
 
