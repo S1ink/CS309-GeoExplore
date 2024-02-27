@@ -20,16 +20,17 @@ public class UserController {
     //C of Crudl
     @PostMapping(path = "/user/create")
     public @ResponseBody User UserCreate(@RequestBody User newUser){
-        //User newUser = new User(name, username, password);
-        userRepository.save(newUser);
-        return newUser;
+        User newestUser = new User(newUser.getName(), newUser.getEmailId(), newUser.getPassword());
+        userRepository.save(newestUser);
+        return newestUser;
     }
 
 
     //R of Crudl
     @GetMapping(path = "/user/{id}")
-    Optional<User> getUser(@PathVariable Long id){
-        return userRepository.findById(id);
+    public @ResponseBody User getUser(@PathVariable Long id){
+
+        return userRepository.findById(id).get();
     }
 
     //U of Crudl

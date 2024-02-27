@@ -35,22 +35,15 @@ public class User {
 
     private String password;
     private String encryptedPassword;
-    private boolean ifAdmin;
+    private boolean isAdmin;
     public User(Long id, String name, String emailId, String password) {
         this.id = id;
         this.name = name;
         this.emailId = emailId;
         this.password = password;
-        ArrayList<String> adminList = new ArrayList<>();
-        adminList.add("emessmer@iastate.edu");
-        adminList.add("samr888@iastate.edu");
-        adminList.add("aditin@iastate.edu");
-        adminList.add("yharb@iastate.edu");
-        for (int i = 0; i < adminList.size();i++){
-            if (emailId.equals(adminList.get(i))){
-                setIsAdmin(true);
-            }
-        }
+
+
+        checkIfAdmin();
         encryptPassword();
     }
 
@@ -59,17 +52,7 @@ public class User {
         this.name = name;
         this.emailId = emailId;
         this.password = password;
-        ArrayList<String> adminList = new ArrayList<>();
-        adminList.add("emessmer@iastate.edu");
-        adminList.add("samr888@iastate.edu");
-        adminList.add("aditin@iastate.edu");
-        adminList.add("yharb@iastate.edu");
-        for (int i = 0; i < adminList.size();i++){
-            if (emailId.equals(adminList.get(i))){
-                setIsAdmin(true);
-            }
-        }
-
+        checkIfAdmin();
         encryptPassword();
     }
 
@@ -120,11 +103,23 @@ public class User {
 
 
     public boolean getIsAdmin(){
-        return ifAdmin;
+        return isAdmin;
     }
 
-    public void setIsAdmin(boolean ifAdmin){
-        this.ifAdmin = ifAdmin;
+    public void checkIfAdmin(){
+        ArrayList<String> adminList = new ArrayList<>();
+        adminList.add("emessmer@iastate.edu");
+        adminList.add("samr888@iastate.edu");
+        adminList.add("aditin@iastate.edu");
+        adminList.add("yharb@iastate.edu");
+        //for (String s : adminList) {
+            if (adminList.contains(emailId)) {
+                this.setIsAdmin(true);
+            }
+
+    }
+    public void setIsAdmin(boolean isAdmin){
+        this.isAdmin = isAdmin;
     }
 
 
