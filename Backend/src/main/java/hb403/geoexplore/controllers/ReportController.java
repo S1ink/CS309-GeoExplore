@@ -94,6 +94,7 @@ public class ReportController {
 			}
 			return formatted;
 		} catch(Exception e) {
+			System.out.println("ReportEntity.getReportsWithinBounds(): Encountered exception! -- " + e.getMessage());
 			// continue >>> (return null)
 		}
 		return null;
