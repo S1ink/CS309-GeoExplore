@@ -70,6 +70,16 @@
         android:layout_height="wrap_content"
         android:text="List All Reports" />
 
-    <!-- Add more buttons for Read, Update, Delete, List here -->
+    <Button
+        android:id="@+id/btn_observation_add"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add Observation" />
+
+    <Button
+        android:id="@+id/all_observations"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="All Observation" />
 
 </LinearLayout>

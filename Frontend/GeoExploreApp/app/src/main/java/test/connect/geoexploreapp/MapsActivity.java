@@ -131,6 +131,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
         Button btnEventUpdate = bottomSheetDialog.findViewById(R.id.btn_event_update);
         Button btnEventDelete = bottomSheetDialog.findViewById(R.id.btn_event_delete);
         Button btnEventList = bottomSheetDialog.findViewById(R.id.btn_event_list);
+        Button btnObservationAdd = bottomSheetDialog.findViewById(R.id.btn_observation_add);
 
         btnReportCreate.setOnClickListener(v -> {
             reportInfoTextView.setVisibility(View.VISIBLE);
