@@ -215,11 +215,32 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
         }, "getReportByID"));
     }
 
-    private void updateExistingReport(){
+    private void updateExistingReportByID(Long id){
+        ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
 
     }
 
-    private void deleteReportByID(){
+    private void deleteReportByID(Long id){
+        ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
+
+        reportMarkerApi.deleteReportById(id).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if(response.isSuccessful()){
+                    mMap.clear();
+                    displayAllReports();
+
+                    Toast.makeText(getActivity(), "Report deleted successfully",Toast.LENGTH_SHORT).show();
+                } else{
+                    Toast.makeText(getActivity(), "Failed to delete report", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Toast.makeText(getActivity(), "Error deleting report", Toast.LENGTH_SHORT).show();
+            }
+        });
 
     }
 
@@ -264,11 +285,31 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
         }, "getEventByID"));
     }
 
-    private void updateExistingEvent(){
+    private void updateExistingEventByID(Long id){
+        EventMarkerApi eventMarkerApi = ApiClientFactory.getEventMarkerApi();
 
     }
+    private void deleteEventByID(Long id) {
+        EventMarkerApi eventMarkerApi = ApiClientFactory.getEventMarkerApi();
 
-    private void deleteEventByID(){
+        eventMarkerApi.deleteEventById(id).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if(response.isSuccessful()){
+                    mMap.clear();
+                    displayAllEvents();
+
+                    Toast.makeText(getActivity(), "Event deleted successfully",Toast.LENGTH_SHORT).show();
+                } else{
+                    Toast.makeText(getActivity(), "Failed to delete event", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Toast.makeText(getActivity(), "Error deleting event", Toast.LENGTH_SHORT).show();
+            }
+        });
 
     }
 
