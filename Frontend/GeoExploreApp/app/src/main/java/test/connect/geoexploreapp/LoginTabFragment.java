@@ -1,9 +1,12 @@
 package test.connect.geoexploreapp;
 
+import static android.content.Context.MODE_PRIVATE;
 import static test.connect.geoexploreapp.api.ApiClientFactory.GetUserApi;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +19,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
+import com.google.gson.Gson;
+
 import java.util.List;
 
 import test.connect.geoexploreapp.api.SlimCallback;
@@ -25,6 +30,10 @@ import test.connect.geoexploreapp.model.User;
 public class LoginTabFragment extends Fragment {
     EditText UserEmail,UserPassword;
     Button loginSubmit;
+
+   // public currentUser=null;
+//   SharedPreferences sharedPreferences = getActivity().getSharedPreferences("MySharedPref", MODE_PRIVATE);
+//    SharedPreferences.Editor myEdit = sharedPreferences.edit();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -52,6 +61,7 @@ public class LoginTabFragment extends Fragment {
                     @Override
                     public void onResult(boolean isValid) {
                         if (isValid) {
+
                             startMainActivity();
                         } else {
                             showAlert("Invalid Credentials!");
@@ -90,6 +100,10 @@ public class LoginTabFragment extends Fragment {
                 boolean passwordMatch = password != null && password.equals(temp.getPassword());
                 if (emailMatch && passwordMatch) {
                     Log.d("LoginCheck", "Match found");
+//                    Gson gson = new Gson();
+//                    String json = gson.toJson(temp); // 'user' is an instance of User class
+//                    myEdit.putString("user", json);
+//                    myEdit.apply();
                     callback.onResult(true);
                     return;
                 }

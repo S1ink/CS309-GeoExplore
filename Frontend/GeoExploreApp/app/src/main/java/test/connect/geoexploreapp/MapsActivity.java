@@ -1,11 +1,8 @@
 package test.connect.geoexploreapp;
 
+import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
-
-import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,6 +28,8 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
     private GoogleMap mMap;
     private boolean isCreateReportMode = false;
     private boolean isCreateEventMode = false;
+    private int reportIdStatus = 0; // For promptForReportID method. 1 to Read, 2 to Delete, 3 to Update
+    private int eventIdStatus = 0; // For promptForEventID method. 1 to Read, 2 to Delete, 3 to Update
     private TextView reportInfoTextView;
     private TextView eventInfoTextView;
 
@@ -114,6 +113,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
         Button btnEventUpdate = bottomSheetDialog.findViewById(R.id.btn_event_update);
         Button btnEventDelete = bottomSheetDialog.findViewById(R.id.btn_event_delete);
         Button btnEventList = bottomSheetDialog.findViewById(R.id.btn_event_list);
+        Button btnObservationAdd = bottomSheetDialog.findViewById(R.id.btn_observation_add);
 
         btnReportCreate.setOnClickListener(v -> {
             reportInfoTextView.setVisibility(View.VISIBLE);
@@ -157,10 +157,23 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             //displayAllEvents();
             bottomSheetDialog.dismiss();
         });
+        btnObservationAdd.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), ObservationForm.class);
+            startActivity(intent);
+            bottomSheetDialog.dismiss();
+        });
+//        btnObservationAdd.setOnClickListener(v -> {
+//            Intent intent = new Intent(getActivity(), AllObservations.class);
+//            startActivity(intent);
+//            bottomSheetDialog.dismiss();
+//        });
 
 
         bottomSheetDialog.show();
     }
+
+
+
 
 
 }
