@@ -20,4 +20,11 @@ public class ApiClientFactory {
 
     public static ReportMarkerApi getReportMarkerApi(){ return GetApiClientSeed().create(ReportMarkerApi.class);}
     public static EventMarkerApi getEventMarkerApi(){ return GetApiClientSeed().create(EventMarkerApi.class);}
+
+    public static UserApi GetUserApi(){
+
+        return GetApiClientSeed().create(UserApi.class);
+    }
+    public static ObservationApi GetObservationApi() { return GetApiClientSeed().create(ObservationApi.class);}
+
 }
