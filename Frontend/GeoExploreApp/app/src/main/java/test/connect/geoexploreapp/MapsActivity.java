@@ -1,15 +1,19 @@
 package test.connect.geoexploreapp;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
 
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 import com.google.android.gms.maps.GoogleMap;
@@ -21,6 +25,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import org.w3c.dom.Text;
 
 import java.util.List;
 
@@ -38,7 +44,9 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private boolean isCreateReportMode = false;
-    private TextView infoTextView;
+    private boolean isCreateEventMode = false;
+    private TextView reportInfoTextView;
+    private TextView eventInfoTextView;
 
     public MapsActivity() {
 
@@ -57,7 +65,8 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
         }
 
 
-        infoTextView = view.findViewById(R.id.activity_maps_info_text_view);
+        reportInfoTextView = view.findViewById(R.id.activity_maps_report_info_text_view);
+        eventInfoTextView = view.findViewById(R.id.activity_maps_event_info_text_view);
 
 
         FloatingActionButton fab = view.findViewById(R.id.fab_main);
@@ -86,8 +95,14 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             @Override
             public void onMapClick(LatLng latLng) {
                 if(isCreateReportMode){
+                    promptForReportTitle(latLng);
                     isCreateReportMode = false;
-                    infoTextView.setVisibility(View.GONE);
+                    reportInfoTextView.setVisibility(View.GONE);
+                }
+                if(isCreateEventMode){
+                    promptForEventTitle(latLng);
+                    isCreateEventMode = false;
+                    eventInfoTextView.setVisibility(View.GONE);
                 }
             }
         });
@@ -114,11 +129,12 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
         Button btnEventList = bottomSheetDialog.findViewById(R.id.btn_event_list);
 
         btnReportCreate.setOnClickListener(v -> {
-
+            reportInfoTextView.setVisibility(View.VISIBLE);
+            isCreateReportMode = true;
             bottomSheetDialog.dismiss();
         });
         btnReportRead.setOnClickListener(v -> {
-
+            promptForReportId();
             bottomSheetDialog.dismiss();
         });
         btnReportUpdate.setOnClickListener(v -> {
@@ -130,17 +146,17 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             bottomSheetDialog.dismiss();
         });
         btnReportList.setOnClickListener(v -> {
-
             displayAllReports();
             bottomSheetDialog.dismiss();
         });
         btnEventCreate.setOnClickListener(v -> {
-
+            eventInfoTextView.setVisibility(View.VISIBLE);
+            isCreateEventMode = true;
             bottomSheetDialog.dismiss();
         });
         btnEventRead.setOnClickListener(v -> {
-
             bottomSheetDialog.dismiss();
+            promptForEventId();
         });
         btnEventUpdate.setOnClickListener(v -> {
 
@@ -151,7 +167,6 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             bottomSheetDialog.dismiss();
         });
         btnEventList.setOnClickListener(v -> {
-
             displayAllEvents();
             bottomSheetDialog.dismiss();
         });
@@ -169,13 +184,23 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             mMap.clear();
             for (ReportMarker reportMarker : reportMarkers) {
                 LatLng position = new LatLng(reportMarker.getLatitude(), reportMarker.getLongitude());
-                mMap.addMarker(new MarkerOptions().position(position).title(reportMarker.getReportTitle()));
+                mMap.addMarker(new MarkerOptions().position(position).title(reportMarker.getTitle()));
             }
         }, "GetAllReports"));
     }
 
-    private void createNewReport(final LatLng latLng){
+    private void createNewReport(final LatLng latLng, String reportTitle) {
+        ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
 
+        ReportMarker newReportMarker = new ReportMarker();
+        newReportMarker.setLatitude(latLng.latitude);
+        newReportMarker.setLongitude(latLng.longitude);
+        newReportMarker.setTitle(reportTitle);
+
+        reportMarkerApi.addReport(newReportMarker).enqueue(new SlimCallback<>(createdReportMarker -> {
+            LatLng position = new LatLng(createdReportMarker.getLatitude(), createdReportMarker.getLongitude());
+            mMap.addMarker(new MarkerOptions().position(position).title(createdReportMarker.getTitle()));
+        }, "CreateNewReport"));
     }
     private void displayReportByID(Long id) {
         ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
@@ -184,7 +209,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             if (reportMarker != null) {
                 LatLng position = new LatLng(reportMarker.getLatitude(), reportMarker.getLongitude());
                 mMap.clear();
-                mMap.addMarker(new MarkerOptions().position(position).title(reportMarker.getReportTitle()));
+                mMap.addMarker(new MarkerOptions().position(position).title(reportMarker.getTitle()));
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 10));
             }
         }, "getReportByID"));
@@ -194,7 +219,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
 
     }
 
-    private void deleteReport(){
+    private void deleteReportByID(){
 
     }
 
@@ -207,26 +232,125 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             mMap.clear();
             for (EventMarker eventMarker : eventMarkers) {
                 LatLng position = new LatLng(eventMarker.getLatitude(), eventMarker.getLongitude());
-                mMap.addMarker(new MarkerOptions().position(position).title(eventMarker.getEventTitle()));
+                mMap.addMarker(new MarkerOptions().position(position).title(eventMarker.getTitle() + " Department: " + eventMarker.getCity_department()));
             }
         }, "GetAllEvents"));
     }
 
-    private void createNewEvent(final LatLng latLng){
+    private void createNewEvent(final LatLng latLng, String eventTitle) {
+        EventMarkerApi reportMarkerApi = ApiClientFactory.getEventMarkerApi();
 
+        EventMarker newEventMarker = new EventMarker();
+        newEventMarker.setLatitude(latLng.latitude);
+        newEventMarker.setLongitude(latLng.longitude);
+        newEventMarker.setTitle(eventTitle);
+
+        reportMarkerApi.addEvent(newEventMarker).enqueue(new SlimCallback<>(createdEventMarker -> {
+            LatLng position = new LatLng(createdEventMarker.getLatitude(), createdEventMarker.getLongitude());
+            mMap.addMarker(new MarkerOptions().position(position).title(createdEventMarker.getTitle()));
+        }, "CreateNewEvent"));
     }
 
-    private void displayEventByID(Long id){
+    private void displayEventByID(Long id) {
+        EventMarkerApi eventMarkerApi = ApiClientFactory.getEventMarkerApi();
 
+        eventMarkerApi.getEventById(id).enqueue(new SlimCallback<>(eventMarker -> {
+            if (eventMarker != null) {
+                LatLng position = new LatLng(eventMarker.getLatitude(), eventMarker.getLongitude());
+                mMap.clear();
+                mMap.addMarker(new MarkerOptions().position(position).title(eventMarker.getTitle()));
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 10));
+            }
+        }, "getEventByID"));
     }
 
     private void updateExistingEvent(){
 
     }
 
-    private void deleteEvent(){
+    private void deleteEventByID(){
 
     }
 
 
+
+    // Methods for collecting CRUDL info from user
+    private void promptForReportId() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle("Enter Report ID");
+
+        final EditText input = new EditText(getActivity());
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        builder.setView(input);
+
+        builder.setPositiveButton("OK", (dialog, which) -> {
+            Long id = null;
+            try {
+                id = Long.parseLong(input.getText().toString());
+            } catch (NumberFormatException e) {
+                Toast.makeText(getActivity(), "Please enter a valid ID.", Toast.LENGTH_SHORT).show();
+            }
+
+            if (id != null) {
+                displayReportByID(id);
+            }
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+        builder.show();
+    }
+
+    private void promptForEventId() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle("Enter Event ID");
+
+        final EditText input = new EditText(getActivity());
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        builder.setView(input);
+
+        builder.setPositiveButton("OK", (dialog, which) -> {
+            Long id = null;
+            try {
+                id = Long.parseLong(input.getText().toString());
+            } catch (NumberFormatException e) {
+                Toast.makeText(getActivity(), "Please enter a valid ID.", Toast.LENGTH_SHORT).show();
+            }
+
+            if (id != null) {
+                displayEventByID(id);
+            }
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+        builder.show();
+    }
+
+    private void promptForReportTitle(final LatLng latLng) {
+        final EditText input = new EditText(getActivity());
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle("Enter Report Title")
+                .setView(input)
+                .setPositiveButton("Submit", (dialog, which) -> {
+                    String reportTitle = input.getText().toString();
+                    createNewReport(latLng, reportTitle);
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.cancel())
+                .show();
+    }
+
+
+    private void promptForEventTitle(final LatLng latLng) {
+        final EditText input = new EditText(getActivity());
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle("Enter Report Title")
+                .setView(input)
+                .setPositiveButton("Submit", (dialog, which) -> {
+                    String reportTitle = input.getText().toString();
+                    createNewEvent(latLng, reportTitle);
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.cancel())
+                .show();
+    }
 }
