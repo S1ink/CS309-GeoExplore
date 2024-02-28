@@ -13,7 +13,7 @@
         android:layout_height="match_parent" />
 
     <TextView
-        android:id="@+id/activity_maps_report_info_text_view"
+        android:id="@+id/activity_maps_report_create_text_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#55000000"
@@ -25,7 +25,7 @@
         android:layout_marginTop="16dp"/>
 
     <TextView
-        android:id="@+id/activity_maps_event_info_text_view"
+        android:id="@+id/activity_maps_event_create_text_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#55000000"
@@ -35,6 +35,31 @@
         android:text="Tap on the map to select the location for your event"
         android:visibility="gone"
         android:layout_marginTop="16dp"/>
+
+    <TextView
+        android:id="@+id/activity_maps_report_update_text_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#55000000"
+        android:textColor="#FFFFFF"
+        android:textAlignment="center"
+        android:padding="16dp"
+        android:text="Tap on the map to select the location to update report"
+        android:visibility="gone"
+        android:layout_marginTop="16dp"/>
+
+    <TextView
+        android:id="@+id/activity_maps_event_update_text_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#55000000"
+        android:textColor="#FFFFFF"
+        android:textAlignment="center"
+        android:padding="16dp"
+        android:text="Tap on the map to select the location to update event"
+        android:visibility="gone"
+        android:layout_marginTop="16dp"/>
+
 
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

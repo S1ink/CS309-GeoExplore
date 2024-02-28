@@ -14,7 +14,7 @@ import test.connect.geoexploreapp.model.ReportMarker;
 public interface ReportMarkerApi {
 
     //[C]rudl - Add a new event to the database
-    @POST("geomap/reports/add")
+    @POST("geomap/reports")
     Call<ReportMarker> addReport(@Body ReportMarker reportMarker);
 
     // c[R]udl - Get an event from the database by its id
@@ -22,7 +22,7 @@ public interface ReportMarkerApi {
     Call<ReportMarker> getReportById(@Path("id") Long id);
 
     // cr[U]dl - Update an event already in the database by it's id
-    @PUT("geomap/reports/{id}/update")
+    @PUT("geomap/reports/{id}")
     Call<ReportMarker> updateReportById(@Path("id") Long id, @Body ReportMarker reportMarker);
 
     // cru[D]l - Delete an event in the database by it's id
