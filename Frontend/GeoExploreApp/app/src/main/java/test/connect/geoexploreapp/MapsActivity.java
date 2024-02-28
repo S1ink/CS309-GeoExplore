@@ -48,10 +48,14 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
     private GoogleMap mMap;
     private boolean isCreateReportMode = false;
     private boolean isCreateEventMode = false;
+    private boolean isUpdateReportMode = false;
+    private boolean isUpdateEventMode = false;
     private int reportIdStatus = 0; // For promptForReportID method. 1 to Read, 2 to Delete, 3 to Update
     private int eventIdStatus = 0; // For promptForEventID method. 1 to Read, 2 to Delete, 3 to Update
-    private TextView reportInfoTextView;
-    private TextView eventInfoTextView;
+    private TextView reportCreateTextView;
+    private TextView eventCreateTextView;
+    private TextView reportUpdateTextView;
+    private TextView eventUpdateTextView;
 
     public MapsActivity() {
 
@@ -70,8 +74,11 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
         }
 
 
-        reportInfoTextView = view.findViewById(R.id.activity_maps_report_info_text_view);
-        eventInfoTextView = view.findViewById(R.id.activity_maps_event_info_text_view);
+        reportCreateTextView = view.findViewById(R.id.activity_maps_report_create_text_view);
+        eventCreateTextView = view.findViewById(R.id.activity_maps_event_create_text_view);
+
+        reportUpdateTextView = view.findViewById(R.id.activity_maps_report_update_text_view);
+        eventUpdateTextView = view.findViewById(R.id.activity_maps_event_update_text_view);
 
 
         FloatingActionButton fab = view.findViewById(R.id.fab_main);
@@ -102,12 +109,21 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
                 if(isCreateReportMode){
                     promptForNewReportTitle(latLng);
                     isCreateReportMode = false;
-                    reportInfoTextView.setVisibility(View.GONE);
-                }
-                if(isCreateEventMode){
+                    reportCreateTextView.setVisibility(View.GONE);
+                }else if(isCreateEventMode){
                     promptForNewEventTitle(latLng);
                     isCreateEventMode = false;
-                    eventInfoTextView.setVisibility(View.GONE);
+                    eventCreateTextView.setVisibility(View.GONE);
+                }else if(isUpdateReportMode){
+                    isUpdateReportMode = false;
+                    reportIdStatus = 3;
+                    promptForReportId(latLng);
+                    reportUpdateTextView.setVisibility(View.GONE);
+                }else if(isUpdateEventMode){
+                    isUpdateEventMode = false;
+                    eventIdStatus = 3;
+                    promptForEventId(latLng);
+                    eventUpdateTextView.setVisibility(View.GONE);
                 }
             }
         });
@@ -135,7 +151,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
         Button btnObservationAdd = bottomSheetDialog.findViewById(R.id.btn_observation_add);
 
         btnReportCreate.setOnClickListener(v -> {
-            reportInfoTextView.setVisibility(View.VISIBLE);
+            reportCreateTextView.setVisibility(View.VISIBLE);
             isCreateReportMode = true;
             bottomSheetDialog.dismiss();
         });
@@ -145,8 +161,8 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             bottomSheetDialog.dismiss();
         });
         btnReportUpdate.setOnClickListener(v -> {
-            reportIdStatus = 3;
-            promptForReportId();
+            reportUpdateTextView.setVisibility(View.VISIBLE);
+            isUpdateReportMode = true;
             bottomSheetDialog.dismiss();
         });
         btnReportDelete.setOnClickListener(v -> {
@@ -159,7 +175,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             bottomSheetDialog.dismiss();
         });
         btnEventCreate.setOnClickListener(v -> {
-            eventInfoTextView.setVisibility(View.VISIBLE);
+            eventCreateTextView.setVisibility(View.VISIBLE);
             isCreateEventMode = true;
             bottomSheetDialog.dismiss();
         });
@@ -169,8 +185,8 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             bottomSheetDialog.dismiss();
         });
         btnEventUpdate.setOnClickListener(v -> {
-            eventIdStatus = 3;
-            promptForEventId();
+            eventUpdateTextView.setVisibility(View.VISIBLE);
+            isUpdateEventMode = true;
             bottomSheetDialog.dismiss();
         });
         btnEventDelete.setOnClickListener(v -> {
@@ -227,11 +243,13 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
         }, "getReportByID"));
     }
 
-    private void updateExistingReportByID(Long id, String newTitle) {
+    private void updateExistingReportByID(Long id, String newTitle, LatLng latLng) {
         ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
 
         ReportMarker updatedReportMarker = new ReportMarker();
         updatedReportMarker.setTitle(newTitle);
+        updatedReportMarker.setLatitude(latLng.latitude);
+        updatedReportMarker.setLongitude(latLng.longitude);
 
         reportMarkerApi.updateReportById(id, updatedReportMarker).enqueue(new SlimCallback<>(updatedReport -> {
             if (updatedReport != null) {
@@ -308,12 +326,14 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             }
         }, "getEventByID"));
     }
-    private void updateExistingEventByID(Long id, String newTitle, String newCityDepartment) {
+    private void updateExistingEventByID(Long id, String newTitle, String newCityDepartment, LatLng latLng) {
         EventMarkerApi eventMarkerApi = ApiClientFactory.getEventMarkerApi();
 
         EventMarker updatedEventMarker = new EventMarker();
         updatedEventMarker.setTitle(newTitle);
         updatedEventMarker.setCity_department(newCityDepartment);
+        updatedEventMarker.setLatitude(latLng.latitude);
+        updatedEventMarker.setLongitude(latLng.longitude);
 
 
         eventMarkerApi.updateEventById(id, updatedEventMarker).enqueue(new SlimCallback<>(updatedEvent -> {
@@ -363,6 +383,33 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
 
 
     // Methods for collecting CRUDL info from user
+    private void promptForReportId(LatLng latLng) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle("Enter Report ID");
+
+        final EditText input = new EditText(getActivity());
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        builder.setView(input);
+
+        builder.setPositiveButton("OK", (dialog, which) -> {
+            Long id = null;
+            try {
+                id = Long.parseLong(input.getText().toString());
+            } catch (NumberFormatException e) {
+                Toast.makeText(getActivity(), "Please enter a valid ID.", Toast.LENGTH_SHORT).show();
+            }
+
+            if (id != null) {
+                if(reportIdStatus == 3){
+                    promptToUpdateReportTitle(id,latLng);
+                    reportIdStatus = 0;
+                }
+            }
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+        builder.show();
+    }
     private void promptForReportId() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Enter Report ID");
@@ -386,10 +433,35 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
                 }else if(reportIdStatus == 2){
                     deleteReportByID(id);
                     reportIdStatus = 0;
-                }else if(reportIdStatus == 3){
-                    promptToUpdateReportTitle(id);
-                    reportIdStatus = 0;
                 }
+            }
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+        builder.show();
+    }
+    private void promptForEventId(final LatLng latLng) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle("Enter Event ID");
+
+        final EditText input = new EditText(getActivity());
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        builder.setView(input);
+
+        builder.setPositiveButton("OK", (dialog, which) -> {
+            Long id = null;
+            try {
+                id = Long.parseLong(input.getText().toString());
+            } catch (NumberFormatException e) {
+                Toast.makeText(getActivity(), "Please enter a valid ID.", Toast.LENGTH_SHORT).show();
+            }
+
+            if (id != null) {
+                if(eventIdStatus == 3){
+                    promptUserToUpdateEvent(id,latLng);
+                    eventIdStatus = 0;
+                }
+
             }
         });
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
@@ -419,11 +491,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
                 }else if(eventIdStatus == 2){
                     deleteEventByID(id);
                     eventIdStatus = 0;
-                }else if(eventIdStatus == 3){
-                    promptUserToUpdateEvent(id);
-                    eventIdStatus = 0;
                 }
-
             }
         });
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
@@ -482,7 +550,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
     }
 
 
-    private void promptUserToUpdateEvent(Long Id) {
+    private void promptUserToUpdateEvent(Long Id,LatLng latLng) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Update Event");
 
@@ -505,7 +573,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             public void onClick(DialogInterface dialog, int which) {
                 String newTitle = titleInput.getText().toString();
                 String newCityDepartment = cityDepartmentInput.getText().toString();
-                updateExistingEventByID(Id, newTitle, newCityDepartment);
+                updateExistingEventByID(Id, newTitle, newCityDepartment, latLng);
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -518,7 +586,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
         builder.show();
     }
 
-    private void promptToUpdateReportTitle(Long Id) {
+    private void promptToUpdateReportTitle(Long Id, LatLng latLng) {
         final EditText input = new EditText(getActivity());
         input.setInputType(InputType.TYPE_CLASS_TEXT);
         input.setHint("New Title");
@@ -528,7 +596,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
                 .setView(input)
                 .setPositiveButton("Update", (dialog, which) -> {
                     String newTitle = input.getText().toString();
-                    updateExistingReportByID(Id, newTitle);
+                    updateExistingReportByID(Id, newTitle, latLng);
                 })
                 .setNegativeButton("Cancel", (dialog, which) -> dialog.cancel())
                 .show();
