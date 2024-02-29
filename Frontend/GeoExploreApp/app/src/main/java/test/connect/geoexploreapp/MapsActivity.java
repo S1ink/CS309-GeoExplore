@@ -275,24 +275,11 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
 
         reportMarkerApi.addReport(newReportMarker).enqueue(new SlimCallback<>(createdReportMarker -> {
             LatLng position = new LatLng(createdReportMarker.getLatitude(), createdReportMarker.getLongitude());
-            mMap.addMarker(new MarkerOptions().position(position).title(createdReportMarker.getTitle()));
+            mMap.addMarker(new MarkerOptions().position(position).title(createdReportMarker.getId() + " " + createdReportMarker.getTitle()));
         }, "CreateNewReport"));
     }
 
-    private void createNewObservation(final LatLng latLng, String observationTitle, String observationDescription) {
-        ObservationApi observationApi = ApiClientFactory.GetObservationApi();
 
-        Observation observation = new Observation();
-        observation.setLatitude(latLng.latitude);
-        observation.setLongitude(latLng.longitude);
-        observation.setTitle(observationTitle);
-        observation.setDescription(observationDescription);
-
-        observationApi.saveObs(observation).enqueue(new SlimCallback<>(obs -> {
-            LatLng position = new LatLng(obs.getLatitude(), obs.getLongitude());
-            mMap.addMarker(new MarkerOptions().position(position).title(obs.getTitle()));
-        }, "CreateNewObservation"));
-    }
     private void displayReportByID(Long id) {
         ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
 
@@ -300,25 +287,11 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             if (reportMarker != null) {
                 LatLng position = new LatLng(reportMarker.getLatitude(), reportMarker.getLongitude());
                 mMap.clear();
-                mMap.addMarker(new MarkerOptions().position(position).title(reportMarker.getTitle()));
+                mMap.addMarker(new MarkerOptions().position(position).title(reportMarker.getId() + " " + reportMarker.getTitle()));
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 10));
             }
         }, "getReportByID"));
     }
-    private void displayObservationByID(Long id) {
-        ObservationApi observationApi = ApiClientFactory.GetObservationApi();
-
-        observationApi.getObs(id).enqueue(new SlimCallback<>(obj -> {
-            if (obj != null) {
-                LatLng position = new LatLng(obj.getLatitude(), obj.getLongitude());
-                mMap.clear();
-                mMap.addMarker(new MarkerOptions().position(position).title(obj.getTitle()));
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 10));
-            }
-        }, "getObservationByID"));
-    }
-
-
     private void updateExistingReportByID(Long id, String newTitle, LatLng latLng) {
         ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
 
@@ -337,27 +310,6 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             }
         }));
     }
-
-    private void updateExistingObservationByID(Long id, String newTitle, LatLng latLng, String newDescription) {
-        ObservationApi observationApi = ApiClientFactory.GetObservationApi();
-
-        Observation updatedObservation = new Observation();
-        updatedObservation.setTitle(newTitle);
-        updatedObservation.setLatitude(latLng.latitude);
-        updatedObservation.setLongitude(latLng.longitude);
-        updatedObservation.setDescription(newDescription);
-
-        observationApi.updateObs(id, updatedObservation).enqueue(new SlimCallback<>(updatedReport -> {
-            if (updatedReport != null) {
-
-                mMap.clear();
-                displayAllReports();
-
-                Toast.makeText(getActivity(), "Report updated successfully", Toast.LENGTH_SHORT).show();
-            }
-        }));
-    }
-
     private void deleteReportByID(Long id){
         ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
 
@@ -382,6 +334,64 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
 
     }
 
+    private void displayAllReports() {
+        ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
+
+        reportMarkerApi.GetAllReportMarker().enqueue(new SlimCallback<>(reportMarkers -> {
+            mMap.clear();
+            for (ReportMarker reportMarker : reportMarkers) {
+                LatLng position = new LatLng(reportMarker.getLatitude(), reportMarker.getLongitude());
+                mMap.addMarker(new MarkerOptions().position(position).title(reportMarker.getId() + " " + reportMarker.getTitle()));
+            }
+        }, "GetAllReports"));
+    }
+
+    // Observation CRUDL
+    private void createNewObservation(final LatLng latLng, String observationTitle, String observationDescription) {
+        ObservationApi observationApi = ApiClientFactory.GetObservationApi();
+
+        Observation observation = new Observation();
+        observation.setLatitude(latLng.latitude);
+        observation.setLongitude(latLng.longitude);
+        observation.setTitle(observationTitle);
+        observation.setDescription(observationDescription);
+
+        observationApi.saveObs(observation).enqueue(new SlimCallback<>(obs -> {
+            LatLng position = new LatLng(obs.getLatitude(), obs.getLongitude());
+            mMap.addMarker(new MarkerOptions().position(position).title(obs.getId() + " " + obs.getTitle()));
+        }, "CreateNewObservation"));
+    }
+    private void displayObservationByID(Long id) {
+        ObservationApi observationApi = ApiClientFactory.GetObservationApi();
+
+        observationApi.getObs(id).enqueue(new SlimCallback<>(obj -> {
+            if (obj != null) {
+                LatLng position = new LatLng(obj.getLatitude(), obj.getLongitude());
+                mMap.clear();
+                mMap.addMarker(new MarkerOptions().position(position).title(obj.getId() + " " + obj.getTitle()));
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 10));
+            }
+        }, "getObservationByID"));
+    }
+    private void updateExistingObservationByID(Long id, String newTitle, LatLng latLng, String newDescription) {
+        ObservationApi observationApi = ApiClientFactory.GetObservationApi();
+
+        Observation updatedObservation = new Observation();
+        updatedObservation.setTitle(newTitle);
+        updatedObservation.setLatitude(latLng.latitude);
+        updatedObservation.setLongitude(latLng.longitude);
+        updatedObservation.setDescription(newDescription);
+
+        observationApi.updateObs(id, updatedObservation).enqueue(new SlimCallback<>(updatedReport -> {
+            if (updatedReport != null) {
+
+                mMap.clear();
+                displayAllObservations();
+
+                Toast.makeText(getActivity(), "Report updated successfully", Toast.LENGTH_SHORT).show();
+            }
+        }));
+    }
     private void deleteObservationByID(Long id){
         ObservationApi observationApi = ApiClientFactory.GetObservationApi();
         observationApi.deleteObs(id).enqueue(new Callback<Observation>() {
@@ -397,24 +407,11 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             }
             @Override
             public void onFailure(Call<Observation> call, Throwable t) {
-              Toast.makeText(getActivity(), "Error deleting report", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), "Error deleting report", Toast.LENGTH_SHORT).show();
             }
         });
 
     }
-
-    private void displayAllReports() {
-        ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
-
-        reportMarkerApi.GetAllReportMarker().enqueue(new SlimCallback<>(reportMarkers -> {
-            mMap.clear();
-            for (ReportMarker reportMarker : reportMarkers) {
-                LatLng position = new LatLng(reportMarker.getLatitude(), reportMarker.getLongitude());
-                mMap.addMarker(new MarkerOptions().position(position).title(reportMarker.getTitle()));
-            }
-        }, "GetAllReports"));
-    }
-
     private void displayAllObservations() {
         ObservationApi observationApi = ApiClientFactory.GetObservationApi();
 
@@ -422,7 +419,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             mMap.clear();
             for (Observation ob : obs) {
                 LatLng position = new LatLng(ob.getLatitude(), ob.getLongitude());
-                mMap.addMarker(new MarkerOptions().position(position).title(ob.getTitle()));
+                mMap.addMarker(new MarkerOptions().position(position).title(ob.getId() + " " + ob.getTitle()));
             }
         }, "GetAllObservationId"));
     }
@@ -440,7 +437,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
 
         reportMarkerApi.addEvent(newEventMarker).enqueue(new SlimCallback<>(createdEventMarker -> {
             LatLng position = new LatLng(createdEventMarker.getLatitude(), createdEventMarker.getLongitude());
-            mMap.addMarker(new MarkerOptions().position(position).title(createdEventMarker.getTitle() + " Department: " + createdEventMarker.getCity_department()));
+            mMap.addMarker(new MarkerOptions().position(position).title(createdEventMarker.getId() + " " + createdEventMarker.getTitle() + " Department: " + createdEventMarker.getCity_department()));
         }, "CreateNewEvent"));
     }
     private void displayEventByID(Long id) {
@@ -450,7 +447,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             if (eventMarker != null) {
                 LatLng position = new LatLng(eventMarker.getLatitude(), eventMarker.getLongitude());
                 mMap.clear();
-                mMap.addMarker(new MarkerOptions().position(position).title(eventMarker.getTitle()));
+                mMap.addMarker(new MarkerOptions().position(position).title(eventMarker.getId() + " " + eventMarker.getTitle() + " Department: " + eventMarker.getCity_department()));
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 10));
             }
         }, "getEventByID"));
@@ -505,7 +502,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             mMap.clear();
             for (EventMarker eventMarker : eventMarkers) {
                 LatLng position = new LatLng(eventMarker.getLatitude(), eventMarker.getLongitude());
-                mMap.addMarker(new MarkerOptions().position(position).title(eventMarker.getTitle() + " Department: " + eventMarker.getCity_department()));
+                mMap.addMarker(new MarkerOptions().position(position).title(eventMarker.getId() + " " + eventMarker.getTitle() + " Department: " + eventMarker.getCity_department()));
             }
         }, "GetAllEvents"));
     }
