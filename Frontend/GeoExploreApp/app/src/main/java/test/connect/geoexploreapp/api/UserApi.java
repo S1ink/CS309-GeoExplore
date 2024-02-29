@@ -15,20 +15,20 @@ import test.connect.geoexploreapp.model.User;
 
 public interface UserApi {
 
-    @POST("/user/create")
+    @POST("user/create")
     Call<User> UserCreate(@Body User newUser);
 
-    @GET("/user/{id}")
+    @GET("user/{id}")
     Call<Optional<User>> getUser(@Path("id") Long id);
 
-    @PUT("/user/{id}/update")
+    @PUT("user/{id}/update")
     Call<User> updateUser(@Path("id") Long id, @Body User updated);
-    @DELETE("/user/{id}/delete")
+    @DELETE("user/{id}/delete")
     Call<String> deleteUser(@Path("id") Long Id);
 
-    @DELETE("/user/delete/all")
+    @DELETE("user/delete/all")
     Call<String> deleteAll();
-    @GET("/userinfo")
+    @GET("userinfo")
     Call<List<User>> getAllUsers();
 }
 

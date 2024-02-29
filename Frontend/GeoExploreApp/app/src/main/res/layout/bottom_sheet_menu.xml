@@ -77,7 +77,25 @@
         android:text="Add Observation" />
 
     <Button
-        android:id="@+id/all_observations"
+        android:id="@+id/btn_observation_read"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="All Observation" />
+
+    <Button
+        android:id="@+id/btn_observation_update"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="All Observation" />
+
+    <Button
+        android:id="@+id/btn_observation_delete"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="All Observation" />
+
+    <Button
+        android:id="@+id/btn_observation_all"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="All Observation" />

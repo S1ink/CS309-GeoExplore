@@ -31,7 +31,6 @@
             android:name=".MapsActivity"
             android:exported="false"
             android:label="@string/title_activity_maps" />
-        <activity android:name=".ObservationForm"></activity>
         <activity
             android:name=".LoginSignUpActivity"
             android:exported="true">

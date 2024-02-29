@@ -13,19 +13,19 @@ import test.connect.geoexploreapp.model.Observation;
 
 public interface ObservationApi {
 
-    @POST("/geomap/observations/add")
+    @POST("geomap/observations")
     Call<Observation> saveObs(@Body Observation observation);
 
-    @GET("/geomap/observations/{id}")
+    @GET("geomap/observations/{id}")
     Call<Observation> getObs(@Path("id") Long id);
 
-    @PUT("/geomap/Observations/{id}/update")
+    @PUT("geomap/Observations/{id}")
     Call<Observation> updateObs(@Path("id") Long id, @Body Observation observation);
 
-    @DELETE("/geomap/observations/{id}/delete")
+    @DELETE("geomap/observations/{id}")
     Call<Observation> deleteObs(@Path("id") Long id);
 
-    @GET("/geomap/observations")
+    @GET("geomap/observations")
     Call<List<Observation>> getAllObs();
 
     //C of Crudl, adds observation to repo

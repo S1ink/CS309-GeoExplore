@@ -37,6 +37,19 @@
         android:layout_marginTop="16dp"/>
 
     <TextView
+        android:id="@+id/activity_maps_observation_create_text_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#55000000"
+        android:textColor="#FFFFFF"
+        android:textAlignment="center"
+        android:padding="16dp"
+        android:text="Tap on the map to select the location for your observation"
+        android:visibility="gone"
+        android:layout_marginTop="16dp"/>
+
+
+    <TextView
         android:id="@+id/activity_maps_report_update_text_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -57,6 +70,18 @@
         android:textAlignment="center"
         android:padding="16dp"
         android:text="Tap on the map to select the location to update event"
+        android:visibility="gone"
+        android:layout_marginTop="16dp"/>
+
+    <TextView
+        android:id="@+id/activity_maps_observation_update_text_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#55000000"
+        android:textColor="#FFFFFF"
+        android:textAlignment="center"
+        android:padding="16dp"
+        android:text="Tap on the map to select the location to update observation"
         android:visibility="gone"
         android:layout_marginTop="16dp"/>
 
