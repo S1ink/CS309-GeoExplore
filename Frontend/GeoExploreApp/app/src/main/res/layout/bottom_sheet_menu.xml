@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <Button
+        android:id="@+id/btn_event_create"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Create Event" />
+
+
+    <Button
+        android:id="@+id/btn_event_read"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Show An Event" />
+
+
+    <Button
+        android:id="@+id/btn_event_update"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Update Event" />
+
+    <Button
+        android:id="@+id/btn_event_delete"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Delete Event" />
+
+    <Button
+        android:id="@+id/btn_event_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="List All Events" />
+
+
+    <Button
+        android:id="@+id/btn_report_create"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Create Report" />
+
+
+    <Button
+        android:id="@+id/btn_report_read"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Show An Report" />
+
+
+    <Button
+        android:id="@+id/btn_report_update"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Update Report" />
+
+    <Button
+        android:id="@+id/btn_report_delete"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Delete Report" />
+
+    <Button
+        android:id="@+id/btn_report_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="List All Reports" />
+
+    <Button
+        android:id="@+id/btn_observation_add"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add Observation" />
+
+    <Button
+        android:id="@+id/btn_observation_read"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="All Observation" />
+
+    <Button
+        android:id="@+id/btn_observation_update"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="All Observation" />
+
+    <Button
+        android:id="@+id/btn_observation_delete"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="All Observation" />
+
+    <Button
+        android:id="@+id/btn_observation_all"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="All Observation" />
+
+</LinearLayout>
