@@ -6,7 +6,7 @@ import org.springframework.core.style.ToStringCreator;
 import org.locationtech.jts.geom.*;
 
 @Entity
-@Table(name = "geomap_events")
+@Table(name = "geomap_observations")
 public class ObservationEntity extends LocationBase {
 
 	protected String title, description;

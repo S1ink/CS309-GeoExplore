@@ -13,8 +13,9 @@ import org.locationtech.jts.geom.Geometry;
 @NoRepositoryBean
 public interface LocatableRepository<Entity extends LocationBase> extends JpaRepository<Entity, Long> {
 
-	@Query(value = "SELECT p from PointEntity p WHERE within(p.point, :bounds) = true")
-	public List<Entity> findWithin(@Param("bounds") Geometry bounds);
+	// this is now worthless
+	// @Query(value = "SELECT p from Entity p WHERE within(p.point, :bounds) = true")
+	// public List<Entity> findWithin(@Param("bounds") Geometry bounds);
 
 
 }
