@@ -21,7 +21,9 @@ public class ObservationController {
     @PostMapping(path = "geomap/observations")
     public @ResponseBody ObservationEntity.JsonFormat saveObs(@RequestBody ObservationEntity.JsonFormat obs_json){
         if (obs_json != null){
-            final ObservationEntity saved = this.obsRepo.save(ObservationEntity.fromJson(obs_json));
+             ObservationEntity saved = ObservationEntity.fromJson(obs_json);
+            saved.nullId();
+            this.obsRepo.save(saved);
             return ObservationEntity.formatJson(saved);
 
         }
@@ -44,11 +46,11 @@ public class ObservationController {
 
     @PutMapping(path = "geomap/observations/{id}")
     public @ResponseBody ObservationEntity.JsonFormat updateObs(@PathVariable Long id,@RequestBody ObservationEntity.JsonFormat obs_json){
-        if (id != null){
-            final ObservationEntity.JsonFormat ref = this.getObs(id);
-            this.obsRepo.deleteById(id);
-            final ObservationEntity saved = this.obsRepo.save(ObservationEntity.fromJson(obs_json));
-            return ObservationEntity.formatJson(saved);
+        if (id != null && obs_json != null){
+                obs_json.setId(id);
+                final ObservationEntity saved = this.obsRepo.save(ObservationEntity.fromJson(obs_json));
+                saved.setId(id);
+                return ObservationEntity.formatJson(saved);
         }
         else {
             return null;
