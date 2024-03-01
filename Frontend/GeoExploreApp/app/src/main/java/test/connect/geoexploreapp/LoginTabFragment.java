@@ -31,9 +31,6 @@ public class LoginTabFragment extends Fragment {
     EditText UserEmail,UserPassword;
     Button loginSubmit;
 
-   // public currentUser=null;
-//   SharedPreferences sharedPreferences = getActivity().getSharedPreferences("MySharedPref", MODE_PRIVATE);
-//    SharedPreferences.Editor myEdit = sharedPreferences.edit();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -60,10 +57,7 @@ public class LoginTabFragment extends Fragment {
                 isValidCredentials(email, passcode, new CredentialsCallback() {
                     @Override
                     public void onResult(boolean isValid) {
-                        if (isValid) {
-
-                            startMainActivity();
-                        } else {
+                        if (!isValid) {
                             showAlert("Invalid Credentials!");
                         }
                     }
@@ -100,10 +94,7 @@ public class LoginTabFragment extends Fragment {
                 boolean passwordMatch = password != null && password.equals(temp.getPassword());
                 if (emailMatch && passwordMatch) {
                     Log.d("LoginCheck", "Match found");
-//                    Gson gson = new Gson();
-//                    String json = gson.toJson(temp); // 'user' is an instance of User class
-//                    myEdit.putString("user", json);
-//                    myEdit.apply();
+                    startMainActivity(temp);
                     callback.onResult(true);
                     return;
                 }
@@ -113,8 +104,11 @@ public class LoginTabFragment extends Fragment {
 
         }, "getAllUsers"));
     }
-    private void startMainActivity() {
+    private void startMainActivity(User newUser) {
         Intent intent = new Intent(getActivity(), MainActivity.class);
+        intent.putExtra("UserName", newUser.getName());
+        intent.putExtra("UserEmail", newUser.getEmailId());
+       // intent.putExtra("UserID", newUser.getId());
         startActivity(intent);
         getActivity().finish(); // Call finish on the Activity, not the Fragment
     }

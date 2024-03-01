@@ -19,14 +19,19 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        String userName = getIntent().getStringExtra("UserName");
+        String userEmail = getIntent().getStringExtra("UserEmail");
+        //Long userId= getIntent().getLongExtra("UserId",-1);
+
         binding.bottomNavigationView.setSelectedItemId(R.id.maps);
         replaceFragment(new MapsActivity());
 
         binding.bottomNavigationView.setOnItemSelectedListener(item -> {
-
+//
             int itemId = item.getItemId();
             if (itemId == R.id.profile) {
-                replaceFragment(new ProfileActivity());
+                ProfileActivity profileFragment = ProfileActivity.newInstance(userName, userEmail);
+                replaceFragment(profileFragment);
             } else if (itemId == R.id.maps) {
                 replaceFragment(new MapsActivity());
             } else if (itemId == R.id.settings) {

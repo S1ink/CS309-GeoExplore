@@ -26,23 +26,27 @@
             android:textAppearance="?android:attr/textAppearanceMedium"/>
 
         <TextView
-            android:id="@+id/textViewEmail"
+            android:id="@+id/userEmailDisplay"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:text="Email: user@example.com"
             android:textAppearance="?android:attr/textAppearanceMedium"/>
-
-        <!-- Additional User Info Here -->
-
-        <Button
-            android:id="@+id/buttonEditProfile"
-            android:layout_width="310dp"
-            android:layout_height="60dp"
-            android:layout_marginTop="30dp"
-            android:text="Edit Profile"
-            android:textSize="18sp"
-            android:textColor="@color/white"
-            android:background="@drawable/button"/>
+    <TextView
+        android:id="@+id/userId"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+       
+        android:textAppearance="?android:attr/textAppearanceMedium"/>
+<!--        <Button-->
+<!--            android:id="@+id/buttonEditPassword"-->
+<!--            android:layout_width="310dp"-->
+<!--            android:layout_height="60dp"-->
+<!--            android:layout_marginTop="30dp"-->
+<!--            android:text="Change Password"-->
+<!--            android:textSize="18sp"-->
+<!--            android:textColor="@color/white"-->
+<!--            android:background="@drawable/button"/>-->
 
     </LinearLayout>

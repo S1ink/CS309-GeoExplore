@@ -125,7 +125,7 @@ public class SignupTabFragment extends Fragment {
                 if (response.isSuccessful()) {
                     User createdUser = response.body();
                     Log.d("API_SUCCESS", "User created: " + createdUser.toString());
-                    startMainActivity();
+                    startMainActivity(createdUser);
                 } else {
                     Log.e("API_FAILURE", "Response not successful: " + response.code() + " " + response.message());
                 }
@@ -137,8 +137,11 @@ public class SignupTabFragment extends Fragment {
             }
         });
     }
-    private void startMainActivity() {
+    private void startMainActivity(User newUser) {
         Intent intent = new Intent(getActivity(), MainActivity.class);
+        intent.putExtra("UserName", newUser.getName());
+        intent.putExtra("UserEmail", newUser.getEmailId());
+      //  intent.putExtra("UserID", newUser.getId());
         startActivity(intent);
         getActivity().finish(); // Call finish on the Activity, not the Fragment
     }
