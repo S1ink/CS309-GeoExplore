@@ -74,30 +74,30 @@
         android:id="@+id/btn_observation_add"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Add Observation" />
+        android:text="Create an Observation" />
 
     <Button
         android:id="@+id/btn_observation_read"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="All Observation" />
+        android:text="Show An Observation" />
 
     <Button
         android:id="@+id/btn_observation_update"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="All Observation" />
+        android:text="Update An Observation" />
 
     <Button
         android:id="@+id/btn_observation_delete"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="All Observation" />
+        android:text="Delete An Observation" />
 
     <Button
         android:id="@+id/btn_observation_all"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="All Observation" />
+        android:text="List All Observation" />
 
 </LinearLayout>

@@ -18,6 +18,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 
+import java.util.List;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -54,16 +56,16 @@ public class SignupTabFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 String fullName = FirstName.getText().toString() + " " + LastName.getText().toString();
-                String email = UserEmail.getText().toString();
-                String password = UserPassword.getText().toString();
-                String confirmPassword = ConfirmPassword.getText().toString();
+                String email = UserEmail.getText().toString().trim();
+                String password = UserPassword.getText().toString().trim();
+                String confirmPassword = ConfirmPassword.getText().toString().trim();
                 boolean isAdmin = IsAdmin.isChecked();
 
                 if (fullName.isEmpty() ||  email.isEmpty() ||  password.isEmpty() ||  confirmPassword.isEmpty()){
-                    showAlert("Invalid Credentials!");
+                    showAlert("Please fill out all information!");
 
                 }else if (password.equals(confirmPassword)==false){
-                    showAlert("Invalid Credentials!");
+                    showAlert("Password does not match confirmPassword!");
 
                 }else {
                     User newUser = new User();
@@ -72,7 +74,7 @@ public class SignupTabFragment extends Fragment {
                     newUser.setIsAdmin(isAdmin);
                     newUser.setPassword(password);
 
-                    createUser(newUser);
+                    createUserIfEmailNotExists(newUser);
                 }
 
             }
@@ -88,10 +90,35 @@ public class SignupTabFragment extends Fragment {
                 .show();
     }
 
+    public void createUserIfEmailNotExists(User newUser){
+        Log.d("UserCreation", "Checking if user email exists: " + newUser.getEmailId());
 
-    public void createUser(User newUser){
-        Log.d("LoginCheck", "Checking user " + newUser.toString());
+        GetUserApi().getAllUsers().enqueue(new Callback<List<User>>() {
+            @Override
+            public void onResponse(Call<List<User>> call, Response<List<User>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<User> users = response.body();
+                    boolean emailExists = users.stream().anyMatch(user -> newUser.getEmailId().equalsIgnoreCase(user.getEmailId()));
 
+                    if (!emailExists) {
+                        createUser(newUser);
+                    } else {
+                        Log.d("UserCreation", "Email already exists: " + newUser.getEmailId());
+                        showAlert("Email already exists!");
+                    }
+                } else {
+                    Log.e("API_FAILURE", "Failed to retrieve users: " + response.code() + " " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<User>> call, Throwable t) {
+                Log.e("API_FAILURE", "Call failed: " + t.getMessage(), t);
+            }
+        });
+    }
+
+    private void createUser(User newUser){
         GetUserApi().UserCreate(newUser).enqueue(new Callback<User>() {
             @Override
             public void onResponse(Call<User> call, Response<User> response) {
@@ -100,18 +127,16 @@ public class SignupTabFragment extends Fragment {
                     Log.d("API_SUCCESS", "User created: " + createdUser.toString());
                     startMainActivity();
                 } else {
-                    Log.e("API_FAILURE", "Response not successful: " + response.code());
+                    Log.e("API_FAILURE", "Response not successful: " + response.code() + " " + response.message());
                 }
             }
 
             @Override
             public void onFailure(Call<User> call, Throwable t) {
-                Log.e("API_FAILURE", "Call failed", t);
+                Log.e("API_FAILURE", "Call failed: " + t.getMessage(), t);
             }
         });
-
     }
-
     private void startMainActivity() {
         Intent intent = new Intent(getActivity(), MainActivity.class);
         startActivity(intent);

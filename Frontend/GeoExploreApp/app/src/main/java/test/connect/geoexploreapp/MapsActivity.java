@@ -142,8 +142,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
                     isUpdateObservationMode = false;
                     observationIdStatus = 3;
                     promptForObservationId(latLng);
-                    promptForReportId(latLng);
-                    reportUpdateTextView.setVisibility(View.GONE);
+                    observationUpdateTextView.setVisibility(View.GONE);
                 }
             }
         });
@@ -170,7 +169,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
         Button btnEventList = bottomSheetDialog.findViewById(R.id.btn_event_list);
         Button btnObservationAdd = bottomSheetDialog.findViewById(R.id.btn_observation_add);
         Button btnObservationRead = bottomSheetDialog.findViewById(R.id.btn_observation_read);
-        Button btnObservationUpdate = bottomSheetDialog.findViewById(R.id.btn_observation_update);
+        Button btnObservationUpdate = bottomSheetDialog.findViewById(R.id.btn_observation_update); //not updating
         Button btnObservationDelete = bottomSheetDialog.findViewById(R.id.btn_observation_delete);
         Button btnObservationList = bottomSheetDialog.findViewById(R.id.btn_observation_all);
 
@@ -244,21 +243,14 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             bottomSheetDialog.dismiss();
         });
         btnObservationDelete.setOnClickListener(v -> {
-            reportIdStatus = 2;
-            promptForReportId();
+            observationIdStatus = 2;
+            promptForObservationId();
             bottomSheetDialog.dismiss();
         });
         btnObservationList.setOnClickListener(v -> {
-            displayAllReports();
+            displayAllObservations();
             bottomSheetDialog.dismiss();
         });
-
-//        btnObservationAdd.setOnClickListener(v -> {
-//            Intent intent = new Intent(getActivity(), AllObservations.class);
-//            startActivity(intent);
-//            bottomSheetDialog.dismiss();
-//        });
-
 
         bottomSheetDialog.show();
     }
@@ -346,6 +338,18 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
         }, "GetAllReports"));
     }
 
+    private void displayAllObservations() {
+        ObservationApi observationApi = ApiClientFactory.GetObservationApi();
+
+        observationApi.getAllObs().enqueue(new SlimCallback<>(obs -> {
+            mMap.clear();
+            for (Observation ob : obs) {
+                LatLng position = new LatLng(ob.getLatitude(), ob.getLongitude());
+                mMap.addMarker(new MarkerOptions().position(position).title(ob.getId() + " " + ob.getTitle()));
+            }
+        }, "GetAllObservations"));
+    }
+
     // Observation CRUDL
     private void createNewObservation(final LatLng latLng, String observationTitle, String observationDescription) {
         ObservationApi observationApi = ApiClientFactory.GetObservationApi();
@@ -382,8 +386,8 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
         updatedObservation.setLongitude(latLng.longitude);
         updatedObservation.setDescription(newDescription);
 
-        observationApi.updateObs(id, updatedObservation).enqueue(new SlimCallback<>(updatedReport -> {
-            if (updatedReport != null) {
+        observationApi.updateObs(id, updatedObservation).enqueue(new SlimCallback<>(obs -> {
+            if (obs != null) {
 
                 mMap.clear();
                 displayAllObservations();
@@ -412,18 +416,6 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
         });
 
     }
-    private void displayAllObservations() {
-        ObservationApi observationApi = ApiClientFactory.GetObservationApi();
-
-        observationApi.getAllObs().enqueue(new SlimCallback<>(obs -> {
-            mMap.clear();
-            for (Observation ob : obs) {
-                LatLng position = new LatLng(ob.getLatitude(), ob.getLongitude());
-                mMap.addMarker(new MarkerOptions().position(position).title(ob.getId() + " " + ob.getTitle()));
-            }
-        }, "GetAllObservationId"));
-    }
-
 
     // Event CRUDL
     private void createNewEvent(final LatLng latLng, String eventTitle, String cityDepartment) {
@@ -556,7 +548,6 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             if (id != null) {
                 if(observationIdStatus == 3){
                     promptToUpdateObservationTitle(id,latLng);
-                  //  promptToUpdateReportTitle(id,latLng);
                     observationIdStatus = 0;
                 }
             }
@@ -709,7 +700,6 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
                 .setPositiveButton("Next", (dialog, which) -> {
                     String observationTitle = title.getText().toString();
                     promptForObservationDescription(latLng, observationTitle);
-                    createNewObservation(latLng, observationTitle, observationTitle);
                 })
                 .setNegativeButton("Cancel", (dialog, which) -> dialog.cancel())
                 .show();
