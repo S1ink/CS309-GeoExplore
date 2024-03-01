@@ -23,8 +23,8 @@ public class ObservationController {
         if (obs_json != null){
              ObservationEntity saved = ObservationEntity.fromJson(obs_json);
             saved.nullId();
-            this.obsRepo.save(saved);
-            return ObservationEntity.formatJson(saved);
+            final ObservationEntity returning = obsRepo.save(saved);
+            return ObservationEntity.formatJson(returning);
 
         }
         else {
