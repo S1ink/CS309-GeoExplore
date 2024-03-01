@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment;
 
 
 import android.text.InputType;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -381,19 +382,24 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
         ObservationApi observationApi = ApiClientFactory.GetObservationApi();
 
         Observation updatedObservation = new Observation();
+        updatedObservation.setId(id);
         updatedObservation.setTitle(newTitle);
         updatedObservation.setLatitude(latLng.latitude);
         updatedObservation.setLongitude(latLng.longitude);
         updatedObservation.setDescription(newDescription);
-
+        Log.d("Updating...", updatedObservation.getTitle() + " "+ updatedObservation.getId()+" " +updatedObservation.getDescription());
         observationApi.updateObs(id, updatedObservation).enqueue(new SlimCallback<>(obs -> {
+            Log.d("Update 1", "Update check");
             if (obs != null) {
 
                 mMap.clear();
                 displayAllObservations();
+                Log.d("Update", "Updated correctly");
 
                 Toast.makeText(getActivity(), "Report updated successfully", Toast.LENGTH_SHORT).show();
             }
+            Log.d("Update 2", "Update faiiles");
+
         }));
     }
     private void deleteObservationByID(Long id){

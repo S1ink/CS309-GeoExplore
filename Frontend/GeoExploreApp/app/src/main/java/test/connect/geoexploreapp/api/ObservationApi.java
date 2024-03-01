@@ -19,7 +19,7 @@ public interface ObservationApi {
     @GET("geomap/observations/{id}")
     Call<Observation> getObs(@Path("id") Long id);
 
-    @PUT("geomap/Observations/{id}")
+    @PUT("geomap/observations/{id}")
     Call<Observation> updateObs(@Path("id") Long id, @Body Observation observation);
 
     @DELETE("geomap/observations/{id}")
