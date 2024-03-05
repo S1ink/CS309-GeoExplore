@@ -35,7 +35,7 @@ public class User {
 
     private String password;
     private String encryptedPassword;
-    private boolean isAdmin;
+    private String userType;
     public User(Long id, String name, String emailId, String password) {
         this.id = id;
         this.name = name;
@@ -43,7 +43,7 @@ public class User {
         this.password = password;
 
 
-        checkIfAdmin();
+        checkUserType(emailId);
         encryptPassword();
     }
 
@@ -52,7 +52,7 @@ public class User {
         this.name = name;
         this.emailId = emailId;
         this.password = password;
-        checkIfAdmin();
+        checkUserType(emailId);
         encryptPassword();
     }
 
@@ -102,12 +102,9 @@ public class User {
     }
 
 
-    public boolean getIsAdmin(){
-        return isAdmin;
-    }
 
-    public void checkIfAdmin(){
-        ArrayList<String> adminList = new ArrayList<>();
+    public void checkUserType(String emailid){
+        /*ArrayList<String> adminList = new ArrayList<>();
         adminList.add("emessmer@iastate.edu");
         adminList.add("samr888@iastate.edu");
         adminList.add("aditin@iastate.edu");
@@ -116,11 +113,18 @@ public class User {
             if (adminList.contains(emailId)) {
                 this.setIsAdmin(true);
             }
+*/
+        if (this.emailId.contains("@iastate.edu")){
+            this.userType = "Admin";
+        }
+        else if (this.emailId.contains("@cityofames.org")){
+            this.userType = "Official";
+        }
+        else {
+            this.userType = "Citizen";
+        }
+    }
 
-    }
-    public void setIsAdmin(boolean isAdmin){
-        this.isAdmin = isAdmin;
-    }
 
 
     @Override
