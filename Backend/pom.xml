@@ -76,6 +76,10 @@
       <artifactId>mysql-connector-java</artifactId>
       <version>8.0.32</version>
     </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+    </dependency>
     <!-- geoDB for H2 server https://mvnrepository.com/artifact/org.opengeo/geodb -->
     <!-- https://mvnrepository.com/artifact/org.opengeo/geodb -->
     <!-- <dependency>

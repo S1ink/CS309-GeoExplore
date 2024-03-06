@@ -1,5 +1,7 @@
 package hb403.geoexplore.datatype;
 
+import java.util.Date;
+
 import org.springframework.core.style.ToStringCreator;
 
 import org.locationtech.jts.geom.Point;
@@ -19,6 +21,12 @@ public abstract class LocationBase {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	protected Long id;
+
+	@Temporal(TemporalType.TIMESTAMP)	// the make more sense in a "base marker" class
+	private Date add_tstamp;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date updated_tstamp;
 
 	@Lob
 	@JsonSerialize(using = GeometrySerializer.class)

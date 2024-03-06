@@ -19,7 +19,7 @@ public class ObservationController {
 
     //C of Crudl, adds observation to repo
     @PostMapping(path = "geomap/observations")
-    public @ResponseBody ObservationEntity.JsonFormat saveObs(@RequestBody ObservationEntity.JsonFormat obs_json){
+    public @ResponseBody ObservationEntity.JsonFormat saveObs(@RequestBody ObservationEntity.JsonFormat obs_json) {
         if (obs_json != null){
              ObservationEntity saved = ObservationEntity.fromJson(obs_json);
             saved.nullId();
