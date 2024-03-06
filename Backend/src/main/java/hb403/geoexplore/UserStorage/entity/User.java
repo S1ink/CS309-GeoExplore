@@ -3,9 +3,13 @@ package hb403.geoexplore.UserStorage.entity;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
-@Table(name = "user", schema = "testDB")
+@Table(name = "users")
 public class User {
     //todo as of saturday, Work on this to be finished and start the observation request using this as a
     // framework but start outside of git so it won't be too annoying
@@ -36,6 +40,8 @@ public class User {
     private String password;
     private String encryptedPassword;
     private boolean isAdmin;
+
+
     public User(Long id, String name, String emailId, String password) {
         this.id = id;
         this.name = name;

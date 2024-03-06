@@ -1,5 +1,7 @@
 package hb403.geoexplore.datatype;
 
+import java.util.Date;
+
 import org.springframework.core.style.ToStringCreator;
 
 import org.locationtech.jts.geom.Point;
