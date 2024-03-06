@@ -22,12 +22,6 @@ public abstract class LocationBase {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	protected Long id;
 
-	@Temporal(TemporalType.TIMESTAMP)	// the make more sense in a "base marker" class
-	private Date add_tstamp;
-
-	@Temporal(TemporalType.TIMESTAMP)
-	private Date updated_tstamp;
-
 	@Lob
 	@JsonSerialize(using = GeometrySerializer.class)
 	@JsonDeserialize(using = GeometryDeserializer.class)

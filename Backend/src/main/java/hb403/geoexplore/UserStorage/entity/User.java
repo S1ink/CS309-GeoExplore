@@ -41,10 +41,6 @@ public class User {
     private String encryptedPassword;
     private boolean isAdmin;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "user-groups")
-    @JsonIgnore
-    private Set<UserGroup> groups = new HashSet<>();
-
 
     public User(Long id, String name, String emailId, String password) {
         this.id = id;
