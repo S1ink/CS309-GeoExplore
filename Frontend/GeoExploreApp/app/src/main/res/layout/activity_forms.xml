@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".ObservationForm"
     android:padding="16dp">
 
     <EditText
@@ -31,36 +30,15 @@
         android:background="@drawable/edittext_bkg"/>
 
     <EditText
-        android:id="@+id/editTextLocation"
+        android:id="@+id/editTextCityDepartment"
         android:layout_width="310dp"
         android:layout_height="60dp"
         android:layout_gravity="center"
         android:layout_marginTop="20dp"
         android:padding="8dp"
-        android:hint="Location"
-        android:inputType="text"
+        android:hint="City/Department"
+        android:inputType="textMultiLine"
         android:background="@drawable/edittext_bkg"/>
 
-    <Button
-        android:id="@+id/buttonCancel"
-        android:layout_width="310dp"
-        android:layout_height="60dp"
-        android:layout_gravity="center"
-        android:layout_marginTop="30dp"
-        android:text="Cancel"
-        android:textSize="18sp"
-        android:textColor="@color/white"
-        android:background="@drawable/button"/>
-
-    <Button
-        android:id="@+id/buttonCreate"
-        android:layout_width="310dp"
-        android:layout_height="60dp"
-        android:layout_gravity="center"
-        android:layout_marginTop="20dp"
-        android:text="Create"
-        android:textSize="18sp"
-        android:textColor="@color/white"
-        android:background="@drawable/button"/>
 
 </LinearLayout>

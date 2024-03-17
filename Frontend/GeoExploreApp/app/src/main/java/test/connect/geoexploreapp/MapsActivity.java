@@ -2,7 +2,6 @@ package test.connect.geoexploreapp;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -30,10 +29,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
-import org.w3c.dom.Text;
-
-import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -114,44 +109,114 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
         mMap.addMarker(new MarkerOptions().position(ames).title("Test Marker"));
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ames,14));
 
-        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+//        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+//            @Override
+//            public void onMapClick(LatLng latLng) {
+//                if(isCreateReportMode){
+//                    promptForNewReportTitle(latLng);
+//                    isCreateReportMode = false;
+//                    reportCreateTextView.setVisibility(View.GONE);
+//                }else if(isCreateEventMode){
+//                    promptForNewEventTitle(latLng);
+//                    isCreateEventMode = false;
+//                    eventCreateTextView.setVisibility(View.GONE);
+//                }else if(isUpdateReportMode){
+//                    isUpdateReportMode = false;
+//                    reportIdStatus = 3;
+//                    promptForReportId(latLng);
+//                    reportUpdateTextView.setVisibility(View.GONE);
+//                }else if(isUpdateEventMode){
+//                    isUpdateEventMode = false;
+//                    eventIdStatus = 3;
+//                    promptForEventId(latLng);
+//                    eventUpdateTextView.setVisibility(View.GONE);
+//                }else if(isCreateObservationMode){
+//                    promptForNewObservationTitle(latLng);
+//                    isCreateObservationMode=false;
+//                    observationCreateTextView.setVisibility(View.GONE);
+//                }else if(isUpdateObservationMode){
+//                    isUpdateObservationMode = false;
+//                    observationIdStatus = 3;
+//                    promptForObservationId(latLng);
+//                    observationUpdateTextView.setVisibility(View.GONE);
+//                }
+//            }
+//        });
+
+        mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
-            public void onMapClick(LatLng latLng) {
-                if(isCreateReportMode){
-                    promptForNewReportTitle(latLng);
-                    isCreateReportMode = false;
-                    reportCreateTextView.setVisibility(View.GONE);
-                }else if(isCreateEventMode){
-                    promptForNewEventTitle(latLng);
-                    isCreateEventMode = false;
-                    eventCreateTextView.setVisibility(View.GONE);
-                }else if(isUpdateReportMode){
-                    isUpdateReportMode = false;
-                    reportIdStatus = 3;
-                    promptForReportId(latLng);
-                    reportUpdateTextView.setVisibility(View.GONE);
-                }else if(isUpdateEventMode){
-                    isUpdateEventMode = false;
-                    eventIdStatus = 3;
-                    promptForEventId(latLng);
-                    eventUpdateTextView.setVisibility(View.GONE);
-                }else if(isCreateObservationMode){
-                    promptForNewObservationTitle(latLng);
-                    isCreateObservationMode=false;
-                    observationCreateTextView.setVisibility(View.GONE);
-                }else if(isUpdateObservationMode){
-                    isUpdateObservationMode = false;
-                    observationIdStatus = 3;
-                    promptForObservationId(latLng);
-                    observationUpdateTextView.setVisibility(View.GONE);
-                }
+            public void onMapLongClick(LatLng latLng) {
+                showCreatePrompt(latLng);
             }
         });
 
 
 
     }
+    private void showCreatePrompt(LatLng latLng) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle("What do you want to create?");
+        CharSequence[] options = {"Observation", "Report", "Event"};
 
+        builder.setItems(options, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                switch (i) {
+                    case 0: // Observation
+                        showAddDialog(latLng, "Observation");
+                        break;
+                    case 1: // Report
+                        showAddDialog(latLng, "Report");
+                        break;
+                    case 2: // Event
+                        showAddDialog(latLng, "Event");
+                        break;
+                }
+            }
+        });
+
+        // Create and show the AlertDialog
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void showAddDialog(LatLng latLng, String type) {
+        // Inflate the custom layout
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        View view = inflater.inflate(R.layout.activity_forms, null);
+
+        EditText editTextTitle = view.findViewById(R.id.editTextTitle);
+        EditText editTextDescription = view.findViewById(R.id.editTextDescription);
+        EditText editTextCityDepartment = view.findViewById(R.id.editTextCityDepartment);
+
+        if ("Report".equals(type)) {
+            editTextDescription.setVisibility(View.GONE); // Hide description for Report
+            editTextCityDepartment.setVisibility(View.GONE);
+        } else if ("Event".equals(type)) {
+            editTextDescription.setVisibility(View.GONE);
+            editTextCityDepartment.setVisibility(View.VISIBLE); // Show city/department for Event
+        } else {
+            editTextDescription.setVisibility(View.VISIBLE);
+            editTextCityDepartment.setVisibility(View.GONE); // Hide city/department for Observation
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setView(view)
+                .setTitle(type)
+                .setPositiveButton("Create", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Here, you can access editTextTitle and editTextDescription for their values
+                        String title = editTextTitle.getText().toString().trim();
+                        String description = editTextDescription.getText().toString().trim();
+                        // TODO: Add logic to handle the creation with title and description
+                    }
+                })
+                .setNegativeButton("Cancel", null); // Dismiss dialog without doing anything
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
     private void showBottomSheetDialog() {
 
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(getActivity());

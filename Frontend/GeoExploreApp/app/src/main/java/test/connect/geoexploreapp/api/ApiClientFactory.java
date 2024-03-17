@@ -11,9 +11,9 @@ public class ApiClientFactory {
 
     static Retrofit GetApiClientSeed(){
         if(apiClientSeed == null){
-
+//http://coms-309-005.class.las.iastate.edu:8080
             apiClientSeed = new Retrofit.Builder()
-                    .baseUrl("http://coms-309-005.class.las.iastate.edu:8080/") // Server url here with / at the end
+                    .baseUrl("https://bdabeac2-f13b-4e71-b97d-9c7c1bab23c5.mock.pstmn.io/") // Server url here with / at the end
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
         }
