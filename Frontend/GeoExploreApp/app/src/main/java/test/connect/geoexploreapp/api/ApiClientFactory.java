@@ -1,7 +1,5 @@
 package test.connect.geoexploreapp.api;
 
-import okhttp3.OkHttpClient;
-import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -13,7 +11,7 @@ public class ApiClientFactory {
         if(apiClientSeed == null){
 
             apiClientSeed = new Retrofit.Builder()
-                    .baseUrl("http://coms-309-005.class.las.iastate.edu:8080/") // Server url here with / at the end
+                    .baseUrl("https://67d7f572-57ac-492a-8502-49174d854116.mock.pstmn.io/") // Server url here with / at the end http://coms-309-005.class.las.iastate.edu:8080
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
         }
