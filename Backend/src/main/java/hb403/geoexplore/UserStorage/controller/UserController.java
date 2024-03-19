@@ -1,21 +1,23 @@
 package hb403.geoexplore.UserStorage.controller;
 
 import hb403.geoexplore.UserStorage.entity.User;
+import hb403.geoexplore.UserStorage.entity.UserGroup;
 import hb403.geoexplore.UserStorage.repository.UserRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @RestController
 public class UserController {
 
-
-
     @Autowired
     UserRepository userRepository;
+
 
     //C of Crudl
     @PostMapping(path = "/user/create")
@@ -62,6 +64,16 @@ public class UserController {
     @GetMapping(path = "/userinfo")
     @ResponseBody List<User>  getAllUsers() {
         return userRepository.findAll();
+    }
+
+    @GetMapping(path="/user/{id}/groups")
+    @ResponseBody Set<UserGroup> getUserGroups(@PathVariable Long id) {
+        try {
+            return this.getUser(id).getGroups();
+        } catch(Exception e) {
+            // ...
+        }
+        return null;
     }
 
 
