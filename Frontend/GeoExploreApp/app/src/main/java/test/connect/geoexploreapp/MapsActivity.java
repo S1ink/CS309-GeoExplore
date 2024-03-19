@@ -256,7 +256,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             bottomSheetDialog.dismiss();
         });
         btnObservationList.setOnClickListener(v -> {
-            displayAllReports();
+            displayAllObservations();
             bottomSheetDialog.dismiss();
         });
 
@@ -282,7 +282,10 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
 
         reportMarkerApi.addReport(newReportMarker).enqueue(new SlimCallback<>(createdReportMarker -> {
             LatLng position = new LatLng(createdReportMarker.getLatitude(), createdReportMarker.getLongitude());
-            mMap.addMarker(new MarkerOptions().position(position).title(createdReportMarker.getId() + " " + createdReportMarker.getTitle()));
+            mMap.addMarker(new MarkerOptions()
+                    .position(position)
+                    .title(createdReportMarker.getId() + " " + createdReportMarker.getTitle())
+                    .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_report_24)));
         }, "CreateNewReport"));
     }
 
@@ -294,7 +297,10 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             if (reportMarker != null) {
                 LatLng position = new LatLng(reportMarker.getLatitude(), reportMarker.getLongitude());
                 mMap.clear();
-                mMap.addMarker(new MarkerOptions().position(position).title(reportMarker.getId() + " " + reportMarker.getTitle()));
+                mMap.addMarker(new MarkerOptions()
+                        .position(position)
+                        .title(reportMarker.getId() + " " + reportMarker.getTitle())
+                        .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_report_24)));
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 10));
             }
         }, "getReportByID"));
@@ -368,7 +374,10 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
 
         observationApi.saveObs(observation).enqueue(new SlimCallback<>(obs -> {
             LatLng position = new LatLng(obs.getLatitude(), obs.getLongitude());
-            mMap.addMarker(new MarkerOptions().position(position).title(obs.getId() + " " + obs.getTitle()));
+            mMap.addMarker(new MarkerOptions()
+                    .position(position)
+                    .title(obs.getId() + " " + obs.getTitle())
+                    .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_photo_camera_24)));
         }, "CreateNewObservation"));
     }
     private void displayObservationByID(Long id) {
@@ -378,7 +387,10 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             if (obj != null) {
                 LatLng position = new LatLng(obj.getLatitude(), obj.getLongitude());
                 mMap.clear();
-                mMap.addMarker(new MarkerOptions().position(position).title(obj.getId() + " " + obj.getTitle()));
+                mMap.addMarker(new MarkerOptions()
+                        .position(position)
+                        .title(obj.getId() + " " + obj.getTitle())
+                        .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_photo_camera_24)));
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 10));
             }
         }, "getObservationByID"));
@@ -429,7 +441,10 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             mMap.clear();
             for (Observation ob : obs) {
                 LatLng position = new LatLng(ob.getLatitude(), ob.getLongitude());
-                mMap.addMarker(new MarkerOptions().position(position).title(ob.getId() + " " + ob.getTitle()));
+                mMap.addMarker(new MarkerOptions()
+                        .position(position)
+                        .title(ob.getId() + " " + ob.getTitle())
+                        .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_photo_camera_24)));
             }
         }, "GetAllObservationId"));
     }
@@ -447,7 +462,10 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
 
         reportMarkerApi.addEvent(newEventMarker).enqueue(new SlimCallback<>(createdEventMarker -> {
             LatLng position = new LatLng(createdEventMarker.getLatitude(), createdEventMarker.getLongitude());
-            mMap.addMarker(new MarkerOptions().position(position).title(createdEventMarker.getId() + " " + createdEventMarker.getTitle() + " Department: " + createdEventMarker.getCity_department()));
+            mMap.addMarker(new MarkerOptions()
+                    .position(position)
+                    .title(createdEventMarker.getId() + " " + createdEventMarker.getTitle() + " Department: " + createdEventMarker.getCity_department())
+                    .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_celebration_24)));
         }, "CreateNewEvent"));
     }
     private void displayEventByID(Long id) {
@@ -457,7 +475,10 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             if (eventMarker != null) {
                 LatLng position = new LatLng(eventMarker.getLatitude(), eventMarker.getLongitude());
                 mMap.clear();
-                mMap.addMarker(new MarkerOptions().position(position).title(eventMarker.getId() + " " + eventMarker.getTitle() + " Department: " + eventMarker.getCity_department()));
+                mMap.addMarker(new MarkerOptions()
+                        .position(position)
+                        .title(eventMarker.getId() + " " + eventMarker.getTitle() + " Department: " + eventMarker.getCity_department())
+                        .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_celebration_24)));
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 10));
             }
         }, "getEventByID"));
@@ -512,7 +533,10 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             mMap.clear();
             for (EventMarker eventMarker : eventMarkers) {
                 LatLng position = new LatLng(eventMarker.getLatitude(), eventMarker.getLongitude());
-                mMap.addMarker(new MarkerOptions().position(position).title(eventMarker.getId() + " " + eventMarker.getTitle() + " Department: " + eventMarker.getCity_department()));
+                mMap.addMarker(new MarkerOptions()
+                        .position(position)
+                        .title(eventMarker.getId() + " " + eventMarker.getTitle() + " Department: " + eventMarker.getCity_department())
+                        .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_celebration_24)));
             }
         }, "GetAllEvents"));
     }
