@@ -148,8 +148,95 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             }
         });
 
+        mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(LatLng latLng) {
+                showCreatePrompt(latLng);
+            }
+        });
 
 
+
+
+    }
+
+    private void showCreatePrompt(LatLng latLng) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setTitle("What do you want to create?");
+        CharSequence[] options = {"Observation", "Report", "Event"};
+
+        builder.setItems(options, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                switch (i) {
+                    case 0: // Observation
+                        showAddDialog(latLng, "Observation");
+                        break;
+                    case 1: // Report
+                        showAddDialog(latLng, "Report");
+                        break;
+                    case 2: // Event
+                        showAddDialog(latLng, "Event");
+                        break;
+                }
+            }
+        });
+
+        // Create and show the AlertDialog
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void showAddDialog(LatLng latLng, String type) {
+        // Inflate the custom layout
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        View view = inflater.inflate(R.layout.activity_forms, null);
+
+        EditText editTextTitle = view.findViewById(R.id.editTextTitle);
+        EditText editTextDescription = view.findViewById(R.id.editTextDescription);
+        EditText editTextCityDepartment = view.findViewById(R.id.editTextCityDepartment);
+
+        if ("Report".equals(type)) {
+            editTextDescription.setVisibility(View.GONE); // Hide description for Report
+            editTextCityDepartment.setVisibility(View.GONE);
+        } else if ("Event".equals(type)) {
+            editTextDescription.setVisibility(View.GONE);
+            editTextCityDepartment.setVisibility(View.VISIBLE); // Show city/department for Event
+        } else {
+            editTextDescription.setVisibility(View.VISIBLE);
+            editTextCityDepartment.setVisibility(View.GONE); // Hide city/department for Observation
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setView(view)
+                .setTitle(type)
+                .setPositiveButton("Create", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Here, you can access editTextTitle and editTextDescription for their values
+                        String title = editTextTitle.getText().toString().trim();
+                        String description = editTextDescription.getText().toString().trim();
+                        String cityDepartment = editTextCityDepartment.getText().toString().trim();
+
+                        if("Report".equals(type)){
+                            //create report
+                            createNewReport(latLng, title);
+
+                        }else if("Event".equals(type)){
+                            //create event
+                            createNewEvent(latLng, title, cityDepartment);
+
+                        }else{
+                            createNewObservation(latLng, title,description );
+                            //create observation
+                        }
+
+                    }
+                })
+                .setNegativeButton("Cancel", null); // Dismiss dialog without doing anything
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     private void showBottomSheetDialog() {
