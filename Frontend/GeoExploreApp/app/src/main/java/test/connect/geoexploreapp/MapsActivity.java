@@ -2,6 +2,7 @@ package test.connect.geoexploreapp;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -60,7 +61,6 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
     private TextView eventUpdateTextView;
     private TextView observationCreateTextView;
     private TextView observationUpdateTextView;
-
     public MapsActivity() {
 
     }
@@ -109,39 +109,39 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
         mMap.addMarker(new MarkerOptions().position(ames).title("Test Marker"));
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ames,14));
 
-//        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-//            @Override
-//            public void onMapClick(LatLng latLng) {
-//                if(isCreateReportMode){
-//                    promptForNewReportTitle(latLng);
-//                    isCreateReportMode = false;
-//                    reportCreateTextView.setVisibility(View.GONE);
-//                }else if(isCreateEventMode){
-//                    promptForNewEventTitle(latLng);
-//                    isCreateEventMode = false;
-//                    eventCreateTextView.setVisibility(View.GONE);
-//                }else if(isUpdateReportMode){
-//                    isUpdateReportMode = false;
-//                    reportIdStatus = 3;
-//                    promptForReportId(latLng);
-//                    reportUpdateTextView.setVisibility(View.GONE);
-//                }else if(isUpdateEventMode){
-//                    isUpdateEventMode = false;
-//                    eventIdStatus = 3;
-//                    promptForEventId(latLng);
-//                    eventUpdateTextView.setVisibility(View.GONE);
-//                }else if(isCreateObservationMode){
-//                    promptForNewObservationTitle(latLng);
-//                    isCreateObservationMode=false;
-//                    observationCreateTextView.setVisibility(View.GONE);
-//                }else if(isUpdateObservationMode){
-//                    isUpdateObservationMode = false;
-//                    observationIdStatus = 3;
-//                    promptForObservationId(latLng);
-//                    observationUpdateTextView.setVisibility(View.GONE);
-//                }
-//            }
-//        });
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                if(isCreateReportMode){
+                    promptForNewReportTitle(latLng);
+                    isCreateReportMode = false;
+                    reportCreateTextView.setVisibility(View.GONE);
+                }else if(isCreateEventMode){
+                    promptForNewEventTitle(latLng);
+                    isCreateEventMode = false;
+                    eventCreateTextView.setVisibility(View.GONE);
+                }else if(isUpdateReportMode){
+                    isUpdateReportMode = false;
+                    reportIdStatus = 3;
+                    promptForReportId(latLng);
+                    reportUpdateTextView.setVisibility(View.GONE);
+                }else if(isUpdateEventMode){
+                    isUpdateEventMode = false;
+                    eventIdStatus = 3;
+                    promptForEventId(latLng);
+                    eventUpdateTextView.setVisibility(View.GONE);
+                }else if(isCreateObservationMode){
+                    promptForNewObservationTitle(latLng);
+                    isCreateObservationMode=false;
+                    observationCreateTextView.setVisibility(View.GONE);
+                }else if(isUpdateObservationMode){
+                    isUpdateObservationMode = false;
+                    observationIdStatus = 3;
+                    promptForObservationId(latLng);
+                    observationUpdateTextView.setVisibility(View.GONE);
+                }
+            }
+        });
 
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
@@ -209,7 +209,21 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
                         // Here, you can access editTextTitle and editTextDescription for their values
                         String title = editTextTitle.getText().toString().trim();
                         String description = editTextDescription.getText().toString().trim();
-                        // TODO: Add logic to handle the creation with title and description
+                        String cityDepartment = editTextCityDepartment.getText().toString().trim();
+
+                        if("Report".equals(type)){
+                            //create report
+                            createNewReport(latLng, title);
+
+                        }else if("Event".equals(type)){
+                            //create event
+                            createNewEvent(latLng, title, cityDepartment);
+
+                        }else{
+                            createNewObservation(latLng, title,description );
+                            //create observation
+                        }
+
                     }
                 })
                 .setNegativeButton("Cancel", null); // Dismiss dialog without doing anything
