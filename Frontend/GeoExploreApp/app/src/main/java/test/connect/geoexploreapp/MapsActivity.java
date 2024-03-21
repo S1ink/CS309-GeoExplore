@@ -152,7 +152,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
                     observationUpdateTextView.setVisibility(View.GONE);
                 }
 
-                showEmergencyNotification("Test Emergency", "This is a test of the emergency notification system.");
+                showEmergencyNotification("Test Emergency", "This is a test of the emergency notification system.",42.0266,-93.6465);
             }
         });
 
@@ -168,15 +168,40 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
 
     }
 
-    public void showEmergencyNotification(String title, String message) {
-        new AlertDialog.Builder(getActivity())
+    public void showEmergencyNotification(String title, String message, double latitude, double longitude) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
                 .setTitle(title)
                 .setMessage(message)
-                .setPositiveButton("Show on map", null)
-                .setNegativeButton("Dismiss",null)
-                .setIcon(R.drawable.baseline_crisis_alert_24)
-                .show();
+                .setPositiveButton("Show on map", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        displayEmergencyOnMap(latitude, longitude, title);
+                    }
+                })
+                .setNegativeButton("Dismiss", null)
+                .setIcon(R.drawable.baseline_crisis_alert_24);
+
+        // ui thread
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                builder.show();
+            }
+        });
     }
+
+    public void displayEmergencyOnMap(double latitude, double longitude, String emergencyTitle){
+
+        LatLng emergencyLocation = new LatLng(latitude, longitude);
+
+        mMap.addMarker(new MarkerOptions()
+                .position(emergencyLocation)
+                .title(emergencyTitle)
+                .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_crisis_alert_24)));
+
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(emergencyLocation, 14));
+    }
+
 
     private void showCreatePrompt(LatLng latLng) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
