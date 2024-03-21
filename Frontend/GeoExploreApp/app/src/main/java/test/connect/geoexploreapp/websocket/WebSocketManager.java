@@ -1,4 +1,4 @@
-package test.connect.geoexploreapp;
+package test.connect.geoexploreapp.websocket;
 
 import android.util.Log;
 
@@ -7,14 +7,20 @@ import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
 
-import okhttp3.WebSocketListener;
+/**
+ * Singleton WebSocketManager instance used for managing WebSocket connections
+ * in the Android application.
+ *
+ * This instance ensures that there is only one WebSocketManager throughout
+ * the application's lifecycle, allowing for centralized WebSocket handling.
+ */
+public class WebSocketManager {
 
-public class WebSocketCommentManager {
-    private static WebSocketCommentManager instance;
+    private static WebSocketManager instance;
     private MyWebSocketClient webSocketClient;
-    private WebSocketCommentListener webSocketCommentListener;
+    private WebSocketListener webSocketListener;
 
-    private WebSocketCommentManager() {}
+    private WebSocketManager() {}
 
     /**
      * Retrieves a synchronized instance of the WebSocketManager, ensuring that
@@ -23,9 +29,9 @@ public class WebSocketCommentManager {
      *
      * @return A synchronized instance of WebSocketManager.
      */
-    public static synchronized WebSocketCommentManager getInstance() {
+    public static synchronized WebSocketManager getInstance() {
         if (instance == null) {
-            instance = new WebSocketCommentManager();
+            instance = new WebSocketManager();
         }
         return instance;
     }
@@ -36,16 +42,16 @@ public class WebSocketCommentManager {
      *
      * @param listener The WebSocketListener to be set for this WebSocketManager.
      */
-    public void setWebSocketCommentListener(WebSocketCommentListener listener) {
-        this.webSocketCommentListener = listener;
+    public void setWebSocketListener(WebSocketListener listener) {
+        this.webSocketListener = listener;
     }
 
     /**
      * Removes the currently set WebSocketListener from this WebSocketManager instance.
      * This action effectively disconnects the listener from handling WebSocket events.
      */
-    public void removeWebSocketCommentListener() {
-        this.webSocketCommentListener = null;
+    public void removeWebSocketListener() {
+        this.webSocketListener = null;
     }
 
     /**
@@ -111,8 +117,8 @@ public class WebSocketCommentManager {
         @Override
         public void onOpen(ServerHandshake handshakedata) {
             Log.d("WebSocket", "Connected");
-            if (webSocketCommentListener != null) {
-                webSocketCommentListener.onWebSocketOpen(handshakedata);
+            if (webSocketListener != null) {
+                webSocketListener.onWebSocketOpen(handshakedata);
             }
         }
 
@@ -126,10 +132,11 @@ public class WebSocketCommentManager {
         @Override
         public void onMessage(String message) {
             Log.d("WebSocket", "Received message: " + message);
-            if (webSocketCommentListener != null) {
-                webSocketCommentListener.onWebSocketMessage(message);
+            if (webSocketListener != null) {
+                webSocketListener.onWebSocketMessage(message);
             }
-        }
+        }   // Message will come in as a json object so we can take data
+        // needed to make notification and point a point on the map
 
         /**
          * Called when the WebSocket connection is closed, either due to a client request
@@ -145,8 +152,8 @@ public class WebSocketCommentManager {
         @Override
         public void onClose(int code, String reason, boolean remote) {
             Log.d("WebSocket", "Closed");
-            if (webSocketCommentListener != null) {
-                webSocketCommentListener.onWebSocketClose(code, reason, remote);
+            if (webSocketListener != null) {
+                webSocketListener.onWebSocketClose(code, reason, remote);
             }
         }
 
@@ -160,11 +167,9 @@ public class WebSocketCommentManager {
         @Override
         public void onError(Exception ex) {
             Log.d("WebSocket", "Error");
-            if (webSocketCommentListener != null) {
-                webSocketCommentListener.onWebSocketError(ex);
+            if (webSocketListener != null) {
+                webSocketListener.onWebSocketError(ex);
             }
         }
     }
-
-
 }

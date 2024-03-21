@@ -29,11 +29,14 @@ public class MainActivity extends AppCompatActivity {
         binding.bottomNavigationView.setOnItemSelectedListener(item -> {
 //
             int itemId = item.getItemId();
+
             if (itemId == R.id.profile) {
                 ProfileActivity profileFragment = ProfileActivity.newInstance(userName, userEmail);
                 replaceFragment(profileFragment);
             } else if (itemId == R.id.maps) {
                 replaceFragment(new MapsActivity());
+            } else if(itemId == R.id.show_feed){
+                replaceFragment(new FeedActivity());
             } else if (itemId == R.id.settings) {
                 replaceFragment(new SettingsActivity());
             }

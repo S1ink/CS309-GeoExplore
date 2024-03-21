@@ -1,8 +1,14 @@
-package test.connect.geoexploreapp;
+package test.connect.geoexploreapp.websocket;
 
 import org.java_websocket.handshake.ServerHandshake;
 
-public interface WebSocketCommentListener {
+/**
+ * Interface defining methods for handling WebSocket events.
+ * Implement this interface to listen for WebSocket connection,
+ * message, closure, and error events.
+ */
+public interface WebSocketListener {
+
     /**
      * Called when the WebSocket connection is successfully opened.
      *
@@ -32,5 +38,6 @@ public interface WebSocketCommentListener {
      * @param ex The exception that describes the error.
      */
     void onWebSocketError(Exception ex);
-
 }
+
+
