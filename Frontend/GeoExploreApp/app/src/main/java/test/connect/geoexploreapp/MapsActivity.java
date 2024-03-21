@@ -151,6 +151,8 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
                     promptForObservationId(latLng);
                     observationUpdateTextView.setVisibility(View.GONE);
                 }
+
+                showEmergencyNotification("Test Emergency", "This is a test of the emergency notification system.");
             }
         });
 
@@ -164,6 +166,16 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
 
 
 
+    }
+
+    public void showEmergencyNotification(String title, String message) {
+        new AlertDialog.Builder(getActivity())
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("Show on map", null)
+                .setNegativeButton("Dismiss",null)
+                .setIcon(R.drawable.baseline_crisis_alert_24)
+                .show();
     }
 
     private void showCreatePrompt(LatLng latLng) {
