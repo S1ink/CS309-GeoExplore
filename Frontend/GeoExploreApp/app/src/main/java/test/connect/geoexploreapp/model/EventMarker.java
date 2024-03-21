@@ -1,6 +1,6 @@
 package test.connect.geoexploreapp.model;
 
-public class EventMarker {
+public class EventMarker implements FeedItem{
     private long id;
     private double latitude;
     private double longitude;
@@ -13,6 +13,7 @@ public class EventMarker {
     public long getId() {
         return id;
     }
+
 
     public void setId(long id) {
         this.id = id;
@@ -36,6 +37,11 @@ public class EventMarker {
 
     public String getTitle() {
         return title;
+    }
+
+    @Override
+    public String getDescription() {
+        return null;
     }
 
     public void setTitle(String title) {

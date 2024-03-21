@@ -1,6 +1,6 @@
 package test.connect.geoexploreapp.model;
 
-public class ReportMarker {
+public class ReportMarker implements FeedItem{
 
     private long id;
 
@@ -38,6 +38,11 @@ public class ReportMarker {
 
     public String getTitle() {
         return title;
+    }
+
+    @Override
+    public String getDescription() {
+        return null;
     }
 
     public void setTitle(String title) {

@@ -1,6 +1,6 @@
 package test.connect.geoexploreapp.model;
 
-public class Observation {
+public class Observation implements FeedItem{
     public Long id;
     public double latitude;
     public double longitude;
