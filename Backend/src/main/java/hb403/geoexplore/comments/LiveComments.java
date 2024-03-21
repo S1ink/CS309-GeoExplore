@@ -3,7 +3,10 @@ import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Map;
 
-import hb403.geoexplore.UserStorage.repository.UserRepository;
+
+import hb403.geoexplore.comments.CommentRepo.CommentRepository;
+import hb403.geoexplore.comments.Entity.CommentEntity;
+
 import jakarta.websocket.OnClose;
 import jakarta.websocket.OnError;
 import jakarta.websocket.OnMessage;
@@ -16,25 +19,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import hb403.geoexplore.UserStorage.entity.User;
-import hb403.geoexplore.UserStorage.repository.UserRepository;
-import hb403.geoexplore.UserStorage.controller.UserController;
+import org.springframework.web.bind.annotation.RestController;
 
 
-
-
-
-@ServerEndpoint("/observations/comments/{id}")
+@ServerEndpoint("/observations/comments/{userid}/{postid}")
 @Component
-public class LiveComments {
-
+@RestController
+public class LiveComments {//This is both the comment controller and chat websocket
+    private CommentEntity currUser;
     @Autowired
-    UserRepository userRepository;
-
+    CommentRepository commentRepository;
     // Store all socket session and their corresponding username
     // Two maps for the ease of retrieval by key
-    private static Map < Session, String > sessionUsernameMap = new Hashtable < > ();
-    private static Map < String, Session > usernameSessionMap = new Hashtable < > ();
+    private static Map<Session, String> sessionUsernameMap = new Hashtable<>();
+    private static Map<Session, Long> sessionObservationMap = new Hashtable<>();
+
+    private static Map<String, Session> usernameSessionMap = new Hashtable<>();
+
+    private static Map<Long, Session> postSessionMap = new Hashtable<>();
 
     // server side logger
     private final Logger logger = LoggerFactory.getLogger(LiveComments.class);
@@ -43,34 +45,23 @@ public class LiveComments {
      * This method is called when a new WebSocket connection is established.
      *
      * @param session represents the WebSocket session for the connected user.
-     * @param Id username specified in path parameter.
+     * @param userid  username based of user id.
+     * @param postid  id of post for storing
      */
     @OnOpen
-    public void onOpen(Session session, @PathParam("id") Long Id) throws IOException {
+    public void onOpen(Session session, @PathParam("userid") String userid, @PathParam("postid") long postid) throws IOException {
 
         // server side log
-        logger.info("[onOpen] " + Id);
+        logger.info("[onOpen] User " + userid + " joined session on post " + postid);
 
-        // Handle the case of a duplicate username
-        /*if (usernameSessionMap.containsKey(username)) {
-            session.getBasicRemote().sendText("Username already exists");
-            session.close();
-        }
-        else {
-            // map current session with username
-            sessionUsernameMap.put(session, username);
-
-            // map current username with session
-            usernameSessionMap.put(username, session);
-
-            // send to the user joining in
-            sendMessageToPArticularUser(username, "Welcome to the chat server, "+username);
-
-            // send to everyone in the chat
-            broadcast("User: " + username + " has Joined the Chat");
-        }*/
-        
-
+        this.currUser = new CommentEntity(userid, postid);
+        // map current session with username
+        sessionUsernameMap.put(session, userid);
+        sessionObservationMap.put (session,postid);
+        // map current username with session
+        usernameSessionMap.put(userid, session);
+        //map current post/observation with session
+        postSessionMap.put(postid, session);
     }
 
     /**
@@ -83,16 +74,17 @@ public class LiveComments {
     public void onMessage(Session session, String message) throws IOException {
 
         // get the username by session
-        String username = sessionUsernameMap.get(session);
+        String tempuserid = sessionUsernameMap.get(session);
+
 
         // server side log
-        logger.info("[onMessage] " + username + ": " + message);
+        logger.info("[onMessage] " + tempuserid + ": " + message);
 
         // Direct message to a user using the format "@username <message>"
         if (message.startsWith("@")) {
-
+            logger.info("It came here for some reason");
             // split by space
-            String[] split_msg =  message.split("\\s+");
+            String[] split_msg = message.split("\\s+");
 
             // Combine the rest of message
             StringBuilder actualMessageBuilder = new StringBuilder();
@@ -101,79 +93,85 @@ public class LiveComments {
             }
             String destUserName = split_msg[0].substring(1);    //@username and get rid of @
             String actualMessage = actualMessageBuilder.toString();
-            sendMessageToPArticularUser(destUserName, "[DM from " + username + "]: " + actualMessage);
-            sendMessageToPArticularUser(username, "[DM from " + username + "]: " + actualMessage);
-        }
-        else { // Message to whole chat
-            broadcast(username + ": " + message);
-        }
-    }
-
-    /**
-     * Handles the closure of a WebSocket connection.
-     *
-     * @param session The WebSocket session that is being closed.
-     */
-    @OnClose
-    public void onClose(Session session) throws IOException {
-
-        // get the username from session-username mapping
-        String username = sessionUsernameMap.get(session);
-
-        // server side log
-        logger.info("[onClose] " + username);
-
-        // remove user from memory mappings
-        sessionUsernameMap.remove(session);
-        usernameSessionMap.remove(username);
-
-        // send the message to chat
-        broadcast(username + " disconnected");
-    }
-
-    /**
-     * Handles WebSocket errors that occur during the connection.
-     *
-     * @param session   The WebSocket session where the error occurred.
-     * @param throwable The Throwable representing the error condition.
-     */
-    @OnError
-    public void onError(Session session, Throwable throwable) {
-
-        // get the username from session-username mapping
-        String username = sessionUsernameMap.get(session);
-
-        // do error handling here
-        logger.info("[onError]" + username + ": " + throwable.getMessage());
-    }
-
-    /**
-     * Sends a message to a specific user in the chat (DM).
-     *
-     * @param username The username of the recipient.
-     * @param message  The message to be sent.
-     */
-    private void sendMessageToPArticularUser(String username, String message) {
-        try {
-            usernameSessionMap.get(username).getBasicRemote().sendText(message);
-        } catch (IOException e) {
-            logger.info("[DM Exception] " + e.getMessage());
-        }
-    }
-
-    /**
-     * Broadcasts a message to all users in the chat.
-     *
-     * @param message The message to be broadcasted to all users.
-     */
-    private void broadcast(String message) {
-        sessionUsernameMap.forEach((session, username) -> {
-            try {
-                session.getBasicRemote().sendText(message);
-            } catch (IOException e) {
-                logger.info("[Broadcast Exception] " + e.getMessage());
+            sendMessageToPArticularUser(destUserName, "[DM from " + currUser.getUserid() + "]: " + actualMessage);
+            sendMessageToPArticularUser(currUser.getUserid(), "[DM from " + currUser.getUserid() + "]: " + actualMessage);
+        } else { // Message to whole chat underneath observation
+            //postSessionMap.get(currUser.getPostid()).getBasicRemote().sendText(message);
+            broadcast(message);
             }
-        });
+        }
+
+        /**
+         * Handles the closure of a WebSocket connection.
+         *
+         * @param session The WebSocket session that is being closed.
+         */
+        @OnClose
+        public void onClose (Session session) throws IOException {
+
+            // get the username from session-username mapping
+            String username = sessionUsernameMap.get(session);
+
+            // server side log
+            logger.info("[onClose] " + username);
+
+            // remove user from memory mappings
+            sessionUsernameMap.remove(session);
+            usernameSessionMap.remove(username);
+
+            // send the message to chat
+            //broadcast(username + " disconnected");
+        }
+
+        /**
+         * Handles WebSocket errors that occur during the connection.
+         *
+         * @param session   The WebSocket session where the error occurred.
+         * @param throwable The Throwable representing the error condition.
+         */
+        @OnError
+        public void onError (Session session, Throwable throwable){
+
+            // get the username from session-username mapping
+            String temp = sessionUsernameMap.get(session);
+
+            // do error handling here
+            logger.info("[onError]" + temp + ": " + throwable.getMessage());
+        }
+
+        /**
+         * Sends a message to a specific user in the chat (DM).
+         *
+         * @param username The username of the recipient.
+         * @param message  The message to be sent.
+         */
+        private void sendMessageToPArticularUser (String username, String message){
+            try {
+                logger.info("Something is wrong here");
+                usernameSessionMap.get(username).getBasicRemote().sendText(message);
+            } catch (IOException e) {
+                logger.info("[DM Exception] " + e.getMessage());
+            }
+        }
+
+        /**
+         * Broadcasts a message to all users in the chat.
+         *
+         * @param message The message to be broadcasted to all users.
+         */
+        private void broadcast (String message){
+            sessionObservationMap.forEach((session, postid) -> {
+               // sessionUsernameMap.forEach((session, username) -> {
+                    try {
+                        //commentRepository.save(new CommentEntity(currUser,message));
+                        session.getBasicRemote().sendText(message);
+
+                    } catch (IOException e) {
+                        logger.info("[Broadcast Exception] " + e.getMessage());
+                    }
+                });
+            //});
+        }
+
     }
 
-}

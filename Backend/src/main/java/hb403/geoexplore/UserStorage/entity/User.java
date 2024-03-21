@@ -1,5 +1,6 @@
 package hb403.geoexplore.UserStorage.entity;
 
+import hb403.geoexplore.comments.Entity.CommentEntity;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -40,7 +41,9 @@ public class User {
     private String password;
     private String encryptedPassword;
     private boolean isAdmin;
-
+    @ManyToOne
+    @JoinColumn(name = "Comments")
+    private CommentEntity comment;
 
     public User(Long id, String name, String emailId, String password) {
         this.id = id;
