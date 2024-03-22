@@ -63,6 +63,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
     private boolean isUpdateReportMode = false;
     private boolean isUpdateEventMode = false;
     private boolean isUpdateObservationMode = false;
+    private boolean isCreateEmergencyNotification = false;
     private int reportIdStatus = 0; // For promptForReportID method. 1 to Read, 2 to Delete, 3 to Update
     private int eventIdStatus = 0; // For promptForEventID method. 1 to Read, 2 to Delete, 3 to Update
     private int observationIdStatus = 0; // For promptForReportID method. 1 to Read, 2 to Delete, 3 to Update
@@ -150,6 +151,8 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
                     observationIdStatus = 3;
                     promptForObservationId(latLng);
                     observationUpdateTextView.setVisibility(View.GONE);
+                }else if(isCreateEmergencyNotification){
+                    isCreateEmergencyNotification = false;
                 }
 
                 showEmergencyNotification("Test Emergency", "This is a test of the emergency notification system.",42.0266,-93.6465);

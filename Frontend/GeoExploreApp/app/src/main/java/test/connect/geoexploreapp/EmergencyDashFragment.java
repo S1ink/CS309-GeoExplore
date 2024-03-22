@@ -3,6 +3,8 @@ package test.connect.geoexploreapp;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -62,7 +64,19 @@ public class EmergencyDashFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_emergency_dash, container, false);
         Button backButton = view.findViewById(R.id.backButton);
+        Button setLocationButton = view.findViewById(R.id.setLocationButton);
         backButton.setOnClickListener(v -> getParentFragmentManager().popBackStack());
+
+        setLocationButton.setOnClickListener(v -> {
+            MapsActivity mapsFragment = new MapsActivity();
+
+            FragmentManager fragmentManager = getParentFragmentManager();
+            FragmentTransaction transaction = fragmentManager.beginTransaction();
+            transaction.replace(R.id.frame, mapsFragment);
+            transaction.addToBackStack(null);
+            transaction.commit();
+        });
+
         return view;
     }
 }

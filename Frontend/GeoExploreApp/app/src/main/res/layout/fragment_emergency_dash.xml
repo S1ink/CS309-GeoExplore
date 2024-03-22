@@ -40,10 +40,16 @@
         android:inputType="textMultiLine" />
 
     <Button
-        android:id="@+id/btnSendEmergency"
+        android:id="@+id/sendEmergencyButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Send Notification"
+        android:layout_gravity="center_horizontal" />
+    <Button
+        android:id="@+id/setLocationButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Set Location"
         android:layout_gravity="center_horizontal" />
 
 </LinearLayout>
