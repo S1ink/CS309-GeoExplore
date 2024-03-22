@@ -46,11 +46,13 @@ public class ProfileActivity extends Fragment {
         // Required empty public constructor
     }
 
-    public static ProfileActivity newInstance(String userName, String userEmail) {
+    public static ProfileActivity newInstance(String userName, String userEmail, boolean isAdmin) {
         ProfileActivity fragment = new ProfileActivity();
         Bundle args = new Bundle();
         args.putString("UserName", userName);
         args.putString("UserEmail", userEmail);
+        args.putBoolean("IsAdmin",isAdmin);
+
         //args.putLong("UserId", userId);
         fragment.setArguments(args);
         return fragment;
@@ -76,6 +78,9 @@ public class ProfileActivity extends Fragment {
         if (args != null) {
             String userName = args.getString("UserName", "N/A"); // Default value as "N/A"
             String userEmail = args.getString("UserEmail", "N/A");
+            boolean isAdmin = args.getBoolean("IsAdmin", false);
+
+            Log.d("ProfileActivity", "isAdmin: " + isAdmin);
        //     Long userId = args.getLong("UserId", -1); // -1 as default indicating not found
 
             TextView userNameDisplay = view.findViewById(R.id.userNameDisplay);

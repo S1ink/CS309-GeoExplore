@@ -109,6 +109,7 @@ public class LoginTabFragment extends Fragment {
         intent.putExtra("UserName", newUser.getName());
         intent.putExtra("UserEmail", newUser.getEmailId());
        // intent.putExtra("UserID", newUser.getId());
+        intent.putExtra("IsAdmin", newUser.getIsAdmin());
         startActivity(intent);
         getActivity().finish(); // Call finish on the Activity, not the Fragment
     }
