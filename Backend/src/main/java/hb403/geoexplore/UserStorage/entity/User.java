@@ -2,6 +2,7 @@ package hb403.geoexplore.UserStorage.entity;
 
 import hb403.geoexplore.comments.Entity.CommentEntity;
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -11,6 +12,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "users")
+@Getter
+@Setter
 public class User {
     //todo as of saturday, Work on this to be finished and start the observation request using this as a
     // framework but start outside of git so it won't be too annoying
@@ -31,6 +34,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private Long id;
     private String name;
     private String emailId;
@@ -41,9 +45,15 @@ public class User {
     private String password;
     private String encryptedPassword;
     private boolean isAdmin;
+
     @ManyToOne
     @JoinColumn(name = "Comments")
     private CommentEntity comment;
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "members")
+    @JsonIgnore
+    private Set<UserGroup> groups = new HashSet<>();
+
 
     public User(Long id, String name, String emailId, String password) {
         this.id = id;

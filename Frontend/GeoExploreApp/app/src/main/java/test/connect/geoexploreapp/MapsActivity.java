@@ -1,10 +1,15 @@
 package test.connect.geoexploreapp;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 
@@ -26,6 +31,8 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.UiSettings;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -111,7 +118,6 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
         uiSettings.setZoomControlsEnabled(true);
 
         LatLng ames = new LatLng(42.026224,-93.646256);
-        mMap.addMarker(new MarkerOptions().position(ames).title("Test Marker"));
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ames,14));
 
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
@@ -268,7 +274,10 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
 
         reportMarkerApi.addReport(newReportMarker).enqueue(new SlimCallback<>(createdReportMarker -> {
             LatLng position = new LatLng(createdReportMarker.getLatitude(), createdReportMarker.getLongitude());
-            mMap.addMarker(new MarkerOptions().position(position).title(createdReportMarker.getId() + " " + createdReportMarker.getTitle()));
+            mMap.addMarker(new MarkerOptions()
+                    .position(position)
+                    .title(createdReportMarker.getId() + " " + createdReportMarker.getTitle())
+                    .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_report_24)));
         }, "CreateNewReport"));
     }
 
@@ -280,7 +289,10 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             if (reportMarker != null) {
                 LatLng position = new LatLng(reportMarker.getLatitude(), reportMarker.getLongitude());
                 mMap.clear();
-                mMap.addMarker(new MarkerOptions().position(position).title(reportMarker.getId() + " " + reportMarker.getTitle()));
+                mMap.addMarker(new MarkerOptions()
+                        .position(position)
+                        .title(reportMarker.getId() + " " + reportMarker.getTitle())
+                        .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_report_24)));
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 10));
             }
         }, "getReportByID"));
@@ -334,22 +346,15 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             mMap.clear();
             for (ReportMarker reportMarker : reportMarkers) {
                 LatLng position = new LatLng(reportMarker.getLatitude(), reportMarker.getLongitude());
-                mMap.addMarker(new MarkerOptions().position(position).title(reportMarker.getId() + " " + reportMarker.getTitle()));
+                mMap.addMarker(new MarkerOptions()
+                        .position(position)
+                        .title(reportMarker.getId() + " " + reportMarker.getTitle())
+                        .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_report_24)));
             }
         }, "GetAllReports"));
     }
 
-    private void displayAllObservations() {
-        ObservationApi observationApi = ApiClientFactory.GetObservationApi();
 
-        observationApi.getAllObs().enqueue(new SlimCallback<>(obs -> {
-            mMap.clear();
-            for (Observation ob : obs) {
-                LatLng position = new LatLng(ob.getLatitude(), ob.getLongitude());
-                mMap.addMarker(new MarkerOptions().position(position).title(ob.getId() + " " + ob.getTitle()));
-            }
-        }, "GetAllObservations"));
-    }
 
     // Observation CRUDL
     private void createNewObservation(final LatLng latLng, String observationTitle, String observationDescription) {
@@ -363,7 +368,10 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
 
         observationApi.saveObs(observation).enqueue(new SlimCallback<>(obs -> {
             LatLng position = new LatLng(obs.getLatitude(), obs.getLongitude());
-            mMap.addMarker(new MarkerOptions().position(position).title(obs.getId() + " " + obs.getTitle()));
+            mMap.addMarker(new MarkerOptions()
+                    .position(position)
+                    .title(obs.getId() + " " + obs.getTitle())
+                    .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_photo_camera_24)));
         }, "CreateNewObservation"));
     }
     private void displayObservationByID(Long id) {
@@ -373,7 +381,10 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             if (obj != null) {
                 LatLng position = new LatLng(obj.getLatitude(), obj.getLongitude());
                 mMap.clear();
-                mMap.addMarker(new MarkerOptions().position(position).title(obj.getId() + " " + obj.getTitle()));
+                mMap.addMarker(new MarkerOptions()
+                        .position(position)
+                        .title(obj.getId() + " " + obj.getTitle())
+                        .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_photo_camera_24)));
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 10));
             }
         }, "getObservationByID"));
@@ -422,6 +433,20 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
         });
 
     }
+    private void displayAllObservations() {
+        ObservationApi observationApi = ApiClientFactory.GetObservationApi();
+
+        observationApi.getAllObs().enqueue(new SlimCallback<>(obs -> {
+            mMap.clear();
+            for (Observation ob : obs) {
+                LatLng position = new LatLng(ob.getLatitude(), ob.getLongitude());
+                mMap.addMarker(new MarkerOptions()
+                        .position(position)
+                        .title(ob.getId() + " " + ob.getTitle())
+                        .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_photo_camera_24)));
+            }
+        }, "GetAllObservations"));
+    }
 
     // Event CRUDL
     private void createNewEvent(final LatLng latLng, String eventTitle, String cityDepartment) {
@@ -435,7 +460,10 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
 
         reportMarkerApi.addEvent(newEventMarker).enqueue(new SlimCallback<>(createdEventMarker -> {
             LatLng position = new LatLng(createdEventMarker.getLatitude(), createdEventMarker.getLongitude());
-            mMap.addMarker(new MarkerOptions().position(position).title(createdEventMarker.getId() + " " + createdEventMarker.getTitle() + " Department: " + createdEventMarker.getCity_department()));
+            mMap.addMarker(new MarkerOptions()
+                    .position(position)
+                    .title(createdEventMarker.getId() + " " + createdEventMarker.getTitle() + " Department: " + createdEventMarker.getCity_department())
+                    .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_celebration_24)));
         }, "CreateNewEvent"));
     }
     private void displayEventByID(Long id) {
@@ -445,7 +473,10 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             if (eventMarker != null) {
                 LatLng position = new LatLng(eventMarker.getLatitude(), eventMarker.getLongitude());
                 mMap.clear();
-                mMap.addMarker(new MarkerOptions().position(position).title(eventMarker.getId() + " " + eventMarker.getTitle() + " Department: " + eventMarker.getCity_department()));
+                mMap.addMarker(new MarkerOptions()
+                        .position(position)
+                        .title(eventMarker.getId() + " " + eventMarker.getTitle() + " Department: " + eventMarker.getCity_department())
+                        .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_celebration_24)));
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 10));
             }
         }, "getEventByID"));
@@ -500,7 +531,10 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             mMap.clear();
             for (EventMarker eventMarker : eventMarkers) {
                 LatLng position = new LatLng(eventMarker.getLatitude(), eventMarker.getLongitude());
-                mMap.addMarker(new MarkerOptions().position(position).title(eventMarker.getId() + " " + eventMarker.getTitle() + " Department: " + eventMarker.getCity_department()));
+                mMap.addMarker(new MarkerOptions()
+                        .position(position)
+                        .title(eventMarker.getId() + " " + eventMarker.getTitle() + " Department: " + eventMarker.getCity_department())
+                        .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_celebration_24)));
             }
         }, "GetAllEvents"));
     }
@@ -852,6 +886,16 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
                 .show();
     }
 
+    private BitmapDescriptor bitmapDescriptorFromVector(Context context, int vectorResId){
+        Drawable vectorDrawable = ContextCompat.getDrawable(context,vectorResId);
+        vectorDrawable.setBounds(0,0,vectorDrawable.getIntrinsicHeight(),
+                vectorDrawable.getIntrinsicHeight());
+        Bitmap bitmap = Bitmap.createBitmap(vectorDrawable.getIntrinsicWidth(),
+                vectorDrawable.getIntrinsicHeight(),Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        vectorDrawable.draw(canvas);
+        return BitmapDescriptorFactory.fromBitmap(bitmap);
+    }
 
 
 
