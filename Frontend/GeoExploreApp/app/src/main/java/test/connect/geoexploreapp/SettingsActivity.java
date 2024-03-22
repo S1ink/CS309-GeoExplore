@@ -3,6 +3,8 @@ package test.connect.geoexploreapp;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -76,8 +78,12 @@ public class SettingsActivity extends Fragment {
                 btnEmergencyDashboard.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        // Navigate to the Emergency Dashboard
-                        //navigateToEmergencyDashboard();
+                        Fragment emergencyDashFragment = new EmergencyDashFragment();
+                        FragmentManager fragmentManager = getParentFragmentManager();
+                        FragmentTransaction transaction = fragmentManager.beginTransaction();
+                        transaction.replace(R.id.frame, emergencyDashFragment);
+                        transaction.addToBackStack(null);
+                        transaction.commit();
                     }
                 });
             } else {

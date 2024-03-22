@@ -8,20 +8,36 @@
     android:padding="16dp"
     tools:context=".EmergencyDashFragment">
 
+    <Button
+        android:id="@+id/backButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="back" />
     <EditText
-        android:id="@+id/editTextEmergencyTitle"
+        android:id="@+id/titleText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Title" />
 
     <EditText
-        android:id="@+id/editTextEmergencyMessage"
+        android:id="@+id/messageText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Message"
         android:inputType="textMultiLine" />
 
-    <!-- Include other fields as necessary -->
+    <EditText
+        android:id="@+id/longitudeText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Longitude" />
+
+    <EditText
+        android:id="@+id/latitudeText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Latitude"
+        android:inputType="textMultiLine" />
 
     <Button
         android:id="@+id/btnSendEmergency"
