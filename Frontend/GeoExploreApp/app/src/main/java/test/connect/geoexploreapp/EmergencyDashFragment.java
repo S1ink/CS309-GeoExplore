@@ -5,11 +5,14 @@ import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -22,6 +25,8 @@ public class EmergencyDashFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+
+    private EditText latitudeText, longitudeText;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -63,18 +68,41 @@ public class EmergencyDashFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_emergency_dash, container, false);
+
+        // Initialize EditText fields
+        latitudeText = view.findViewById(R.id.latitudeText);
+        longitudeText = view.findViewById(R.id.longitudeText);
+
+        // Get instance of SharedViewModel from the activity
+        SharedViewModel viewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+
+        // Observe the LiveData for latitude
+        viewModel.getLatitude().observe(getViewLifecycleOwner(), latitude -> {
+            latitudeText.setText(latitude != null ? String.valueOf(latitude) : "N/A");
+        });
+
+        // Observe the LiveData for longitude
+        viewModel.getLongitude().observe(getViewLifecycleOwner(), longitude -> {
+            longitudeText.setText(longitude != null ? String.valueOf(longitude) : "N/A");
+        });
+
+
+
         Button backButton = view.findViewById(R.id.backButton);
         Button setLocationButton = view.findViewById(R.id.setLocationButton);
         backButton.setOnClickListener(v -> getParentFragmentManager().popBackStack());
 
         setLocationButton.setOnClickListener(v -> {
+            // Ensure MapsActivity can notify this fragment when a location is picked
+            viewModel.setCreateEmergencyNotification(true);
+            Log.d("EmergencyDashFragment","Emergency was set to true");
             MapsActivity mapsFragment = new MapsActivity();
-
             FragmentManager fragmentManager = getParentFragmentManager();
             FragmentTransaction transaction = fragmentManager.beginTransaction();
             transaction.replace(R.id.frame, mapsFragment);
             transaction.addToBackStack(null);
             transaction.commit();
+
         });
 
         return view;

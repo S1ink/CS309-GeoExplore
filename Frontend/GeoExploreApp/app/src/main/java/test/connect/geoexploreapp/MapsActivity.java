@@ -11,6 +11,7 @@ import android.os.Bundle;
 
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 
 import android.text.InputType;
@@ -90,6 +91,16 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
             mapFragment.getMapAsync(this);
         }
 
+        // check if admin needs location
+        SharedViewModel viewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+
+        viewModel.getCreateEmergencyNotification().observe(getViewLifecycleOwner(), isCreateEmergency -> {
+            isCreateEmergencyNotification = isCreateEmergency;
+            if (isCreateEmergency) {
+                Log.d("Maps","Emergency notfication supposedly good");
+            }
+        });
+
 
         reportCreateTextView = view.findViewById(R.id.activity_maps_report_create_text_view);
         eventCreateTextView = view.findViewById(R.id.activity_maps_event_create_text_view);
@@ -152,10 +163,14 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
                     promptForObservationId(latLng);
                     observationUpdateTextView.setVisibility(View.GONE);
                 }else if(isCreateEmergencyNotification){
+                    Log.d("MapsActivity", "Entering isCreateEmergencyNotification mode");
                     isCreateEmergencyNotification = false;
+                    SharedViewModel viewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+                    viewModel.setLocation(latLng.latitude, latLng.longitude);
+                    viewModel.setCreateEmergencyNotification(false);
+                    getActivity().getSupportFragmentManager().popBackStack();
                 }
 
-                showEmergencyNotification("Test Emergency", "This is a test of the emergency notification system.",42.0266,-93.6465);
             }
         });
 
