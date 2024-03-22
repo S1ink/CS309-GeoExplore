@@ -4,6 +4,7 @@ public class Observation implements FeedItem{
     public Long id;
     public double latitude;
     public double longitude;
+
     public String title;
     public String description;
 
@@ -41,6 +42,11 @@ public class Observation implements FeedItem{
 
     public String getDescription() {
         return description;
+    }
+
+    @Override
+    public String getType() {
+        return "Observation";
     }
 
     public void setDescription(String description) {

@@ -5,6 +5,6 @@ public interface FeedItem {
     double getLongitude();
     String getTitle();
     String getDescription();
-
+    String getType();
 
 }

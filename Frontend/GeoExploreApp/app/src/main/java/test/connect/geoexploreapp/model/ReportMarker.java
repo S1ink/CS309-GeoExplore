@@ -45,6 +45,11 @@ public class ReportMarker implements FeedItem{
         return null;
     }
 
+    @Override
+    public String getType() {
+        return "Report";
+    }
+
     public void setTitle(String title) {
         this.title = title;
     }

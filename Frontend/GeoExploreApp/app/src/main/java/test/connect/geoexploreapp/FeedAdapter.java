@@ -11,7 +11,7 @@ import java.util.List;
 import test.connect.geoexploreapp.model.FeedItem;
 
 public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder> {
-    private List<FeedItem> items; // Your data items
+    private List<FeedItem> items;
 
     public FeedAdapter(List<FeedItem> items) {
         this.items = items;
@@ -29,7 +29,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         FeedItem item = items.get(position);
         holder.title.setText(item.getTitle());
         holder.description.setText(item.getDescription());
-        // Set up more views or click listeners here
     }
 
     @Override
@@ -37,14 +36,23 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         return items.size();
     }
 
+    public void setItems(List<FeedItem> allItems) {
+        items=allItems;
+    }
+
+    public List<FeedItem> getItems() {
+        return items;
+    }
+
     static class FeedViewHolder extends RecyclerView.ViewHolder {
-        TextView title, description;
+        TextView title, description, department, type;
 
         FeedViewHolder(View itemView) {
             super(itemView);
             title = itemView.findViewById(R.id.itemTitle);
             description = itemView.findViewById(R.id.itemDescription);
-            // Initialize other views
+            department = itemView.findViewById(R.id.itemDepartment);
+            type = itemView.findViewById(R.id.itemType);
         }
     }
 }

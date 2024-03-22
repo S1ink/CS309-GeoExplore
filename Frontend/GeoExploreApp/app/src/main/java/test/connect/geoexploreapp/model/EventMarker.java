@@ -44,6 +44,11 @@ public class EventMarker implements FeedItem{
         return null;
     }
 
+    @Override
+    public String getType() {
+        return "Event";
+    }
+
     public void setTitle(String title) {
         this.title = title;
     }
