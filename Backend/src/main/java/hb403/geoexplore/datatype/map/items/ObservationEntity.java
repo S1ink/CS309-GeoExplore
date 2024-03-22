@@ -1,9 +1,12 @@
 package hb403.geoexplore.datatype.map.items;
 
+import hb403.geoexplore.comments.Entity.CommentEntity;
 import hb403.geoexplore.datatype.*;
 import jakarta.persistence.*;
 import org.springframework.core.style.ToStringCreator;
 import org.locationtech.jts.geom.*;
+
+import java.util.List;
 
 @Entity
 @Table(name = "geomap_observations")
@@ -23,7 +26,9 @@ public class ObservationEntity extends LocationBase {
 			title;
 
 		public String description;
-
+		/*@ManyToMany
+		@JoinColumn(name = "Comments")
+		private List<CommentEntity> comments;*/
 		public long getId() {
 			return id;
 		}

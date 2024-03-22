@@ -1,5 +1,6 @@
 package hb403.geoexplore.UserStorage.entity;
 
+import hb403.geoexplore.comments.Entity.CommentEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -44,6 +45,10 @@ public class User {
     private String password;
     private String encryptedPassword;
     private boolean isAdmin;
+
+    @ManyToOne
+    @JoinColumn(name = "Comments")
+    private CommentEntity comment;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "members")
     @JsonIgnore
