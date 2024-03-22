@@ -29,6 +29,9 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         FeedItem item = items.get(position);
         holder.title.setText(item.getTitle());
         holder.description.setText(item.getDescription());
+        holder.type.setText(item.getType());
+        holder.department.setText(item.getDepartment());
+        holder.date.setText(item.getDate().toString());
     }
 
     @Override
@@ -45,7 +48,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     }
 
     static class FeedViewHolder extends RecyclerView.ViewHolder {
-        TextView title, description, department, type;
+        TextView title, description, department, type, date;
 
         FeedViewHolder(View itemView) {
             super(itemView);
@@ -53,6 +56,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
             description = itemView.findViewById(R.id.itemDescription);
             department = itemView.findViewById(R.id.itemDepartment);
             type = itemView.findViewById(R.id.itemType);
+            date = itemView.findViewById(R.id.itemDate);
         }
     }
 }

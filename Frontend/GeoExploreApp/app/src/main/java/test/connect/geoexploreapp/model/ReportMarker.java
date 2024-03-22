@@ -1,5 +1,7 @@
 package test.connect.geoexploreapp.model;
 
+import java.util.Date;
+
 public class ReportMarker implements FeedItem{
 
     private long id;
@@ -9,7 +11,10 @@ public class ReportMarker implements FeedItem{
     private double latitude;
 
     private String title;
+    private Date date;
+
     public ReportMarker() {
+        this.date = new Date();
     }
 
     public long getId() {
@@ -48,6 +53,20 @@ public class ReportMarker implements FeedItem{
     @Override
     public String getType() {
         return "Report";
+    }
+
+    @Override
+    public String getDepartment() {
+        return null;
+    }
+
+    @Override
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date= date;
     }
 
     public void setTitle(String title) {

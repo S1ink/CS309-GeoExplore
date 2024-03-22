@@ -1,13 +1,17 @@
 package test.connect.geoexploreapp.model;
 
+import java.util.Date;
+
 public class EventMarker implements FeedItem{
     private long id;
     private double latitude;
     private double longitude;
     private String title;
     private String city_department;
+    private Date date;
 
     public EventMarker() {
+        this.date = new Date();
     }
 
     public long getId() {
@@ -47,6 +51,20 @@ public class EventMarker implements FeedItem{
     @Override
     public String getType() {
         return "Event";
+    }
+
+    @Override
+    public String getDepartment() {
+        return city_department;
+    }
+
+    @Override
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date= date;
     }
 
     public void setTitle(String title) {

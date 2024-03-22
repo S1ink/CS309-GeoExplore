@@ -1,5 +1,7 @@
 package test.connect.geoexploreapp.model;
 
+import java.util.Date;
+
 public class Observation implements FeedItem{
     public Long id;
     public double latitude;
@@ -7,6 +9,12 @@ public class Observation implements FeedItem{
 
     public String title;
     public String description;
+    private Date date;
+
+    public Observation(){
+        this.date = new Date();
+    }
+
 
     public Long getId() {
         return id;
@@ -47,6 +55,19 @@ public class Observation implements FeedItem{
     @Override
     public String getType() {
         return "Observation";
+    }
+
+    @Override
+    public String getDepartment() {
+        return null;
+    }
+    @Override
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date= date;
     }
 
     public void setDescription(String description) {
