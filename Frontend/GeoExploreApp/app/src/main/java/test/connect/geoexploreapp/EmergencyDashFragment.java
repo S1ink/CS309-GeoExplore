@@ -13,6 +13,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
+
+import com.google.gson.Gson;
+
+import test.connect.geoexploreapp.model.EmergencyMessage;
+import test.connect.geoexploreapp.websocket.WebSocketManager;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -26,7 +32,7 @@ public class EmergencyDashFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    private EditText latitudeText, longitudeText;
+    private EditText titleText, messageText, latitudeText, longitudeText;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -68,20 +74,22 @@ public class EmergencyDashFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_emergency_dash, container, false);
+        WebSocketManager.getInstance().connectWebSocket("wss://socketsbay.com/wss/v2/1/demo/");
 
-        // Initialize EditText fields
         latitudeText = view.findViewById(R.id.latitudeText);
         longitudeText = view.findViewById(R.id.longitudeText);
+        titleText = view.findViewById(R.id.titleText);
+        messageText = view.findViewById(R.id.messageText);
 
-        // Get instance of SharedViewModel from the activity
+
         SharedViewModel viewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
 
-        // Observe the LiveData for latitude
+
         viewModel.getLatitude().observe(getViewLifecycleOwner(), latitude -> {
             latitudeText.setText(latitude != null ? String.valueOf(latitude) : "N/A");
         });
 
-        // Observe the LiveData for longitude
+
         viewModel.getLongitude().observe(getViewLifecycleOwner(), longitude -> {
             longitudeText.setText(longitude != null ? String.valueOf(longitude) : "N/A");
         });
@@ -90,10 +98,11 @@ public class EmergencyDashFragment extends Fragment {
 
         Button backButton = view.findViewById(R.id.backButton);
         Button setLocationButton = view.findViewById(R.id.setLocationButton);
+        Button sendEmergencyButton = view.findViewById(R.id.sendEmergencyButton);
         backButton.setOnClickListener(v -> getParentFragmentManager().popBackStack());
 
         setLocationButton.setOnClickListener(v -> {
-            // Ensure MapsActivity can notify this fragment when a location is picked
+
             viewModel.setCreateEmergencyNotification(true);
             Log.d("EmergencyDashFragment","Emergency was set to true");
             MapsActivity mapsFragment = new MapsActivity();
@@ -102,6 +111,30 @@ public class EmergencyDashFragment extends Fragment {
             transaction.replace(R.id.frame, mapsFragment);
             transaction.addToBackStack(null);
             transaction.commit();
+        });
+
+        sendEmergencyButton.setOnClickListener(v -> {
+
+            String title = titleText.getText().toString();
+            String message = messageText.getText().toString();
+            String latitude = latitudeText.getText().toString();
+            String longitude = longitudeText.getText().toString();
+
+            if(title.isEmpty() || message.isEmpty() || latitude.isEmpty() || longitude.isEmpty()) {
+
+                Toast.makeText(getActivity(), "Please fill all fields", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            EmergencyMessage emergencyMsg = new EmergencyMessage(title, message, Double.parseDouble(latitude), Double.parseDouble(longitude));
+
+
+            Gson gson = new Gson();
+            String jsonMessage = gson.toJson(emergencyMsg);
+
+
+            WebSocketManager.getInstance().sendMessage(jsonMessage);
+
 
         });
 

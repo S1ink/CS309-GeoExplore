@@ -25,13 +25,6 @@
         android:layout_height="wrap_content"
         android:hint="Message"
         android:inputType="textMultiLine" />
-
-    <EditText
-        android:id="@+id/longitudeText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Longitude" />
-
     <EditText
         android:id="@+id/latitudeText"
         android:layout_width="match_parent"
@@ -39,6 +32,12 @@
         android:hint="Latitude"
         android:inputType="textMultiLine" />
 
+    <EditText
+        android:id="@+id/longitudeText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Longitude" />
+    
     <Button
         android:id="@+id/sendEmergencyButton"
         android:layout_width="wrap_content"
