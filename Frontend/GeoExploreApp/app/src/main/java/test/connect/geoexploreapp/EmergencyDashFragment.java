@@ -74,7 +74,7 @@ public class EmergencyDashFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_emergency_dash, container, false);
-        WebSocketManager.getInstance().connectWebSocket("wss://socketsbay.com/wss/v2/1/demo/");
+        WebSocketManager.getInstance().connectWebSocket("wss://socketsbay.com/wss/v2/1/demo/"); // CHANGE URL FOR WEBSOCKET
 
         latitudeText = view.findViewById(R.id.latitudeText);
         longitudeText = view.findViewById(R.id.longitudeText);

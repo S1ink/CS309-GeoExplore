@@ -39,6 +39,9 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import org.java_websocket.handshake.ServerHandshake;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 import java.util.List;
@@ -54,8 +57,10 @@ import test.connect.geoexploreapp.api.SlimCallback;
 import test.connect.geoexploreapp.model.EventMarker;
 import test.connect.geoexploreapp.model.Observation;
 import test.connect.geoexploreapp.model.ReportMarker;
+import test.connect.geoexploreapp.websocket.WebSocketListener;
+import test.connect.geoexploreapp.websocket.WebSocketManager;
 
-public class MapsActivity extends Fragment implements OnMapReadyCallback {
+public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSocketListener {
 
     private GoogleMap mMap;
     private boolean isCreateReportMode = false;
@@ -84,6 +89,9 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
                              Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.activity_maps, container, false);
+
+        WebSocketManager.getInstance().connectWebSocket("wss://socketsbay.com/wss/v2/1/demo/"); // CHANGE URL FOR WEBSOCKET
+        WebSocketManager.getInstance().setWebSocketListener(this);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map);
@@ -121,6 +129,34 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
 
         return view;
     }
+
+    @Override
+    public void onWebSocketMessage(String message){
+        Log.d("WebSocket", "Received message: " + message);
+
+        try {
+            JSONObject jsonMessage = new JSONObject(message);
+
+            String title = jsonMessage.getString("title");
+            String body = jsonMessage.getString("message");
+            double latitude = jsonMessage.getDouble("latitude");
+            double longitude = jsonMessage.getDouble("longitude");
+            showEmergencyNotification(title, body, latitude, longitude);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onWebSocketClose(int code, String reason, boolean remote){
+
+    }
+
+    @Override
+    public void onWebSocketOpen(ServerHandshake handshakedata) {}
+
+    @Override
+    public void onWebSocketError(Exception ex) {}
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
