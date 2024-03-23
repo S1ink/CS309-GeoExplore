@@ -1,12 +1,15 @@
 package hb403.geoexplore.datatype.map.items;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import hb403.geoexplore.comments.Entity.CommentEntity;
 import hb403.geoexplore.datatype.*;
 import jakarta.persistence.*;
 import org.springframework.core.style.ToStringCreator;
 import org.locationtech.jts.geom.*;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "geomap_observations")
@@ -16,7 +19,7 @@ public class ObservationEntity extends LocationBase {
 
 
 	public static class JsonFormat {
-
+		@Id
 		public long
 			id;
 		public double
@@ -26,6 +29,11 @@ public class ObservationEntity extends LocationBase {
 			title;
 
 		public String description;
+
+		@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "posts")
+		@JsonIgnore
+		private Set<CommentEntity> comments = new HashSet<>();
+
 		/*@ManyToMany
 		@JoinColumn(name = "Comments")
 		private List<CommentEntity> comments;*/

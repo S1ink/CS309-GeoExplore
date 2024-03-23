@@ -4,9 +4,11 @@ import java.util.Hashtable;
 import java.util.Map;
 
 
+import hb403.geoexplore.UserStorage.entity.User;
 import hb403.geoexplore.comments.CommentRepo.CommentRepository;
 import hb403.geoexplore.comments.Entity.CommentEntity;
 
+import io.micrometer.observation.transport.SenderContext;
 import jakarta.websocket.OnClose;
 import jakarta.websocket.OnError;
 import jakarta.websocket.OnMessage;
@@ -25,21 +27,22 @@ import org.springframework.web.bind.annotation.RestController;
 @ServerEndpoint("/observations/comments/{userid}/{postid}")
 @Component
 @RestController
-public class LiveComments {//This is both the comment controller and chat websocket
+public class CommentWebsocket {//This is both the comment controller and chat websocket
     private CommentEntity currUser;
+
     @Autowired
     CommentRepository commentRepository;
     // Store all socket session and their corresponding username
     // Two maps for the ease of retrieval by key
     private static Map<Session, String> sessionUsernameMap = new Hashtable<>();
-    private static Map<Session, Long> sessionObservationMap = new Hashtable<>();
-
     private static Map<String, Session> usernameSessionMap = new Hashtable<>();
 
-    private static Map<Long, Session> postSessionMap = new Hashtable<>();
+
+    private static Map<Session, CommentEntity> sessionUserMap = new Hashtable<>();
+    private static Map<CommentEntity, Session> UserSessionMap = new Hashtable<>();
 
     // server side logger
-    private final Logger logger = LoggerFactory.getLogger(LiveComments.class);
+    private final Logger logger = LoggerFactory.getLogger(CommentWebsocket.class);
 
     /**
      * This method is called when a new WebSocket connection is established.
@@ -57,11 +60,16 @@ public class LiveComments {//This is both the comment controller and chat websoc
         this.currUser = new CommentEntity(userid, postid);
         // map current session with username
         sessionUsernameMap.put(session, userid);
-        sessionObservationMap.put (session,postid);
+        //sessionObservationMap.put (session,postid);
         // map current username with session
         usernameSessionMap.put(userid, session);
         //map current post/observation with session
-        postSessionMap.put(postid, session);
+
+
+        //users to filter by user id and postid this is more of a commentor entity, will need to clean this up before
+        // big demo will hopefully replace both of the other pairs of hash tables
+        sessionUserMap.put(session, currUser);
+        UserSessionMap.put(currUser, session);
     }
 
     /**
@@ -74,15 +82,15 @@ public class LiveComments {//This is both the comment controller and chat websoc
     public void onMessage(Session session, String message) throws IOException {
 
         // get the username by session
-        String tempuserid = sessionUsernameMap.get(session);
-
+        CommentEntity tempuser = sessionUserMap.get(session);
+        String tempuserid = tempuser.getUserid();
+        Long tempPostId = tempuser.getPostid();
 
         // server side log
         logger.info("[onMessage] " + tempuserid + ": " + message);
 
         // Direct message to a user using the format "@username <message>"
         if (message.startsWith("@")) {
-            logger.info("It came here for some reason");
             // split by space
             String[] split_msg = message.split("\\s+");
 
@@ -93,11 +101,13 @@ public class LiveComments {//This is both the comment controller and chat websoc
             }
             String destUserName = split_msg[0].substring(1);    //@username and get rid of @
             String actualMessage = actualMessageBuilder.toString();
-            sendMessageToPArticularUser(destUserName, "[DM from " + currUser.getUserid() + "]: " + actualMessage);
-            sendMessageToPArticularUser(currUser.getUserid(), "[DM from " + currUser.getUserid() + "]: " + actualMessage);
+            sendMessageToPArticularUser(destUserName, "[DM from " + currUser.getUserid() + "]: " + actualMessage + " from post " + currUser.getPostid());
+            sendMessageToPArticularUser(currUser.getUserid(), "[DM from " + currUser.getUserid() + "]: " + actualMessage + " from post " + currUser.getPostid());
         } else { // Message to whole chat underneath observation
             //postSessionMap.get(currUser.getPostid()).getBasicRemote().sendText(message);
-            broadcast(message);
+            //sendMessageToPArticularObservation (currUser.getPostid(), message);
+            broadcast(message, tempuser);
+            //this.postid = currUser.getPostid();
             }
         }
 
@@ -110,14 +120,14 @@ public class LiveComments {//This is both the comment controller and chat websoc
         public void onClose (Session session) throws IOException {
 
             // get the username from session-username mapping
-            String username = sessionUsernameMap.get(session);
-
+            CommentEntity user = sessionUserMap.get(session);
+            String username = user.getUserid();
             // server side log
             logger.info("[onClose] " + username);
 
             // remove user from memory mappings
-            sessionUsernameMap.remove(session);
-            usernameSessionMap.remove(username);
+            sessionUserMap.remove(session);
+            UserSessionMap.remove(username);
 
             // send the message to chat
             //broadcast(username + " disconnected");
@@ -133,10 +143,10 @@ public class LiveComments {//This is both the comment controller and chat websoc
         public void onError (Session session, Throwable throwable){
 
             // get the username from session-username mapping
-            String temp = sessionUsernameMap.get(session);
+            CommentEntity temp = sessionUserMap.get(session);
 
             // do error handling here
-            logger.info("[onError]" + temp + ": " + throwable.getMessage());
+            logger.info("[onError]" + temp.getUserid() + ": " + throwable.getMessage());
         }
 
         /**
@@ -147,7 +157,6 @@ public class LiveComments {//This is both the comment controller and chat websoc
          */
         private void sendMessageToPArticularUser (String username, String message){
             try {
-                logger.info("Something is wrong here");
                 usernameSessionMap.get(username).getBasicRemote().sendText(message);
             } catch (IOException e) {
                 logger.info("[DM Exception] " + e.getMessage());
@@ -159,15 +168,22 @@ public class LiveComments {//This is both the comment controller and chat websoc
          *
          * @param message The message to be broadcasted to all users.
          */
-        private void broadcast (String message){
-            sessionObservationMap.forEach((session, postid) -> {
-               // sessionUsernameMap.forEach((session, username) -> {
+        private void broadcast (String message, CommentEntity sender){
+            /*
+            sessionUserMap.put(session, currUser);
+        UserSessionMap.put(currUser, session);
+             */
+            //sessionObservationMap.forEach((session, postid) -> {
+                sessionUserMap.forEach((session, user) -> {
                     try {
                         //commentRepository.save(new CommentEntity(currUser,message));
-                        session.getBasicRemote().sendText(message);
+                        //session.getBasicRemote().sendText(message);
+                        if (sender.getPostid().equals(user.getPostid())) {
+                            usernameSessionMap.get(user.getUserid()).getBasicRemote().sendText(message);
+                        }
 
                     } catch (IOException e) {
-                        logger.info("[Broadcast Exception] " + e.getMessage());
+                        throw new RuntimeException(e);
                     }
                 });
             //});

@@ -46,13 +46,15 @@ public class User {
     private String encryptedPassword;
     private boolean isAdmin;
 
-    @ManyToOne
+    /*@ManyToOne
     @JoinColumn(name = "Comments")
-    private CommentEntity comment;
+    private CommentEntity comment;*/
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "members")
     @JsonIgnore
     private Set<UserGroup> groups = new HashSet<>();
+
+
 
 
     public User(Long id, String name, String emailId, String password) {
