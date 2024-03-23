@@ -11,6 +11,8 @@ import hb403.geoexplore.datatype.marker.AlertMarker;
 import org.springframework.stereotype.Controller;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.fasterxml.jackson.databind.*;
+
 import jakarta.websocket.*;
 import jakarta.websocket.server.*;
 
@@ -66,11 +68,54 @@ public class AlertWebSocket {
 			System.out.println("Failed to access user info.");
 			return;
 		}
-		AlertMarker entity = new AlertMarker();	// TODO: actual parsing from json
+		AlertMarker entity = null;
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+			JsonNode node = mapper.readTree(message);
+
+			Long id = -1L;
+			try{	// attempt to pull prexisting entity data from the DB
+				id = node.get("id").longValue();
+				entity = alert_repo.findById(id).get();
+			} catch(Exception e) {	// parse failed, or id was invalid -- make a new default alert, and populate with any additional entries we parse...
+				entity = new AlertMarker();
+			}
+			try { entity.enforceLocationTable(); } catch(Exception e) {}
+			try { String title = node.get("title").textValue();		entity.setTitle(title);			} catch(Exception e) {}
+			try { String desc = node.get("description").textValue();	entity.setDescription(desc);	} catch(Exception e) {}
+			try {
+				Double lat = node.get("lattitude").doubleValue();
+				Double lng = node.get("longitude").doubleValue();
+				entity.setIo_lattitude(lat);
+				entity.setIo_longitude(lng);
+				entity.enforceLocationIO();
+			} catch(Exception e) {}
+
+		} catch(Exception e) {	// hard fail - don't continue
+			return;
+		}
 		// if successful parse, add or update the database tables
+		System.out.println("Should be using id: " + entity.getId());
 		entity = alert_repo.saveAndFlush(entity);
+		System.out.println("But actually used id: " + entity.getId());
+		entity.enforceLocationTable();
 		// finally, broadcast the alert back out to all users
-		String out_message = "blank message";	// TODO: actual serialization
+		String out_message = String.format(
+			"{" +
+			"	\"id\": %d," +
+			"	\"title\": \"%s\"," +
+			"	\"description\": \"%s\"," +
+			"	\"lattitude\": %f," +
+			"	\"longitude\": %f," +
+			"	\"meta\": \"%s\"" +
+			"}",
+			entity.getId(),
+			entity.getTitle(),
+			entity.getDescription(),
+			entity.getIo_lattitude(),
+			entity.getIo_longitude(),
+			entity.getMeta()
+		);
 		session_user_ids.forEach(
 			(Session s, Long id) -> {
 				if(s == session) return;	// don't send the message back to the original poster
