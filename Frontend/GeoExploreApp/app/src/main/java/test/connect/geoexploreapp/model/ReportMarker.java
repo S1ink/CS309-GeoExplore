@@ -12,6 +12,7 @@ public class ReportMarker implements FeedItem{
 
     private String title;
     private Date date;
+    private String address;
 
     public ReportMarker() {
         this.date = new Date();
@@ -71,6 +72,15 @@ public class ReportMarker implements FeedItem{
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    @Override
+    public String getLocation()  {
+        return address;
+    }
+
+    public void setLocation(String address)  {
+        this.address =address;
     }
 
 

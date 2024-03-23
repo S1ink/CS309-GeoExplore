@@ -1,5 +1,6 @@
 package test.connect.geoexploreapp.model;
 
+import java.io.IOException;
 import java.util.Date;
 
 public interface FeedItem {
@@ -10,6 +11,7 @@ public interface FeedItem {
     String getType();
     String getDepartment();
     Date getDate();
+    String getLocation();
 
 
 }
