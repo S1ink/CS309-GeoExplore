@@ -1,29 +1,18 @@
 package test.connect.geoexploreapp;
 
-import android.app.AlertDialog;
-import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.gson.Gson;
-
-import org.java_websocket.handshake.ServerHandshake;
-
 import java.util.List;
 
 import test.connect.geoexploreapp.model.Comment;
-import test.connect.geoexploreapp.model.FeedItem;
-import test.connect.geoexploreapp.websocket.WebSocketListener;
-import test.connect.geoexploreapp.websocket.WebSocketManager;
 
 public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentViewHolder> {
     private List<Comment> items;
@@ -33,9 +22,8 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
     private String comment;
     private String userName;
 
-    public CommentAdapter(List<Comment> items, String userName) {
+    public CommentAdapter(List<Comment> items) {
         this.items = items;
-        this.userName=userName;
     }
 
     @NonNull

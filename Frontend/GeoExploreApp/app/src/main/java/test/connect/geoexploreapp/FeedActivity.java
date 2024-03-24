@@ -77,7 +77,7 @@ public class FeedActivity extends Fragment {
          noItemsDisplay = view.findViewById(R.id.noItems);
          recyclerView = view.findViewById(R.id.recyclerViewFeed);
          recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-         adapter = new FeedAdapter(allItems, args.getString("UserName", "user"));
+         adapter = new FeedAdapter(allItems, args.getString("UserName", "user"), getActivity());
          recyclerView.setAdapter(adapter);
          getFeedItems();
     }

@@ -8,6 +8,7 @@ import androidx.fragment.app.FragmentTransaction;
 import android.os.Bundle;
 
 import test.connect.geoexploreapp.databinding.ActivityMainBinding;
+import test.connect.geoexploreapp.websocket.WebSocketManager;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -36,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
             } else if (itemId == R.id.maps) {
                 replaceFragment(new MapsActivity());
             } else if(itemId == R.id.show_feed){
+                WebSocketManager.getInstance().connectWebSocket("wss://socketsbay.com/wss/v2/1/demo/"); //URL ADD LATER
                 FeedActivity feedActivity = FeedActivity.newInstance(userName);
                 replaceFragment(feedActivity);
             } else if (itemId == R.id.settings) {

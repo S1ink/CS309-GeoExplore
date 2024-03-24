@@ -11,10 +11,16 @@ public class Comment {
     private String comment;
     private Long postid;
 
-    public Comment(String comment, String userEmailid) {
+    public Comment() {
+
+    }
+
+    public Comment(String comment, String userEmailid, Long postid) {
         this.comment = comment;
         this.userEmailid=userEmailid;
+        this.postid=postid;
     }
+
 
     public List<User> getUser() {
         return user;
