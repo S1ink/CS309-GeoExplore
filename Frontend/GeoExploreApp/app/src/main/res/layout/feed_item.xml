@@ -93,6 +93,11 @@
                 android:src="@drawable/baseline_comment_24"
                 app:tint="@color/blue"/>
         </LinearLayout>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/commentsRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="false"/>
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>

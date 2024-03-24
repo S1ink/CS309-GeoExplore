@@ -1,7 +1,9 @@
 package test.connect.geoexploreapp.model;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class Observation implements FeedItem{
     public Long id;
@@ -12,9 +14,11 @@ public class Observation implements FeedItem{
     public String description;
     private Date date;
     private String address;
+    private List<Comment> comments;
 
     public Observation(){
         this.date = new Date();
+        this.comments = new ArrayList<>();
     }
 
     public Long getId() {
@@ -70,6 +74,15 @@ public class Observation implements FeedItem{
     @Override
     public String getLocation()  {
         return address;
+    }
+
+    @Override
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<Comment> comments) {
+        this.comments= comments;
     }
 
     public void setLocation(String address)  {

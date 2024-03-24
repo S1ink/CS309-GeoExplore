@@ -36,7 +36,8 @@ public class MainActivity extends AppCompatActivity {
             } else if (itemId == R.id.maps) {
                 replaceFragment(new MapsActivity());
             } else if(itemId == R.id.show_feed){
-                replaceFragment(new FeedActivity());
+                FeedActivity feedActivity = FeedActivity.newInstance(userName);
+                replaceFragment(feedActivity);
             } else if (itemId == R.id.settings) {
                 replaceFragment(new SettingsActivity());
             }

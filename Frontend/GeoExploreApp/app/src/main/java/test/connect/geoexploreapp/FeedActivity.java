@@ -39,15 +39,18 @@ public class FeedActivity extends Fragment {
     private TextView noItemsDisplay;
     private List<FeedItem> allItems = new ArrayList<>();
     private FeedAdapter adapter;
-
+    private static Bundle args;
     public FeedActivity() {
         // Required empty public constructor
     }
 
 
-    public static FeedActivity newInstance(String param1, String param2) {
+    public static FeedActivity newInstance(String userName) {
         FeedActivity fragment = new FeedActivity();
-        Bundle args = new Bundle();
+        args = new Bundle();
+        args.putString("UserName", userName);
+
+        fragment.setArguments(args);
 
         return fragment;
     }
@@ -62,7 +65,6 @@ public class FeedActivity extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.activity_feed, container, false);
-        View view1 = inflater.inflate(R.layout.feed_item, container, false);
 
         return view;
     }
@@ -75,7 +77,7 @@ public class FeedActivity extends Fragment {
          noItemsDisplay = view.findViewById(R.id.noItems);
          recyclerView = view.findViewById(R.id.recyclerViewFeed);
          recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-         adapter = new FeedAdapter(allItems);
+         adapter = new FeedAdapter(allItems, args.getString("UserName", "user"));
          recyclerView.setAdapter(adapter);
          getFeedItems();
     }

@@ -6,6 +6,7 @@ import android.location.Address;
 import android.location.Geocoder;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -19,8 +20,11 @@ public class EventMarker implements FeedItem{
     private Date date;
     private String address;
 
+    private List<Comment> comments;
+
     public EventMarker() {
         this.date = new Date();
+        this.comments = new ArrayList<>();
     }
 
     public long getId() {
@@ -78,6 +82,14 @@ public class EventMarker implements FeedItem{
         return address;
     }
 
+    @Override
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
+    }
     public void setLocation(String address)  {
         this.address =address;
     }

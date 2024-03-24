@@ -11,7 +11,9 @@ public class Comment {
     private String comment;
     private Long postid;
 
-    public Comment() {
+    public Comment(String comment, String userEmailid) {
+        this.comment = comment;
+        this.userEmailid=userEmailid;
     }
 
     public List<User> getUser() {
