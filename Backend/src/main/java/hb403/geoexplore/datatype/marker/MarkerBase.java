@@ -1,6 +1,6 @@
 package hb403.geoexplore.datatype.marker;
 
-// import hb403.geoexplore.UserStorage.entity.User;
+import hb403.geoexplore.UserStorage.entity.User;
 
 import java.util.*;
 
@@ -40,13 +40,13 @@ public abstract class MarkerBase {
 	protected Point location;			// lat/long as stored in the tables -- not serialized to json (@JsonIgnore)
 
 	@Transient
-	protected Double io_lattitude;		// lat as serialized/deserialized -- not stored in the tables (@Transient)
+	protected Double io_lattitude = 0.0;		// lat as serialized/deserialized -- not stored in the tables (@Transient)
 	@Transient
-	protected Double io_longitude;		// long as serialize/deserialized -- not stored in the tables (@Transient)
+	protected Double io_longitude = 0.0;		// long as serialize/deserialized -- not stored in the tables (@Transient)
 
-	// @OneToOne()	// caused an error - might have to implement per-entity
-	// @Column()
-	// protected User owner;
+	@OneToOne(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.MERGE })	// caused an error - might have to implement per-entity
+	@JoinColumn(name = "creator_user_id", referencedColumnName = "user_id")
+	protected User owner;
 
 	@Temporal(value = TemporalType.TIMESTAMP)
 	@Column()
@@ -73,8 +73,10 @@ public abstract class MarkerBase {
 	}
 	/** Synchronize the stored table location and IO lat/long values (copies from the table entry) */
 	public void enforceLocationTable() {
-		this.io_lattitude = this.location.getX();
-		this.io_longitude = this.location.getY();
+		if(this.location != null) {
+			this.io_lattitude = this.location.getX();
+			this.io_longitude = this.location.getY();
+		}
 	}
 
 
