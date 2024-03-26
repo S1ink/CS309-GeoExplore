@@ -68,19 +68,16 @@ public class LoginTabFragment extends Fragment {
     }
 
     private void showAlert(String message) {
-        // Context should be getActivity() since you're in a fragment
         new AlertDialog.Builder(getActivity())
                 .setMessage(message)
                 .setTitle("Alert")
-                .setPositiveButton("OK", null) // Optionally, add an OnClickListener
+                .setPositiveButton("OK", null)
                 .create()
                 .show();
     }
 
     private void isValidCredentials(String email, String password, CredentialsCallback callback) {
-        // CHECK IF USER EXISTS HERE
         if (email.isEmpty() || password.isEmpty()) {
-            // Immediate feedback for empty fields
             callback.onResult(false);
             return;
         }
@@ -110,7 +107,7 @@ public class LoginTabFragment extends Fragment {
         intent.putExtra("UserEmail", newUser.getEmailId());
        // intent.putExtra("UserID", newUser.getId());
         startActivity(intent);
-        getActivity().finish(); // Call finish on the Activity, not the Fragment
+        getActivity().finish();
     }
 }
 
