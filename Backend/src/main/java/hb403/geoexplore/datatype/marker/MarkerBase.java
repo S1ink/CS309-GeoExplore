@@ -1,6 +1,7 @@
 package hb403.geoexplore.datatype.marker;
 
 import hb403.geoexplore.UserStorage.entity.User;
+import hb403.geoexplore.datatype.Tag;
 
 import java.util.*;
 
@@ -24,7 +25,7 @@ public abstract class MarkerBase {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column()	// TODO
+	@Column(name = "marker_id")
 	protected Long id = -1L;
 
 	@Column()
@@ -46,7 +47,7 @@ public abstract class MarkerBase {
 
 	@OneToOne(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.MERGE })	// caused an error - might have to implement per-entity
 	@JoinColumn(name = "creator_user_id", referencedColumnName = "user_id")
-	protected User owner;
+	protected User creator;
 
 	@Temporal(value = TemporalType.TIMESTAMP)
 	@Column()
@@ -58,7 +59,25 @@ public abstract class MarkerBase {
 	@Column()
 	protected String meta;
 
-	// @Column()
+	// @ManyToMany(
+	// 	fetch = FetchType.EAGER,
+	// 	cascade = { CascadeType.PERSIST, CascadeType.MERGE }
+	// )
+	// @JoinTable(
+	// 	name = "report_confirmations",		// the name of the intermediate table that links this entity and the target entity (NEW)
+	// 	joinColumns = {
+	// 		@JoinColumn(
+	// 			name = "report_id_linked",		// the name of the column in the intermediate table that links to the primary key (NEW)
+	// 			referencedColumnName="marker_id"	// the name of the column in the owning entity table that this column links to (REFERENCED)
+	// 		)
+	// 	},
+	// 	inverseJoinColumns = {
+	// 		@JoinColumn(
+	// 			name = "user_id_linked",		// the name of the column in the intermediate table that links to the non-owning key (NEW)
+	// 			referencedColumnName="user_id"	// the name of the column in the non-owning entity table for which this column links to (REFERENCED)
+	// 		)
+	// 	}
+	// )
 	// protected Set<Tag> tags;
 
 
