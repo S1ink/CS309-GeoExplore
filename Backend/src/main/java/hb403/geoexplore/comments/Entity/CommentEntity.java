@@ -9,11 +9,12 @@ import java.util.List;
 @Table(name = "Comment")
 public class CommentEntity {
 
-    @OneToMany(mappedBy = "id", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "id", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     private List<User> user;
     /*@OneToMany(mappedBy = "id", cascade = CascadeType.ALL)
     private List<ObservationEntity> observationEntities;*/
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long commentid;
     private String userEmailid;
     private String comment;
