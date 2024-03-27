@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import hb403.geoexplore.comments.Entity.CommentEntity;
 import hb403.geoexplore.datatype.*;
 import jakarta.persistence.*;
+import lombok.Getter;
 import org.springframework.core.style.ToStringCreator;
 import org.locationtech.jts.geom.*;
 
@@ -19,6 +20,10 @@ public class ObservationEntity extends LocationBase {
 
 
 	public static class JsonFormat {
+		/*@ManyToMany
+		@JoinColumn(name = "Comments")
+		private List<CommentEntity> comments;*/
+		@Getter
 		@Id
 		public long
 			id;
@@ -33,13 +38,6 @@ public class ObservationEntity extends LocationBase {
 		@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "posts")
 		@JsonIgnore
 		private Set<CommentEntity> comments = new HashSet<>();
-
-		/*@ManyToMany
-		@JoinColumn(name = "Comments")
-		private List<CommentEntity> comments;*/
-		public long getId() {
-			return id;
-		}
 
 		public void setId(long id) {
 			this.id = id;

@@ -11,11 +11,13 @@ import java.util.Set;
 @Entity
 @Table(name = "Comment")
 public class CommentEntity {
-    /*@Id
+    @Id
     @GeneratedValue
     @Column
+
     private Long commentid;
-    private String userEmailid;
+
+    private Long postid;
     @ManyToMany(
             fetch = FetchType.EAGER,
             cascade = { CascadeType.ALL }
@@ -35,13 +37,10 @@ public class CommentEntity {
                     )
             }
     )
-    private Set<ObservationEntity> posts = new HashSet<>();
-*/
-    @Id
-    private Long commentid;
-    private String userEmailid;
+    private HashSet<ObservationEntity> posts = new HashSet<>();
+
     private String comment;
-    private Long postid;
+    private String userEmailid;
 
     //Constuctor that acts as more of a commenter object
     public CommentEntity(String Userid, Long postid){
