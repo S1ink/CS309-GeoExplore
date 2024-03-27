@@ -43,6 +43,14 @@ public class ObservationEntity extends LocationBase {
 			this.id = id;
 		}
 
+		public void setDescription(String description) {
+			this.description = description;
+		}
+
+		public Set<CommentEntity> getComments() {
+			return comments;
+		}
+
 		@Override
 		public String toString(){
 			return new ToStringCreator(this)

@@ -46,9 +46,9 @@ public class User {
     private String encryptedPassword;
     private boolean isAdmin;
 
-    /*@ManyToOne
-    @JoinColumn(name = "Comments")
-    private CommentEntity comment;*/
+    /*@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "posts")
+    @JsonIgnore
+    private Set<CommentEntity> comments = new HashSet<>();*/
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "members")
     @JsonIgnore

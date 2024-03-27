@@ -7,6 +7,7 @@ import java.util.Map;
 import hb403.geoexplore.UserStorage.entity.User;
 import hb403.geoexplore.comments.CommentRepo.CommentRepository;
 import hb403.geoexplore.comments.Entity.CommentEntity;
+import hb403.geoexplore.comments.controller.CommentController;
 
 import io.micrometer.observation.transport.SenderContext;
 import jakarta.websocket.OnClose;
