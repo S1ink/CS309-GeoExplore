@@ -13,6 +13,7 @@ import android.os.Bundle;
 
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 
 import android.text.InputType;
@@ -40,6 +41,9 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import org.java_websocket.handshake.ServerHandshake;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 import java.io.IOException;
@@ -57,8 +61,10 @@ import test.connect.geoexploreapp.api.SlimCallback;
 import test.connect.geoexploreapp.model.EventMarker;
 import test.connect.geoexploreapp.model.Observation;
 import test.connect.geoexploreapp.model.ReportMarker;
+import test.connect.geoexploreapp.websocket.WebSocketListener;
+import test.connect.geoexploreapp.websocket.WebSocketManager;
 
-public class MapsActivity extends Fragment implements OnMapReadyCallback {
+public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSocketListener {
 
     private GoogleMap mMap;
     private boolean isCreateReportMode = false;
@@ -67,6 +73,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
     private boolean isUpdateReportMode = false;
     private boolean isUpdateEventMode = false;
     private boolean isUpdateObservationMode = false;
+    private boolean isCreateEmergencyNotification = false;
     private int reportIdStatus = 0; // For promptForReportID method. 1 to Read, 2 to Delete, 3 to Update
     private int eventIdStatus = 0; // For promptForEventID method. 1 to Read, 2 to Delete, 3 to Update
     private int observationIdStatus = 0; // For promptForReportID method. 1 to Read, 2 to Delete, 3 to Update
@@ -87,11 +94,24 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
 
         View view = inflater.inflate(R.layout.activity_maps, container, false);
 
+        WebSocketManager.getInstance().connectWebSocket("wss://socketsbay.com/wss/v2/1/demo/"); // CHANGE URL FOR WEBSOCKET
+        WebSocketManager.getInstance().setWebSocketListener(this);
+
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map);
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
+
+        // check if admin needs location
+        SharedViewModel viewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+
+        viewModel.getCreateEmergencyNotification().observe(getViewLifecycleOwner(), isCreateEmergency -> {
+            isCreateEmergencyNotification = isCreateEmergency;
+            if (isCreateEmergency) {
+                Log.d("Maps","Emergency notfication supposedly good");
+            }
+        });
 
 
         reportCreateTextView = view.findViewById(R.id.activity_maps_report_create_text_view);
@@ -113,6 +133,34 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
 
         return view;
     }
+
+    @Override
+    public void onWebSocketMessage(String message){
+        Log.d("WebSocket", "Received message: " + message);
+
+        try {
+            JSONObject jsonMessage = new JSONObject(message);
+
+            String title = jsonMessage.getString("title");
+            String body = jsonMessage.getString("message");
+            double latitude = jsonMessage.getDouble("latitude");
+            double longitude = jsonMessage.getDouble("longitude");
+            showEmergencyNotification(title, body, latitude, longitude);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onWebSocketClose(int code, String reason, boolean remote){
+
+    }
+
+    @Override
+    public void onWebSocketOpen(ServerHandshake handshakedata) {}
+
+    @Override
+    public void onWebSocketError(Exception ex) {}
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -154,7 +202,15 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
                     observationIdStatus = 3;
                     promptForObservationId(latLng);
                     observationUpdateTextView.setVisibility(View.GONE);
+                }else if(isCreateEmergencyNotification){
+                    Log.d("MapsActivity", "Entering isCreateEmergencyNotification mode");
+                    isCreateEmergencyNotification = false;
+                    SharedViewModel viewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+                    viewModel.setLocation(latLng.latitude, latLng.longitude);
+                    viewModel.setCreateEmergencyNotification(false);
+                    getActivity().getSupportFragmentManager().popBackStack();
                 }
+
             }
         });
 
@@ -166,6 +222,41 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback {
         });
 
     }
+
+    public void showEmergencyNotification(String title, String message, double latitude, double longitude) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("Show on map", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        displayEmergencyOnMap(latitude, longitude, title);
+                    }
+                })
+                .setNegativeButton("Dismiss", null)
+                .setIcon(R.drawable.baseline_crisis_alert_24);
+
+        // ui thread
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                builder.show();
+            }
+        });
+    }
+
+    public void displayEmergencyOnMap(double latitude, double longitude, String emergencyTitle){
+
+        LatLng emergencyLocation = new LatLng(latitude, longitude);
+
+        mMap.addMarker(new MarkerOptions()
+                .position(emergencyLocation)
+                .title(emergencyTitle)
+                .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_crisis_alert_24)));
+
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(emergencyLocation, 14));
+    }
+
 
     private void showCreatePrompt(LatLng latLng) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());

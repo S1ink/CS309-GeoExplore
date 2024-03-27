@@ -31,11 +31,12 @@
 
         <!-- Setting Option 2 -->
         <Button
-            android:id="@+id/buttonOption2"
+            android:id="@+id/emergencyDashButton"
             android:layout_width="310dp"
             android:layout_height="60dp"
             android:layout_marginTop="20dp"
-            android:text="Option 2"
+            android:text="Emergency Dashboard"
+            android:visibility="gone"
             android:textSize="18sp"
             android:textColor="@color/white"
             android:background="@drawable/button"/>
