@@ -1,110 +1,120 @@
 package hb403.geoexplore.controllers;
 
-import hb403.geoexplore.datatype.map.items.ObservationEntity;
-import hb403.geoexplore.datatype.map.items.ObservationRepository;
+import hb403.geoexplore.datatype.marker.ObservationMarker;
+import hb403.geoexplore.datatype.marker.repository.ObservationRepository;
 import hb403.geoexplore.util.GeometryUtil;
+
+import java.util.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
 
 @RestController
 public class ObservationController {
 
     @Autowired
-    protected ObservationRepository obsRepo;
+    protected ObservationRepository obs_repo;
 
-    //C of Crudl, adds observation to repo
+
+    // C of Crudl, adds observation to repo
     @Operation(summary = "Add a new observation to the database")
     @PostMapping(path = "geomap/observations")
-    public @ResponseBody ObservationEntity.JsonFormat saveObs(@RequestBody ObservationEntity.JsonFormat obs_json) {
-        if (obs_json != null){
-             ObservationEntity saved = ObservationEntity.fromJson(obs_json);
-            saved.nullId();
-            final ObservationEntity returning = obsRepo.save(saved);
-            return ObservationEntity.formatJson(returning);
-
+    public @ResponseBody ObservationMarker saveObs(@RequestBody ObservationMarker observation) {
+        if (observation != null) {
+            observation.nullifyId();
+            observation.enforceLocationIO();
+            return this.obs_repo.save(observation);
         }
-        else {
-            return null;
-        }
+        return null;
     }
 
-    //R of Crudl gets observation from repo
+    // R of Crudl gets observation from repo
     @Operation(summary = "Get an observation from the database from its id")
     @GetMapping(path = "geomap/observations/{id}")
-    public @ResponseBody ObservationEntity.JsonFormat getObs(@PathVariable Long id) {
+    public @ResponseBody ObservationMarker getObs(@PathVariable Long id) {
         if (id != null) {
-        return ObservationEntity.formatJson(this.obsRepo.findById(id).get());
-        } else {
-            return null;
+            try {
+                final ObservationMarker o = this.obs_repo.findById(id).get();
+                o.enforceLocationTable();
+                return o;
+            } catch(Exception e) {
+                // continue >>> (return null)
+            }
         }
+        return null;
     }
 
     // U of Crudl
     @Operation(summary = "Update an observation already in the database by its id")
     @PutMapping(path = "geomap/observations/{id}")
-    public @ResponseBody ObservationEntity.JsonFormat updateObs(@PathVariable Long id,@RequestBody ObservationEntity.JsonFormat obs_json){
-        if (id != null && obs_json != null){
-                obs_json.setId(id);
-                final ObservationEntity saved = this.obsRepo.save(ObservationEntity.fromJson(obs_json));
-                saved.setId(id);
-                return ObservationEntity.formatJson(saved);
+    public @ResponseBody ObservationMarker updateObs(@PathVariable Long id, @RequestBody ObservationMarker observation) {
+        if (id != null && observation != null){
+            observation.setId(id);
+            observation.enforceLocationIO();
+            return this.obs_repo.save(observation);
         }
-        else {
-            return null;
-        }
+        return null;
     }
 
     // D of Crudl
     @Operation(summary = "Delete an observation in the database by its id")
     @DeleteMapping(path = "geomap/observations/{id}")
-    public @ResponseBody ObservationEntity.JsonFormat deleteObs(@PathVariable Long id){
-        if (id != null){
-            final ObservationEntity.JsonFormat ref = this.getObs(id);
-            this.obsRepo.deleteById(id);
-            return ref;
+    public @ResponseBody ObservationMarker deleteObs(@PathVariable Long id){
+        if (id != null) {
+            try {
+                final ObservationMarker ref = this.getObs(id);
+                this.obs_repo.deleteById(id);
+                ref.enforceLocationTable();
+                return ref;
+            } catch(Exception e) {
+
+            }
         }
-        else {
-            return null;
-        }
+        return null;
     }
 
     // L of Crudl
     @Operation(summary = "Get a list of all the observations in the database")
     @GetMapping(path = "geomap/observations")
-    public List<ObservationEntity.JsonFormat> getAllObs(){
-        final List<ObservationEntity> obs = this.obsRepo.findAll();
-        final ArrayList<ObservationEntity.JsonFormat> formatted = new ArrayList<>();
-        for (ObservationEntity o :obs){
-            formatted.add(ObservationEntity.formatJson(o));
+    public List<ObservationMarker> getAllObs() {
+        final List<ObservationMarker> obs = this.obs_repo.findAll();
+        for (ObservationMarker o : obs){
+            o.enforceLocationTable();
         }
-        return formatted;
+        return obs;
     }
 
 
     /** Returns the list of events within the bounds generated by the provided WKT geometry string */
     @Operation(summary = "Get a list of the observations whose locations are bounded by the provided WKT geometry string")
 	@GetMapping(path = "geomap/observations/within")
-	public @ResponseBody List<ObservationEntity.JsonFormat> getObservationsWithinBounds(@RequestBody String wkt_bounds_geom) {	// takes in 'well known text' for the bounding geometry --> may define special json formats for predefined bounds later
+	public @ResponseBody List<ObservationMarker> getObservationsWithinBounds(@RequestBody String wkt_bounds_geom) {	// takes in 'well known text' for the bounding geometry --> may define special json formats for predefined bounds later
 		try {
-			final List<ObservationEntity> bounded = this.obsRepo.findWithin( GeometryUtil.getGeometry(wkt_bounds_geom) );
-			System.out.println("Recieved " + bounded.size() + " bounded events");
-			final ArrayList<ObservationEntity.JsonFormat> formatted = new ArrayList<>();
-			for(ObservationEntity o : bounded) {
-				formatted.add(ObservationEntity.formatJson(o));
+			final List<ObservationMarker> bounded = this.obs_repo.findWithin( GeometryUtil.getGeometry(wkt_bounds_geom) );
+			// System.out.println("Recieved " + bounded.size() + " bounded events");
+			for(ObservationMarker o : bounded) {
+				o.enforceLocationTable();
 			}
-			return formatted;
+			return bounded;
 		} catch(Exception e) {
-			System.out.println("ObservationEntity.getObservationsWithinBounds(): Encountered exception! -- " + e.getMessage());
+			System.out.println("ObservationMarker.getObservationsWithinBounds(): Encountered exception! -- " + e.getMessage());
 			// continue >>> (return null)
 		}
 		return null;
 	}
+
+
+
+    /** TODO:
+     * - get marker creator (User) by marker id
+     * - get marker tags (MarkerTag[]) by marker id
+     * - append [NEW] marker tag to list, accessed by marker id
+     * - append [EXISTING] marker tag to list, accessed by marker id and tag id
+     * - append User to marker "listed users" by marker id and user id
+     */
 
 
 }
