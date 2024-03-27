@@ -19,7 +19,7 @@ import jakarta.persistence.*;
 public abstract class LocationBase {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	protected Long id;
 
 	@Lob

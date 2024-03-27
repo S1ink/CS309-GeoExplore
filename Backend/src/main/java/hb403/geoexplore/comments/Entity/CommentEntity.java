@@ -1,7 +1,7 @@
 package hb403.geoexplore.comments.Entity;
 
 import hb403.geoexplore.UserStorage.entity.User;
-import hb403.geoexplore.datatype.map.items.ObservationEntity;
+import hb403.geoexplore.datatype.marker.ObservationMarker;
 import jakarta.persistence.*;
 
 import java.util.*;
@@ -9,13 +9,18 @@ import java.util.*;
 @Entity
 @Table(name = "Comment")
 public class CommentEntity {
-    @Id
-    @GeneratedValue
-    @Column
 
+    @OneToMany(mappedBy = "id", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    private List<User> user;
+    /*@OneToMany(mappedBy = "id", cascade = CascadeType.ALL)
+    private List<ObservationEntity> observationEntities;*/
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column
     private Long commentid;
 
     private Long postid;
+
     @ManyToMany(
             fetch = FetchType.EAGER,
             cascade = { CascadeType.ALL }
@@ -32,11 +37,11 @@ public class CommentEntity {
             inverseJoinColumns = {
                     @JoinColumn(
                             name = "postid_linked",		// the name of the column in the intermediate table that links to the non-owning key (NEW)
-                            referencedColumnName="id"	// the name of the column in the non-owning entity table for which this column links to (REFERENCED)
+                            referencedColumnName="marker_id"	// the name of the column in the non-owning entity table for which this column links to (REFERENCED)
                     )
             }
     )
-    private HashSet<ObservationEntity> posts = new HashSet<>();
+    private HashSet<ObservationMarker> posts = new HashSet<>();
     /*@JoinTable(
             name = "comments",		// the name of the intermediate table that links users and groups (NEW)
             joinColumns = {

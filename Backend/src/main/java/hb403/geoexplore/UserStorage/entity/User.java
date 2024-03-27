@@ -33,7 +33,7 @@ public class User {
     @Basic
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)     // probably use UUID after we are done testing
     @Column(name = "user_id")
     private Long id;
     private String name;

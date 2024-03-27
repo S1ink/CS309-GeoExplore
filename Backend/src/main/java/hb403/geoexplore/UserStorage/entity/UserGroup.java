@@ -22,7 +22,7 @@ public class UserGroup {
 
 	@ManyToMany(
 		fetch = FetchType.EAGER,
-		cascade = { CascadeType.ALL }
+		cascade = { CascadeType.PERSIST, CascadeType.MERGE }
 	)
 	@JoinTable(
 		name = "group_members",		// the name of the intermediate table that links users and groups (NEW)
@@ -45,7 +45,9 @@ public class UserGroup {
 	// tags for filtering?
 
 
+
 	public UserGroup() {}
+
 
 }
 
