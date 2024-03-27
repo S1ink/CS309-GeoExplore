@@ -47,7 +47,7 @@ public abstract class MarkerBase {
 
 	@OneToOne(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.MERGE })	// caused an error - might have to implement per-entity
 	@JoinColumn(name = "creator_user_id", referencedColumnName = "user_id")
-	protected User creator;
+	protected User creator;		// jsonignore (just send id?)
 
 	@Temporal(value = TemporalType.TIMESTAMP)
 	@Column()
