@@ -1,9 +1,10 @@
 package hb403.geoexplore.comments.Entity;
 
 import hb403.geoexplore.UserStorage.entity.User;
+import hb403.geoexplore.datatype.marker.ObservationMarker;
 import jakarta.persistence.*;
 
-import java.util.List;
+import java.util.*;
 
 @Entity
 @Table(name = "Comment")
@@ -15,10 +16,52 @@ public class CommentEntity {
     private List<ObservationEntity> observationEntities;*/
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column
     private Long commentid;
-    private String userEmailid;
-    private String comment;
+
     private Long postid;
+
+    @ManyToMany(
+            fetch = FetchType.EAGER,
+            cascade = { CascadeType.ALL }
+    )
+    @JoinTable(
+            name = "comments",		// the name of the intermediate table that links users and groups (NEW)
+            joinColumns = {
+                    @JoinColumn(
+                            name = "commentBody",		// the name of the column in the intermediate table that links to the primary key (NEW)
+                            referencedColumnName="comment"	// the name of the column in the owning entity table that this column links to (REFERENCED)
+                    )
+
+            },
+            inverseJoinColumns = {
+                    @JoinColumn(
+                            name = "postid_linked",		// the name of the column in the intermediate table that links to the non-owning key (NEW)
+                            referencedColumnName="marker_id"	// the name of the column in the non-owning entity table for which this column links to (REFERENCED)
+                    )
+            }
+    )
+    private HashSet<ObservationMarker> posts = new HashSet<>();
+    /*@JoinTable(
+            name = "comments",		// the name of the intermediate table that links users and groups (NEW)
+            joinColumns = {
+                    @JoinColumn(
+                            name = "commentBody",		// the name of the column in the intermediate table that links to the primary key (NEW)
+                            referencedColumnName="comment"	// the name of the column in the owning entity table that this column links to (REFERENCED)
+                    )
+
+            },
+            inverseJoinColumns = {
+                    @JoinColumn(
+                            name = "userid_linked",		// the name of the column in the intermediate table that links to the non-owning key (NEW)
+                            referencedColumnName="emailId"	// the name of the column in the non-owning entity table for which this column links to (REFERENCED)
+                    )
+            }
+
+    )
+    private HashSet<User> users = new HashSet<>();*/
+    private String comment;
+    private String userEmailid;
 
     //Constuctor that acts as more of a commenter object
     public CommentEntity(String Userid, Long postid){
@@ -42,7 +85,7 @@ public class CommentEntity {
 
     }
 
-    public List<User> getUser() {
+   /* public List<User> getUser() {
         return user;
     }
     public String getUserbyid(Long id){
@@ -54,7 +97,7 @@ public class CommentEntity {
             }
         }
         return user.get(found).getEmailId();
-    }
+    }*/
 
 
     public void setId(Long id) {

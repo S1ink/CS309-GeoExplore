@@ -2,15 +2,18 @@ package hb403.geoexplore.datatype.marker;
 
 import hb403.geoexplore.UserStorage.entity.User;
 // import hb403.geoexplore.datatype.MarkerTag;
+import hb403.geoexplore.comments.Entity.CommentEntity;
 
 import java.util.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
 import lombok.*;
 
 
 @Entity
-@Table(name = "geomap_observations2")
+@Table(name = "geomap_observations")
 @Getter
 @Setter
 public class ObservationMarker extends MarkerBase {
@@ -35,6 +38,10 @@ public class ObservationMarker extends MarkerBase {
 		}
 	)
 	private Set<User> confirmed_by = new HashSet<>();
+
+	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "posts")
+	@JsonIgnore
+	private Set<CommentEntity> comments = new HashSet<>();
 
 
 }
