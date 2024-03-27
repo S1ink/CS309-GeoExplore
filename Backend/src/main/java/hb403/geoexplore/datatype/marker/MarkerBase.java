@@ -1,7 +1,7 @@
 package hb403.geoexplore.datatype.marker;
 
 import hb403.geoexplore.UserStorage.entity.User;
-import hb403.geoexplore.datatype.Tag;
+import hb403.geoexplore.datatype.MarkerTag;
 
 import java.util.*;
 
@@ -47,7 +47,7 @@ public abstract class MarkerBase {
 
 	@OneToOne(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.MERGE })	// caused an error - might have to implement per-entity
 	@JoinColumn(name = "creator_user_id", referencedColumnName = "user_id")
-	protected User creator;
+	protected User creator;		// jsonignore (just send id?)
 
 	@Temporal(value = TemporalType.TIMESTAMP)
 	@Column()
@@ -59,26 +59,26 @@ public abstract class MarkerBase {
 	@Column()
 	protected String meta;
 
-	// @ManyToMany(
-	// 	fetch = FetchType.EAGER,
-	// 	cascade = { CascadeType.PERSIST, CascadeType.MERGE }
-	// )
-	// @JoinTable(
-	// 	name = "report_confirmations",		// the name of the intermediate table that links this entity and the target entity (NEW)
-	// 	joinColumns = {
-	// 		@JoinColumn(
-	// 			name = "report_id_linked",		// the name of the column in the intermediate table that links to the primary key (NEW)
-	// 			referencedColumnName="marker_id"	// the name of the column in the owning entity table that this column links to (REFERENCED)
-	// 		)
-	// 	},
-	// 	inverseJoinColumns = {
-	// 		@JoinColumn(
-	// 			name = "user_id_linked",		// the name of the column in the intermediate table that links to the non-owning key (NEW)
-	// 			referencedColumnName="user_id"	// the name of the column in the non-owning entity table for which this column links to (REFERENCED)
-	// 		)
-	// 	}
-	// )
-	// protected Set<Tag> tags;
+	@ManyToMany(
+		fetch = FetchType.EAGER,
+		cascade = { CascadeType.PERSIST, CascadeType.MERGE }
+	)
+	@JoinTable(
+		// name = "marker_linked_tags",		// the name of the intermediate table that links this entity and the target entity (NEW)
+		joinColumns = {
+			@JoinColumn(
+				name = "marker_id_linked",		// the name of the column in the intermediate table that links to the primary key (NEW)
+				referencedColumnName="marker_id"	// the name of the column in the owning entity table that this column links to (REFERENCED)
+			)
+		},
+		inverseJoinColumns = {
+			@JoinColumn(
+				name = "tag_id_linked",		// the name of the column in the intermediate table that links to the non-owning key (NEW)
+				referencedColumnName="tag_id"	// the name of the column in the non-owning entity table for which this column links to (REFERENCED)
+			)
+		}
+	)
+	protected Set<MarkerTag> tags;
 
 
 

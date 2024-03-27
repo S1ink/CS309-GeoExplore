@@ -3,6 +3,7 @@ package hb403.geoexplore.UserStorage.controller;
 import java.util.List;
 
 import hb403.geoexplore.UserStorage.repository.*;
+import io.swagger.v3.oas.annotations.Operation;
 import hb403.geoexplore.UserStorage.entity.*;
 
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,7 @@ public class UserGroupController {
 	UserRepository user_repo;
 
 	
+	@Operation(summary = "Add a new usergroup to the database")
 	@PostMapping(path = "user/groups")
 	public @ResponseBody UserGroup addGroup(@RequestBody UserGroup group) {		// adds a group with full UserGroup serialized data
 		if(group != null) {
@@ -26,6 +28,7 @@ public class UserGroupController {
 		}
 		return null;
 	}
+	@Operation(summary = "Create a new usergroup in the database by simply providing a name")
 	@PostMapping(path = "user/groups/create")
 	public @ResponseBody UserGroup createGroup(@RequestBody String name) {		// creates and adds a group just from a name
 		if(name != null && !name.isEmpty()) {
@@ -37,6 +40,7 @@ public class UserGroupController {
 		return null;
 	}
 
+	@Operation(summary = "Get a usergroup in the database from its id")
 	@GetMapping(path = "user/groups/{id}")
 	public @ResponseBody UserGroup getGroupById(@PathVariable Long id) {
 		if(id != null) {
@@ -49,6 +53,7 @@ public class UserGroupController {
 		return null;
 	}
 
+	@Operation(summary = "Update a usergroup already in the database by its id")
 	@PutMapping(path = "user/groups/{id}")
 	public @ResponseBody UserGroup updateGroupById(@PathVariable Long id, @RequestBody UserGroup group) {
 		if(id != null && group != null) {
@@ -58,6 +63,7 @@ public class UserGroupController {
 		return null;
 	}
 
+	@Operation(summary = "Delete a usergroup from the database by its id")
 	@DeleteMapping(path = "user/groups/{id}")	// TODO: I think that deleting a group deletes all the users as well :(
 	public @ResponseBody UserGroup deleteGroupById(@PathVariable Long id) {
 		if(id != null) {
@@ -72,11 +78,13 @@ public class UserGroupController {
 		return null;
 	}
 
+	@Operation(summary = "Get a list of all the usergroups in the database")
 	@GetMapping(path = "user/groups")
 	public @ResponseBody List<UserGroup> getAllGroups() {
 		return this.group_repo.findAll();
 	}
 
+	@Operation(summary = "Add a user already in the database to a usergroup already in the database - both by their respective ids")
 	@PostMapping(path = "user/groups/{group_id}/members")
 	public @ResponseBody UserGroup addMemberToGroupById(@PathVariable Long group_id, @RequestBody Long user_id) {
 		if(group_id != null && user_id != null) {
