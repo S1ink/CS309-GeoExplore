@@ -1,6 +1,10 @@
 package test.connect.geoexploreapp.model;
 
-public class ReportMarker {
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+public class ReportMarker implements FeedItem{
 
     private long id;
 
@@ -9,7 +13,14 @@ public class ReportMarker {
     private double latitude;
 
     private String title;
+    private Date date;
+    private String address;
+
+    private List<Comment> comments;
+
     public ReportMarker() {
+        this.date = new Date();
+        this.comments = new ArrayList<>();
     }
 
     public long getId() {
@@ -40,8 +51,50 @@ public class ReportMarker {
         return title;
     }
 
+    @Override
+    public String getDescription() {
+        return null;
+    }
+
+    @Override
+    public String getType() {
+        return "Report";
+    }
+
+    @Override
+    public String getDepartment() {
+        return null;
+    }
+
+    @Override
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date= date;
+    }
+
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    @Override
+    public String getLocation()  {
+        return address;
+    }
+
+    @Override
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<Comment> comments) {
+        this.comments=comments;
+    }
+
+    public void setLocation(String address)  {
+        this.address =address;
     }
 
 

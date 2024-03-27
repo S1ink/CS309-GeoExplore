@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Bundle;
 
 import androidx.core.content.ContextCompat;
@@ -44,7 +46,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.Text;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -217,9 +221,6 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
             }
         });
 
-
-
-
     }
 
     public void showEmergencyNotification(String title, String message, double latitude, double longitude) {
@@ -316,16 +317,13 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
                         String cityDepartment = editTextCityDepartment.getText().toString().trim();
 
                         if("Report".equals(type)){
-                            //create report
                             createNewReport(latLng, title);
 
                         }else if("Event".equals(type)){
-                            //create event
                             createNewEvent(latLng, title, cityDepartment);
 
                         }else{
                             createNewObservation(latLng, title,description );
-                            //create observation
                         }
 
                     }
@@ -457,9 +455,23 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
                     .title(createdReportMarker.getId() + " " + createdReportMarker.getTitle())
                     .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_report_24)));
         }, "CreateNewReport"));
+
+        try {
+            newReportMarker.setLocation(getLocation(latLng.latitude,latLng.longitude));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-
+    public String getLocation(double latitude, double longitude) throws IOException {
+        Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
+        List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
+        if (addresses != null && !addresses.isEmpty()) {
+            Address address = addresses.get(0);
+            return address.toString();
+        }
+        return "No address found!";
+    }
     private void displayReportByID(Long id) {
         ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
 
@@ -495,7 +507,6 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
     }
     private void deleteReportByID(Long id){
         ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
-
         reportMarkerApi.deleteReportById(id).enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
@@ -532,8 +543,6 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         }, "GetAllReports"));
     }
 
-
-
     // Observation CRUDL
     private void createNewObservation(final LatLng latLng, String observationTitle, String observationDescription) {
         ObservationApi observationApi = ApiClientFactory.GetObservationApi();
@@ -551,6 +560,13 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
                     .title(obs.getId() + " " + obs.getTitle())
                     .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_photo_camera_24)));
         }, "CreateNewObservation"));
+
+        try {
+            observation.setLocation(getLocation(latLng.latitude,latLng.longitude));
+            Log.d("location found for observation", observation.getLocation());
+        } catch (IOException e) {
+            Log.d("location not found for observation", observation.getLocation());;
+        }
     }
     private void displayObservationByID(Long id) {
         ObservationApi observationApi = ApiClientFactory.GetObservationApi();
@@ -587,7 +603,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
 
                 Toast.makeText(getActivity(), "Report updated successfully", Toast.LENGTH_SHORT).show();
             }
-            Log.d("Update 2", "Update faiiles");
+            Log.d("Update 2", "Update failed");
 
         }));
     }
@@ -643,6 +659,12 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
                     .title(createdEventMarker.getId() + " " + createdEventMarker.getTitle() + " Department: " + createdEventMarker.getCity_department())
                     .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_celebration_24)));
         }, "CreateNewEvent"));
+
+        try {
+            newEventMarker.setLocation(getLocation(latLng.latitude,latLng.longitude));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
     private void displayEventByID(Long id) {
         EventMarkerApi eventMarkerApi = ApiClientFactory.getEventMarkerApi();
@@ -1078,6 +1100,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
 
 
 }
+
 
 
 
