@@ -48,6 +48,16 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
+    <!--Spring Boot Websocket Dependency-->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-websocket</artifactId>
+    </dependency>
+    <!--<dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+      <version>2.4.0</version>
+    </dependency>-->
     <!-- The ORM JPA specs/hibernate impl -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -64,6 +74,7 @@
       <artifactId>hibernate-spatial</artifactId>
       <version>6.4.4.Final</version>
     </dependency>
+
     <!-- The H2 database dependency -->
     <!-- <dependency>
       <groupId>com.h2database</groupId>
@@ -75,6 +86,10 @@
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
       <version>8.0.32</version>
+    </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
     </dependency>
     <!-- geoDB for H2 server https://mvnrepository.com/artifact/org.opengeo/geodb -->
     <!-- https://mvnrepository.com/artifact/org.opengeo/geodb -->
