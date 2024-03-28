@@ -1,23 +1,26 @@
 package hb403.geoexplore.UserStorage.controller;
 
 import hb403.geoexplore.UserStorage.entity.User;
+import hb403.geoexplore.UserStorage.entity.UserGroup;
 import hb403.geoexplore.UserStorage.repository.UserRepository;
+
+import java.util.*;
+
+import io.swagger.v3.oas.annotations.Operation;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 @RestController
 public class UserController {
 
-
-
     @Autowired
     UserRepository userRepository;
 
+
     //C of Crudl
+    @Operation(summary = "Add a new user to the database")
     @PostMapping(path = "/user/create")
     public @ResponseBody User UserCreate(@RequestBody User newUser){
         User newestUser = new User(newUser.getName(), newUser.getEmailId(), newUser.getPassword());
@@ -27,6 +30,7 @@ public class UserController {
 
 
     //R of Crudl
+    @Operation(summary = "Get a user from the database from its id")
     @GetMapping(path = "/user/{id}")
     public @ResponseBody User getUser(@PathVariable Long id){
 
@@ -34,6 +38,7 @@ public class UserController {
     }
 
     //U of Crudl
+    @Operation(summary = "Update a user already in the database by its id")
     @PutMapping(path = "/user/{id}/update")
     public @ResponseBody User updateUser(@PathVariable Long id, @RequestBody User updated){
         userRepository.deleteById(id);
@@ -42,7 +47,8 @@ public class UserController {
         return updater;
     }
 
-
+    // D of Crudl
+    @Operation(summary = "Delete a user from the database by its id")
     @DeleteMapping(path = "/user/{id}/delete")
     public @ResponseBody String deleteUser(@PathVariable Long id){
         User deleted = userRepository.findById(id).get();
@@ -50,6 +56,8 @@ public class UserController {
         return "Successfully deleted: \n" + deleted.toString();
     }
 
+    // Delete all
+    @Operation(summary = "Delete all the users in the database")
     @DeleteMapping(path = "user/delete/all")
     public @ResponseBody String deleteAll(){
         userRepository.deleteAll();
@@ -59,9 +67,22 @@ public class UserController {
 
 
     //L of Crudl
+    @Operation(summary = "Get a list of all the users in the database")
     @GetMapping(path = "/userinfo")
     @ResponseBody List<User>  getAllUsers() {
         return userRepository.findAll();
+    }
+
+    // Get a list of groups that a user is in
+    @Operation(summary = "Get the list of usergroups that a user is a member in")
+    @GetMapping(path="/user/{id}/groups")
+    @ResponseBody Set<UserGroup> getUserGroups(@PathVariable Long id) {
+        try {
+            return this.getUser(id).getGroups();
+        } catch(Exception e) {
+            // ...
+        }
+        return null;
     }
 
 
