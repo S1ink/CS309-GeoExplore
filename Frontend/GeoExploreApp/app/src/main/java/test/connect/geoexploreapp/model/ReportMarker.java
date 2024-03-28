@@ -15,7 +15,6 @@ public class ReportMarker implements FeedItem{
     private String title;
     private Date date;
     private String address;
-
     private List<Comment> comments;
 
     public ReportMarker() {

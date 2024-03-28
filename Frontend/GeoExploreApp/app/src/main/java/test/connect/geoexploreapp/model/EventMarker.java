@@ -82,6 +82,10 @@ public class EventMarker implements FeedItem{
         return address;
     }
 
+    public void setLocation(String address)  {
+        this.address = address;
+    }
+
     @Override
     public List<Comment> getComments() {
         return comments;
@@ -90,9 +94,7 @@ public class EventMarker implements FeedItem{
     public void setComments(List<Comment> comments) {
         this.comments = comments;
     }
-    public void setLocation(String address)  {
-        this.address =address;
-    }
+
 
     public void setDate(Date date) {
         this.date= date;
