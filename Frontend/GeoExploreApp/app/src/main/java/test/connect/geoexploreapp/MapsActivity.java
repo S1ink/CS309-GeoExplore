@@ -767,7 +767,6 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
 
         builder.show();
     }
-
     private void promptForObservationId(LatLng latLng) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Enter Observation ID");
