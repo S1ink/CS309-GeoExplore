@@ -77,7 +77,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
 
         holder.title.setText(item.getTitle());
         holder.type.setText(item.getType());
-        holder.date.setText(item.getDate().toString());
+        holder.date.setText(item.getTime_created().toString());
        // holder.location.setText("Address: " + item.getLocation());
 
         holder.commentsRecyclerView.setLayoutManager(new LinearLayoutManager(holder.itemView.getContext()));
