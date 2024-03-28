@@ -8,6 +8,7 @@ import androidx.fragment.app.FragmentTransaction;
 import android.os.Bundle;
 
 import test.connect.geoexploreapp.databinding.ActivityMainBinding;
+import test.connect.geoexploreapp.websocket.WebSocketManager;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -21,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
 
         String userName = getIntent().getStringExtra("UserName");
         String userEmail = getIntent().getStringExtra("UserEmail");
+        boolean isAdmin = getIntent().getBooleanExtra("IsAdmin",false);
         //Long userId= getIntent().getLongExtra("UserId",-1);
 
         binding.bottomNavigationView.setSelectedItemId(R.id.maps);
@@ -29,13 +31,19 @@ public class MainActivity extends AppCompatActivity {
         binding.bottomNavigationView.setOnItemSelectedListener(item -> {
 //
             int itemId = item.getItemId();
+
             if (itemId == R.id.profile) {
-                ProfileActivity profileFragment = ProfileActivity.newInstance(userName, userEmail);
+                ProfileActivity profileFragment = ProfileActivity.newInstance(userName, userEmail,isAdmin);
                 replaceFragment(profileFragment);
             } else if (itemId == R.id.maps) {
                 replaceFragment(new MapsActivity());
+            } else if(itemId == R.id.show_feed){
+                WebSocketManager.getInstance().connectWebSocket("wss://socketsbay.com/wss/v2/1/demo/"); //URL ADD LATER
+                FeedActivity feedActivity = FeedActivity.newInstance(userName);
+                replaceFragment(feedActivity);
             } else if (itemId == R.id.settings) {
-                replaceFragment(new SettingsActivity());
+                SettingsActivity settingsFragment = SettingsActivity.newInstance(isAdmin);
+                replaceFragment(settingsFragment);
             }
 
             return true;

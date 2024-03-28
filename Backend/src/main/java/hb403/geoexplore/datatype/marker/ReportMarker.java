@@ -10,7 +10,7 @@ import lombok.*;
 
 
 @Entity
-@Table(name = "geomap_reports2")
+@Table(name = "geomap_reports")
 @Getter
 @Setter
 public class ReportMarker extends MarkerBase {

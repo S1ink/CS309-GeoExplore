@@ -37,4 +37,14 @@ public class AlertController {
 	}
 
 
+
+	/** TODO:
+     * - get marker creator (User) by marker id
+     * - get marker tags (MarkerTag[]) by marker id
+     * - append [NEW] marker tag to list, accessed by marker id
+     * - append [EXISTING] marker tag to list, accessed by marker id and tag id
+     * - append User to marker "listed users" by marker id and user id
+     */
+
+
 }
