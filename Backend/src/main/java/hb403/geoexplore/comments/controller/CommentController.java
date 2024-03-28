@@ -22,53 +22,36 @@ public class CommentController {
         return newComment;
     }
     //R of Crudl
-    /*@GetMapping(path = "/user/{id}")
-    public @ResponseBody User getUser(@PathVariable Long id){
-
-        return null;
+    @GetMapping(path = "/comment/{id}")
+    public @ResponseBody CommentEntity getComment(@PathVariable Long id){
+        CommentEntity deleted = commentRepository.getById(id);
+        commentRepository.deleteById(id);
+        return deleted;
     }
 
     //U of Crudl
-    @PutMapping(path = "/user/{id}/update")
-    public @ResponseBody User updateUser(@PathVariable Long id, @RequestBody User updated){
-        //commentRepository.deleteById(id);
-        User updater = new User(id, updated.getName(), updated.getEmailId(), updated.getPassword());
-        //commentRepository.save();
-        return updater;
+    @PutMapping(path = "/comment/{id}/update")
+    public @ResponseBody CommentEntity updateComment(@PathVariable Long id, @RequestBody CommentEntity updated){
+        //CommentEntity updater = commentRepository.getById(id);
+        CommentEntity updater = new CommentEntity(id, updated.getPostid(), updated.getUserid(), updated.getComment());
+        commentRepository.save(updater);
+        return updated;
     }
 
 
-    @DeleteMapping(path = "/user/{id}/delete")
-    public @ResponseBody String deleteUser(@PathVariable Long id){
-        User deleted = commentRepository.findById(id).get();
+    @DeleteMapping(path = "/comment/{id}/delete")
+    public @ResponseBody String deleteComment(@PathVariable Long id){
+        CommentEntity deleted = commentRepository.findById(id).get();
         commentRepository.deleteById(id);
         return "Successfully deleted: \n" + deleted.toString();
     }
 
-    @DeleteMapping(path = "user/delete/all")
-    public @ResponseBody String deleteAll(){
-        commentRepository.deleteAll();
-        return "Successfully deleted all users";
-    }
 
 
-
-    //L of Crudl
-    @GetMapping(path = "/userinfo")
+    //L of Crudl (won't be used probably)
+    @GetMapping(path = "/comment/list")
     @ResponseBody
-    List<User> getAllUsers() {
+    List<CommentEntity> getAllComments() {
         return commentRepository.findAll();
     }
-
-    @GetMapping(path="/user/{id}/groups")
-    @ResponseBody
-    Set<UserGroup> getUserGroups(@PathVariable Long id) {
-        try {
-            return this.getUser(id).getGroups();
-        } catch(Exception e) {
-            // ...
-        }
-        return null;
-    }
-*/
 }

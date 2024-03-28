@@ -79,6 +79,15 @@ public class CommentEntity {
 
     //this.likes = likes; //not used yet
     }
+    //used for updating
+    public CommentEntity(Long CommentId,Long PostId, String UserId, String comment){//likes can be added later
+        this.commentid = CommentId;
+        this.postid = PostId;
+        this.userEmailid = UserId;
+        this.comment = comment;
+
+        //this.likes = likes; //not used yet
+    }
 
     //not going to be used
     public CommentEntity() {
