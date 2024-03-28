@@ -7,18 +7,20 @@ import java.util.List;
 public class ReportMarker implements FeedItem{
 
     private long id;
-
-    private double longitude;
-
-    private double latitude;
-
     private String title;
-    private Date date;
+    private double latitude;
+    private double longitude;
+    private User creator;
+    private Date time_created;
+    private Date time_updated;
+    private String meta;
+    private List<MarkerTag> tags;
+    private List<User> attendees;
     private String address;
     private List<Comment> comments;
 
     public ReportMarker() {
-        this.date = new Date();
+        this.time_created = new Date();
         this.comments = new ArrayList<>();
     }
 
@@ -66,12 +68,12 @@ public class ReportMarker implements FeedItem{
     }
 
     @Override
-    public Date getDate() {
-        return date;
+    public Date getTime_created() {
+        return time_created;
     }
 
-    public void setDate(Date date) {
-        this.date= date;
+    public void setTime_created(Date time_created) {
+        this.time_created = time_created;
     }
 
     public void setTitle(String title) {

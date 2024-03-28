@@ -1,29 +1,26 @@
 package test.connect.geoexploreapp.model;
 
-import static java.security.AccessController.getContext;
-
-import android.location.Address;
-import android.location.Geocoder;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 public class EventMarker implements FeedItem{
     private long id;
     private double latitude;
     private double longitude;
+    private User creator;
     private String title;
     private String city_department;
-    private Date date;
+    private Date time_created;
+    private Date time_updated;
+    private String meta;
+    private List<MarkerTag> tags;
     private String address;
 
     private List<Comment> comments;
 
     public EventMarker() {
-        this.date = new Date();
+        this.time_created = new Date();
         this.comments = new ArrayList<>();
     }
 
@@ -72,8 +69,8 @@ public class EventMarker implements FeedItem{
     }
 
     @Override
-    public Date getDate() {
-        return date;
+    public Date getTime_created() {
+        return time_created;
     }
 
     @Override
@@ -96,8 +93,8 @@ public class EventMarker implements FeedItem{
     }
 
 
-    public void setDate(Date date) {
-        this.date= date;
+    public void setTime_created(Date time_created) {
+        this.time_created = time_created;
     }
 
     public void setTitle(String title) {
