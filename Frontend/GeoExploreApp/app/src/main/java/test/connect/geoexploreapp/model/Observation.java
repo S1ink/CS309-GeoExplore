@@ -22,6 +22,7 @@ public class Observation implements FeedItem{
     public Observation(){
         this.time_created = new Date();
         this.comments = new ArrayList<>();
+        this.tags = new ArrayList<>();
     }
 
     public Long getId() {
@@ -91,12 +92,50 @@ public class Observation implements FeedItem{
     public void setLocation(String address)  {
         this.address =address;
     }
-
     public void setTime_created(Date time_created) {
         this.time_created = time_created;
     }
-
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public User getCreator() {
+        return creator;
+    }
+
+    public void setCreator(User creator) {
+        this.creator = creator;
+    }
+
+    public Date getTime_updated() {
+        return time_updated;
+    }
+
+    public void setTime_updated(Date time_updated) {
+        this.time_updated = time_updated;
+    }
+
+    public String getMeta() {
+        return meta;
+    }
+
+    public void setMeta(String meta) {
+        this.meta = meta;
+    }
+
+    public List<MarkerTag> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<MarkerTag> tags) {
+        this.tags = tags;
+    }
+
+    public User getConfirmed_by() {
+        return confirmed_by;
+    }
+
+    public void setConfirmed_by(User confirmed_by) {
+        this.confirmed_by = confirmed_by;
     }
 }

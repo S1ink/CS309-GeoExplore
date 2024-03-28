@@ -438,7 +438,16 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         bottomSheetDialog.show();
     }
 
-
+    public String getLocation(double latitude, double longitude) throws IOException {
+        Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
+        List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
+        if (addresses != null && !addresses.isEmpty()) {
+            Address address = addresses.get(0);
+            return address.toString();
+        }
+        return "No address found!";
+    }
+    
     // Report CRUDL
     private void createNewReport(final LatLng latLng, String reportTitle) {
         ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
@@ -461,16 +470,6 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public String getLocation(double latitude, double longitude) throws IOException {
-        Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
-        List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
-        if (addresses != null && !addresses.isEmpty()) {
-            Address address = addresses.get(0);
-            return address.toString();
-        }
-        return "No address found!";
     }
     private void displayReportByID(Long id) {
         ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();

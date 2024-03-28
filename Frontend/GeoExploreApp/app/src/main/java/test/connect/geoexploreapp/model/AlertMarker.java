@@ -1,5 +1,6 @@
 package test.connect.geoexploreapp.model;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -14,6 +15,11 @@ public class AlertMarker {
     private Date time_updated;
     private String meta;
     private List<MarkerTag> tags;
+
+    public AlertMarker() {
+        this.time_created = new Date();
+        this.tags = new ArrayList<>();
+    }
 
     public long getId() {
         return id;
