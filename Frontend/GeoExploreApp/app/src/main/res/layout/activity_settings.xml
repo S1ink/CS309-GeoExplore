@@ -18,18 +18,17 @@
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:layout_gravity="center"/>
 
-        <!-- Setting Option 1 -->
         <Button
-            android:id="@+id/buttonOption1"
+            android:id="@+id/sendEmergencyButton"
             android:layout_width="310dp"
             android:layout_height="60dp"
             android:layout_marginTop="20dp"
-            android:text="Option 1"
+            android:text="Send Emergency Alert"
+            android:visibility="gone"
             android:textSize="18sp"
             android:textColor="@color/white"
             android:background="@drawable/button"/>
 
-        <!-- Setting Option 2 -->
         <Button
             android:id="@+id/emergencyDashButton"
             android:layout_width="310dp"
@@ -41,6 +40,5 @@
             android:textColor="@color/white"
             android:background="@drawable/button"/>
 
-        <!-- Additional Options Here -->
 
     </LinearLayout>
