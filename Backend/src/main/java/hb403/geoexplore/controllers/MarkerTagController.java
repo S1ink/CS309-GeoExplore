@@ -24,8 +24,12 @@ public class MarkerTagController {
 	@PostMapping(path = "marker_tags")
 	public @ResponseBody MarkerTag addTag(@RequestBody MarkerTag tag) {
 		if(tag != null) {
-			tag.setId(-1L);
-			return this.tag_repo.save(tag);
+			try {
+				tag.setId(-1L);
+				return this.tag_repo.save(tag);
+			} catch(Exception e) {	// catch for when unique name creation fails
+
+			}
 		}
 		return null;
 	}
@@ -34,10 +38,14 @@ public class MarkerTagController {
 	@PostMapping(path = "marker_tags/create")
 	public @ResponseBody MarkerTag createTag(@RequestBody String tname) {
 		if(tname != null && !tname.isEmpty()) {
-			final MarkerTag t = new MarkerTag();
-			t.setName(tname);
-			t.setId(-1L);
-			return this.tag_repo.save(t);
+			try {
+				final MarkerTag t = new MarkerTag();
+				t.setName(tname);
+				t.setId(-1L);
+				return this.tag_repo.save(t);
+			} catch(Exception e) {	// see previous method
+
+			}
 		}
 		return null;
 	}

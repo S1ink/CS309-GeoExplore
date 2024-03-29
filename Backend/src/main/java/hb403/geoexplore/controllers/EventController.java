@@ -1,7 +1,11 @@
 package hb403.geoexplore.controllers;
 
+import hb403.geoexplore.UserStorage.entity.User;
+import hb403.geoexplore.UserStorage.repository.UserRepository;
+import hb403.geoexplore.datatype.MarkerTag;
 import hb403.geoexplore.datatype.marker.EventMarker;
 import hb403.geoexplore.datatype.marker.repository.EventRepository;
+import hb403.geoexplore.datatype.marker.repository.MarkerTagRepository;
 import hb403.geoexplore.util.GeometryUtil;
 
 import java.util.*;
@@ -17,6 +21,10 @@ public class EventController {
 	
 	@Autowired
 	protected EventRepository events_repo;
+	@Autowired
+	protected MarkerTagRepository tags_repo;
+	@Autowired
+	protected UserRepository users_repo;
 
 
 	/** [C]rudl - Add a new event to the database */
@@ -100,6 +108,44 @@ public class EventController {
 		} catch(Exception e) {
 			System.out.println("EventMarker.getEventsWithinBounds(): Encountered exception! -- " + e.getMessage());
 			// continue >>> (return null)
+		}
+		return null;
+	}
+
+
+
+	@Operation(summary = "Add a prexisting tag by its id to a marker by its id")
+	@PostMapping(path = "geomap/events/{id}/tags")
+	public @ResponseBody EventMarker addTagToMarkerById(@PathVariable Long id, @RequestBody Long tag_id) {
+		if(id != null && tag_id != null) {
+			try {
+				final MarkerTag t = this.tags_repo.findById(tag_id).get();
+				final EventMarker m = this.events_repo.findById(id).get();
+				if(m.getTags().add(t)) {
+					this.events_repo.save(m);
+					return m;
+				}
+			} catch(Exception e) {
+
+			}
+		}
+		return null;
+	}
+
+	@Operation(summary = "Add a prexisting user by id as an attendee to a marker by its id")
+	@PostMapping(path = "geomap/events/{id}/attendees")
+	public @ResponseBody EventMarker addUserToAttendeesById(@PathVariable Long id, @RequestBody Long user_id) {
+		if(id != null && user_id != null) {
+			try {
+				final EventMarker m = this.events_repo.findById(id).get();
+				final User u = this.users_repo.findById(user_id).get();
+				if(m.getAttendees().add(u)) {
+					this.events_repo.save(m);
+					return m;
+				}
+			} catch(Exception e) {
+
+			}
 		}
 		return null;
 	}

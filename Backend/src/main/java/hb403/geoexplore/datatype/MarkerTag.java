@@ -16,13 +16,13 @@ import lombok.*;
 @Getter
 @Setter
 public class MarkerTag {
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "tag_id")
 	private Long id = -1L;
 
-	@Column()
+	@Column(unique = true)
 	private String name;
 
 
