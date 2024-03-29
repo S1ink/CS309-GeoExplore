@@ -40,6 +40,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONException;
@@ -59,6 +61,7 @@ import test.connect.geoexploreapp.api.EventMarkerApi;
 import test.connect.geoexploreapp.api.ObservationApi;
 import test.connect.geoexploreapp.api.ReportMarkerApi;
 import test.connect.geoexploreapp.api.SlimCallback;
+import test.connect.geoexploreapp.model.AlertMarker;
 import test.connect.geoexploreapp.model.EventMarker;
 import test.connect.geoexploreapp.model.Observation;
 import test.connect.geoexploreapp.model.ReportMarker;
@@ -146,14 +149,11 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         Log.d("WebSocket", "Received message: " + message);
 
         try {
-            JSONObject jsonMessage = new JSONObject(message);
+            AlertMarker alertMarker = new Gson().fromJson(message, AlertMarker.class);
 
-            String title = jsonMessage.getString("title");
-            String body = jsonMessage.getString("message");
-            double latitude = jsonMessage.getDouble("latitude");
-            double longitude = jsonMessage.getDouble("longitude");
-            showEmergencyNotification(title, body, latitude, longitude);
-        } catch (JSONException e) {
+            showEmergencyNotification(alertMarker.getTitle(), alertMarker.getDescription(),
+                    alertMarker.getLatitude(), alertMarker.getLongitude());
+        } catch (JsonSyntaxException e) {
             e.printStackTrace();
         }
     }
