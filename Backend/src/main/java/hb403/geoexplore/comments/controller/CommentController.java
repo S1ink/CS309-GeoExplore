@@ -18,23 +18,27 @@ public class CommentController {
     //C of Crudl
     @PostMapping(path = "/comment/store")
     public @ResponseBody CommentEntity commentStore (@RequestBody CommentEntity newComment){
+
+        //CommentEntity newComment = new CommentEntity("emessmer", (long)53, "How do you do this?");
         commentRepository.save(newComment);
+        System.out.print(newComment);
+        //System.out.println(newComment);
         return newComment;
     }
     //R of Crudl
     @GetMapping(path = "/comment/{id}")
     public @ResponseBody CommentEntity getComment(@PathVariable Long id){
-        CommentEntity deleted = commentRepository.getById(id);
-        commentRepository.deleteById(id);
-        return deleted;
+        CommentEntity found = commentRepository.getById(id);
+        //System.out.println(found.getPostIds());
+        return found;
     }
 
     //U of Crudl
     @PutMapping(path = "/comment/{id}/update")
     public @ResponseBody CommentEntity updateComment(@PathVariable Long id, @RequestBody CommentEntity updated){
         //CommentEntity updater = commentRepository.getById(id);
-        CommentEntity updater = new CommentEntity(id, updated.getPostid(), updated.getUserid(), updated.getComment());
-        commentRepository.save(updater);
+        //CommentEntity updater = new CommentEntity(id, updated.getPostid(), updated.getUserid(), updated.getComment());
+       // commentRepository.save(updater);
         return updated;
     }
 

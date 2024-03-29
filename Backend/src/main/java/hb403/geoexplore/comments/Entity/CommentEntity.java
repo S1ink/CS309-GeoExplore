@@ -1,144 +1,112 @@
 package hb403.geoexplore.comments.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import hb403.geoexplore.UserStorage.entity.User;
+import hb403.geoexplore.UserStorage.entity.UserGroup;
 import hb403.geoexplore.datatype.marker.ObservationMarker;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.*;
 
 @Entity
-@Table(name = "Comment")
+@Table(name = "CommentEntity")
+@Getter
+@Setter
 public class CommentEntity {
 
-    @OneToMany(mappedBy = "id", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
-    private List<User> user;
-    /*@OneToMany(mappedBy = "id", cascade = CascadeType.ALL)
-    private List<ObservationEntity> observationEntities;*/
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column
-    private Long commentid;
 
-    private Long postid;
+        @Setter
+        @Getter
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)     // probably use UUID after we are done testing
+        @Column(name = "comment_id")
+        private Long id;
 
-    @ManyToMany(
-            fetch = FetchType.EAGER,
-            cascade = { CascadeType.ALL }
-    )
-    @JoinTable(
-            name = "comments",		// the name of the intermediate table that links users and groups (NEW)
-            joinColumns = {
-                    @JoinColumn(
-                            name = "commentBody",		// the name of the column in the intermediate table that links to the primary key (NEW)
-                            referencedColumnName="comment"	// the name of the column in the owning entity table that this column links to (REFERENCED)
-                    )
-
-            },
-            inverseJoinColumns = {
-                    @JoinColumn(
-                            name = "postid_linked",		// the name of the column in the intermediate table that links to the non-owning key (NEW)
-                            referencedColumnName="marker_id"	// the name of the column in the non-owning entity table for which this column links to (REFERENCED)
-                    )
-            }
-    )
-    private HashSet<ObservationMarker> posts = new HashSet<>();
-    /*@JoinTable(
-            name = "comments",		// the name of the intermediate table that links users and groups (NEW)
-            joinColumns = {
-                    @JoinColumn(
-                            name = "commentBody",		// the name of the column in the intermediate table that links to the primary key (NEW)
-                            referencedColumnName="comment"	// the name of the column in the owning entity table that this column links to (REFERENCED)
-                    )
-
-            },
-            inverseJoinColumns = {
-                    @JoinColumn(
-                            name = "userid_linked",		// the name of the column in the intermediate table that links to the non-owning key (NEW)
-                            referencedColumnName="emailId"	// the name of the column in the non-owning entity table for which this column links to (REFERENCED)
-                    )
-            }
-
-    )
-    private HashSet<User> users = new HashSet<>();*/
-    private String comment;
-    private String userEmailid;
-
-    //Constuctor that acts as more of a commenter object
-    public CommentEntity(String Userid, Long postid){
-        this.userEmailid = Userid;
-        this.postid = postid;
-    }
+        @Setter
+        @Getter
+        @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "PostIds")
+        @JsonIgnore
+        private Set<ObservationMarker> observations = new HashSet<>();
 
 
-    private int likes;
-    public CommentEntity(CommentEntity commentor, String comment){//likes can be added later
 
-    this.postid = commentor.getPostid();
-    this.userEmailid = commentor.getUserid();
-    this.comment = comment;
+       //@JsonIgnore
+        /*@Column(name = "post_Id_linker")
+        @OneToMany(mappedBy = "ObservationMarker")
+        protected ArrayList<ObservationMarker> postLinker;*/
+       /*@ManyToMany
+       @JoinTable(
+               name = "Observation_pertains",
+               joinColumns = @JoinColumn(name = "comment_id"),
+               inverseJoinColumns = @JoinColumn(name = "marker_id"))
+       Set<ObservationMarker> pertainsObservationMarker;*/
 
-    //this.likes = likes; //not used yet
-    }
-    //used for updating
-    public CommentEntity(Long CommentId,Long PostId, String UserId, String comment){//likes can be added later
-        this.commentid = CommentId;
-        this.postid = PostId;
-        this.userEmailid = UserId;
-        this.comment = comment;
+        @Getter
+        //@Column(name = "post_id_linked")
+        private Long postId;
 
-        //this.likes = likes; //not used yet
-    }
+        @Setter
+        @Getter
+        @Column
+        private String userId;
 
-    //not going to be used
-    public CommentEntity() {
+        @Column
+        private String comment;
+    /*@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "posts")
+    @JsonIgnore
+    private Set<CommentEntity> comments = new HashSet<>();*/
 
-    }
 
-   /* public List<User> getUser() {
-        return user;
-    }
-    public String getUserbyid(Long id){
-        int found = 0;
-        for (int i = 0; i < user.size() - 1; i++){
-            if (user.get(i).getId().equals(id)) {
-                found = i;
-                break;
-            }
+
+
+
+        //CommentEntity updater = new CommentEntity(id, updated.getPostid(), updated.getUserid(), updated.getComment());
+        public CommentEntity(Long Commentid,Long PostID,  String userId, String comment) {
+        this.id = Commentid;
+
+        this.userId = userId;
+        this.comment= comment;
         }
-        return user.get(found).getEmailId();
-    }*/
 
+        public CommentEntity(String adduserId, Long addpostid, String Addcomment) {
+//        this.id = id;
+            this.userId = adduserId;
+            this.postId = addpostid;
+            this.comment = Addcomment;
 
-    public void setId(Long id) {
-        this.commentid = id;
-    }
+        }
 
-    public Long getId() {
-        return commentid;
-    }
+        public CommentEntity( String Userid,Long postId) {
+        this.userId = Userid;
+        this.postId = postId;
+        }
 
-    public void setComment(String comment) {
-        this.comment = comment;
+        public CommentEntity() {
+
+        }
+
+    public void setPostId(Long postId) {
+        this.postId = postId;
     }
 
     public String getComment() {
         return comment;
     }
 
-    public Long getPostid() {
-        return postid;
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
-    public String getUserid() {
-        return userEmailid;
+    @Override
+        public String toString(){
+            return "CommentId: " + this.id +
+                    "\nUserId " + this.userId +
+                    "\nPostId: " + this.postId +
+                    "\nComment" + this.comment +
+                    "\nSuccessfully created";
+        }
     }
 
-    public void setUserid(String userid) {
-        this.userEmailid = userid;
-    }
 
-    public void setPostid(Long postid) {
-        this.postid = postid;
-    }
-
-}

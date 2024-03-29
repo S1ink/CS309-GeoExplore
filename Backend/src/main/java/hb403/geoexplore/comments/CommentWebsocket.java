@@ -84,8 +84,8 @@ public class CommentWebsocket {//This is both the comment controller and chat we
 
         // get the username by session
         CommentEntity tempuser = sessionUserMap.get(session);
-        String tempuserid = tempuser.getUserid();
-        Long tempPostId = tempuser.getPostid();
+        String tempuserid = tempuser.getUserId();
+        Long tempPostId = tempuser.getPostId();
 
         // server side log
         logger.info("[onMessage] " + tempuserid + ": " + message);
@@ -102,13 +102,13 @@ public class CommentWebsocket {//This is both the comment controller and chat we
             }
             String destUserName = split_msg[0].substring(1);    //@username and get rid of @
             String actualMessage = actualMessageBuilder.toString();
-            sendMessageToPArticularUser(destUserName, "[DM from " + currUser.getUserid() + "]: " + actualMessage + " from post " + currUser.getPostid());
-            sendMessageToPArticularUser(currUser.getUserid(), "[DM from " + currUser.getUserid() + "]: " + actualMessage + " from post " + currUser.getPostid());
+            sendMessageToPArticularUser(destUserName, "[DM from " + currUser.getUserId() + "]: " + actualMessage + " from post " + currUser.getPostId());
+            sendMessageToPArticularUser(currUser.getUserId(), "[DM from " + currUser.getUserId() + "]: " + actualMessage + " from post " + currUser.getPostId());
         } else { // Message to whole chat underneath observation
-            //postSessionMap.get(currUser.getPostid()).getBasicRemote().sendText(message);
-            //sendMessageToPArticularObservation (currUser.getPostid(), message);
+            //postSessionMap.get(currUser.getPostId()).getBasicRemote().sendText(message);
+            //sendMessageToPArticularObservation (currUser.getPostId(), message);
             broadcast(message, tempuser);
-            //this.postid = currUser.getPostid();
+            //this.postid = currUser.getPostId();
             }
         }
 
@@ -122,7 +122,7 @@ public class CommentWebsocket {//This is both the comment controller and chat we
 
             // get the username from session-username mapping
             CommentEntity user = sessionUserMap.get(session);
-            String username = user.getUserid();
+            String username = user.getUserId();
             // server side log
             logger.info("[onClose] " + username);
 
@@ -147,7 +147,7 @@ public class CommentWebsocket {//This is both the comment controller and chat we
             CommentEntity temp = sessionUserMap.get(session);
 
             // do error handling here
-            logger.info("[onError]" + temp.getUserid() + ": " + throwable.getMessage());
+            logger.info("[onError]" + temp.getUserId() + ": " + throwable.getMessage());
         }
 
         /**
@@ -179,8 +179,8 @@ public class CommentWebsocket {//This is both the comment controller and chat we
                     try {
                         //commentRepository.save(new CommentEntity(currUser,message));
                         //session.getBasicRemote().sendText(message);
-                        if (sender.getPostid().equals(user.getPostid())) {
-                            usernameSessionMap.get(user.getUserid()).getBasicRemote().sendText(message);
+                        if (sender.getPostId().equals(user.getPostId())) {
+                            usernameSessionMap.get(user.getUserId()).getBasicRemote().sendText(message);
                         }
 
                     } catch (IOException e) {
