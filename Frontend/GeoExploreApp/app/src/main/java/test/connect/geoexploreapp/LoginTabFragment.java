@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.gson.Gson;
 
@@ -91,6 +92,8 @@ public class LoginTabFragment extends Fragment {
                 boolean passwordMatch = password != null && password.equals(temp.getPassword());
                 if (emailMatch && passwordMatch) {
                     Log.d("LoginCheck", "Match found");
+                    SharedViewModel viewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+                    viewModel.setLoggedInUser(temp);
                     startMainActivity(temp);
                     callback.onResult(true);
                     return;
