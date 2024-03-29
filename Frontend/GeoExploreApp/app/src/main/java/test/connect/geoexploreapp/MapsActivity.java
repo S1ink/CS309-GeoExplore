@@ -47,6 +47,7 @@ import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -61,6 +62,7 @@ import test.connect.geoexploreapp.api.SlimCallback;
 import test.connect.geoexploreapp.model.EventMarker;
 import test.connect.geoexploreapp.model.Observation;
 import test.connect.geoexploreapp.model.ReportMarker;
+import test.connect.geoexploreapp.model.User;
 import test.connect.geoexploreapp.websocket.WebSocketListener;
 import test.connect.geoexploreapp.websocket.WebSocketManager;
 
@@ -83,6 +85,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
     private TextView eventUpdateTextView;
     private TextView observationCreateTextView;
     private TextView observationUpdateTextView;
+    private User loggedInUser;
 
     public MapsActivity() {
 
@@ -108,9 +111,13 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
 
         viewModel.getCreateEmergencyNotification().observe(getViewLifecycleOwner(), isCreateEmergency -> {
             isCreateEmergencyNotification = isCreateEmergency;
-            if (isCreateEmergency) {
-                Log.d("Maps","Emergency notfication supposedly good");
-            }
+//            if (isCreateEmergency) {
+//                Log.d("Maps","Emergency notfication supposedly good");
+//            }
+        });
+
+        viewModel.getLoggedInUser().observe(getViewLifecycleOwner(), loggedInUser -> {
+            this.loggedInUser = loggedInUser;
         });
 
 
@@ -456,6 +463,9 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         newReportMarker.setLatitude(latLng.latitude);
         newReportMarker.setLongitude(latLng.longitude);
         newReportMarker.setTitle(reportTitle);
+        newReportMarker.setCreator(loggedInUser);
+        newReportMarker.setTime_created(new Date());
+        newReportMarker.setTime_updated(new Date());
 
         reportMarkerApi.addReport(newReportMarker).enqueue(new SlimCallback<>(createdReportMarker -> {
             LatLng position = new LatLng(createdReportMarker.getLatitude(), createdReportMarker.getLongitude());
@@ -491,6 +501,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
 
         ReportMarker updatedReportMarker = new ReportMarker();
         updatedReportMarker.setTitle(newTitle);
+        updatedReportMarker.setTime_updated(new Date());
         updatedReportMarker.setLatitude(latLng.latitude);
         updatedReportMarker.setLongitude(latLng.longitude);
 
@@ -549,7 +560,10 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         Observation observation = new Observation();
         observation.setLatitude(latLng.latitude);
         observation.setLongitude(latLng.longitude);
+        observation.setCreator(loggedInUser);
         observation.setTitle(observationTitle);
+        observation.setTime_created(new Date());
+        observation.setTime_updated(new Date());
         observation.setDescription(observationDescription);
 
         observationApi.saveObs(observation).enqueue(new SlimCallback<>(obs -> {
@@ -590,6 +604,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         updatedObservation.setTitle(newTitle);
         updatedObservation.setLatitude(latLng.latitude);
         updatedObservation.setLongitude(latLng.longitude);
+        updatedObservation.setTime_updated(new Date());
         updatedObservation.setDescription(newDescription);
         Log.d("Updating...", updatedObservation.getTitle() + " "+ updatedObservation.getId()+" " +updatedObservation.getDescription());
         observationApi.updateObs(id, updatedObservation).enqueue(new SlimCallback<>(obs -> {
@@ -648,7 +663,10 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         EventMarker newEventMarker = new EventMarker();
         newEventMarker.setLatitude(latLng.latitude);
         newEventMarker.setLongitude(latLng.longitude);
+        newEventMarker.setCreator(loggedInUser);
         newEventMarker.setTitle(eventTitle);
+        newEventMarker.setTime_created(new Date());
+        newEventMarker.setTime_updated(new Date());
         newEventMarker.setCity_department(cityDepartment);
 
         reportMarkerApi.addEvent(newEventMarker).enqueue(new SlimCallback<>(createdEventMarker -> {
@@ -686,6 +704,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         EventMarker updatedEventMarker = new EventMarker();
         updatedEventMarker.setTitle(newTitle);
         updatedEventMarker.setCity_department(newCityDepartment);
+        updatedEventMarker.setTime_updated(new Date());
         updatedEventMarker.setLatitude(latLng.latitude);
         updatedEventMarker.setLongitude(latLng.longitude);
 
