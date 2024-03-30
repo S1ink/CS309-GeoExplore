@@ -17,9 +17,12 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import test.connect.geoexploreapp.model.AlertMarker;
+import test.connect.geoexploreapp.model.MarkerTag;
 import test.connect.geoexploreapp.model.User;
 import test.connect.geoexploreapp.websocket.WebSocketManager;
 
@@ -143,6 +146,17 @@ public class EmergencySendFragment extends Fragment {
             alertMarker.setLongitude(Double.parseDouble(longitude));
             alertMarker.setCreator(loggedInUser);
             alertMarker.setTime_created(new Date());
+
+            if (!tagsText.getText().toString().trim().isEmpty()) {
+                String[] tagArray = tagsText.getText().toString().trim().split(",");
+                List<MarkerTag> markerTags = new ArrayList<>();
+                for (String tag : tagArray) {
+                    MarkerTag markerTag = new MarkerTag();
+                    markerTag.setName(tag.trim());
+                    markerTags.add(markerTag);
+                }
+                alertMarker.setTags(markerTags);
+            }
 
 
             Gson gson = new Gson();
