@@ -9,11 +9,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import test.connect.geoexploreapp.api.AlertMarkerApi;
 import test.connect.geoexploreapp.api.ApiClientFactory;
+import test.connect.geoexploreapp.api.ReportMarkerApi;
 import test.connect.geoexploreapp.api.SlimCallback;
 import test.connect.geoexploreapp.model.AlertMarker;
 
@@ -34,6 +39,7 @@ public class EmergencyDashboardFragment extends Fragment {
     private String mParam2;
 
     private TextView alertInfoTextView;
+    private EditText alertIdEditText;
 
     public EmergencyDashboardFragment() {
         // Required empty public constructor
@@ -72,13 +78,15 @@ public class EmergencyDashboardFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_emergency_dashboard, container, false);
         Button getAllAlertsButton = view.findViewById(R.id.getAllAlertsBtn);
-        Button getAlertByIdButton = view.findViewById(R.id.getAlertByIdBtn);
+        Button menuButton = view.findViewById(R.id.menuButton);
         Button backButton = view.findViewById(R.id.backButton);
-        EditText alertIdEditText = view.findViewById(R.id.alertIdEditText);
+        alertIdEditText = view.findViewById(R.id.alertIdEditText);
         alertInfoTextView = view.findViewById(R.id.alertInfoTextview);
 
 
         backButton.setOnClickListener(v -> getParentFragmentManager().popBackStack());
+
+        menuButton.setOnClickListener(v -> showPopupMenu(v));
 
         getAllAlertsButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -87,9 +95,16 @@ public class EmergencyDashboardFragment extends Fragment {
             }
         });
 
-        getAlertByIdButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        return view;
+    }
+
+    private void showPopupMenu(View v) {
+        PopupMenu popupMenu = new PopupMenu(getActivity(), v);
+        popupMenu.getMenuInflater().inflate(R.menu.alert_options_menu, popupMenu.getMenu());
+        popupMenu.setOnMenuItemClickListener(item -> {
+            int itemId = item.getItemId();
+
+            if (itemId == R.id.action_get_alert_by_id) {
                 String IdString = alertIdEditText.getText().toString();
                 if(!IdString.isEmpty()){
                     try{
@@ -102,13 +117,27 @@ public class EmergencyDashboardFragment extends Fragment {
                 }else {
                     Toast.makeText(getContext(),"Enter Valid ID", Toast.LENGTH_LONG).show();
                 }
+                return true;
+            } else if (itemId == R.id.action_delete_alert_by_id) {
+                String IdString = alertIdEditText.getText().toString();
+                if(!IdString.isEmpty()){
+                    try{
+                        Long id = Long.parseLong(IdString);
+                        deleteAlertByID(id);
+                    } catch(NumberFormatException e){
+                        Toast.makeText(getContext(),"Enter Valid ID", Toast.LENGTH_LONG).show();
+
+                    }
+                }else {
+                    Toast.makeText(getContext(),"Enter Valid ID", Toast.LENGTH_LONG).show();
+                }
+                return true;
+            } else {
+                return false;
             }
         });
-
-        return view;
+        popupMenu.show();
     }
-
-
 
 
     private void printAllAlerts() {
@@ -140,5 +169,27 @@ public class EmergencyDashboardFragment extends Fragment {
                 }
             }
         }, "getAlertByID"));
+    }
+
+    private void deleteAlertByID(Long id){
+        AlertMarkerApi alertMarkerApi = ApiClientFactory.getAlertMarkerApi();
+        alertMarkerApi.deleteAlertById(id).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if(response.isSuccessful()){
+                    String deleteSuccessText = "Alert with ID: " + id + " deleted successfully";
+                    alertInfoTextView.setText(deleteSuccessText);
+
+                } else{
+                    Toast.makeText(getActivity(), "Failed to delete alert", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Toast.makeText(getActivity(), "Error deleting alert", Toast.LENGTH_SHORT).show();
+            }
+        });
+
     }
 }
