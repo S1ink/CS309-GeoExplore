@@ -74,9 +74,6 @@ import test.connect.geoexploreapp.websocket.WebSocketManager;
 public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSocketListener {
 
     private GoogleMap mMap;
-    private boolean isCreateReportMode = false;
-    private boolean isCreateEventMode = false;
-    private boolean isCreateObservationMode = false;
     private boolean isUpdateReportMode = false;
     private boolean isUpdateEventMode = false;
     private boolean isUpdateObservationMode = false;
@@ -373,11 +370,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         Button btnObservationDelete = bottomSheetDialog.findViewById(R.id.btn_observation_delete);
         Button btnObservationList = bottomSheetDialog.findViewById(R.id.btn_observation_all);
 
-        btnReportCreate.setOnClickListener(v -> {
-            reportCreateTextView.setVisibility(View.VISIBLE);
-            isCreateReportMode = true;
-            bottomSheetDialog.dismiss();
-        });
+
         btnReportRead.setOnClickListener(v -> {
             reportIdStatus = 1;
             promptForReportId();
@@ -395,11 +388,6 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         });
         btnReportList.setOnClickListener(v -> {
             displayAllReports();
-            bottomSheetDialog.dismiss();
-        });
-        btnEventCreate.setOnClickListener(v -> {
-            eventCreateTextView.setVisibility(View.VISIBLE);
-            isCreateEventMode = true;
             bottomSheetDialog.dismiss();
         });
         btnEventRead.setOnClickListener(v -> {
@@ -420,15 +408,6 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         btnEventList.setOnClickListener(v -> {
             displayAllEvents();
             bottomSheetDialog.dismiss();
-        });
-        //done
-        btnObservationAdd.setOnClickListener(v -> {
-            observationCreateTextView.setVisibility(View.VISIBLE);
-            isCreateObservationMode = true;
-            bottomSheetDialog.dismiss();
-//            Intent intent = new Intent(getActivity(), ObservationForm.class);
-//            startActivity(intent);
-
         });
         //done
         btnObservationRead.setOnClickListener(v -> {

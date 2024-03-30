@@ -21,6 +21,7 @@ import java.util.Date;
 
 import test.connect.geoexploreapp.model.AlertMarker;
 import test.connect.geoexploreapp.model.EmergencyMessage;
+import test.connect.geoexploreapp.model.User;
 import test.connect.geoexploreapp.websocket.WebSocketManager;
 
 /**
@@ -36,6 +37,7 @@ public class EmergencySendFragment extends Fragment {
     private static final String ARG_PARAM2 = "param2";
 
     private EditText titleText, messageText, latitudeText, longitudeText;
+    private User loggedInUser;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -98,6 +100,11 @@ public class EmergencySendFragment extends Fragment {
         });
 
 
+        viewModel.getLoggedInUser().observe(getViewLifecycleOwner(), loggedUser -> {
+            loggedInUser = loggedUser;
+        });
+
+
 
         Button backButton = view.findViewById(R.id.backButton);
         Button setLocationButton = view.findViewById(R.id.setLocationButton);
@@ -135,6 +142,7 @@ public class EmergencySendFragment extends Fragment {
             alertMarker.setDescription(message);
             alertMarker.setLatitude(Double.parseDouble(latitude));
             alertMarker.setLongitude(Double.parseDouble(longitude));
+            alertMarker.setCreator(loggedInUser);
             alertMarker.setTime_created(new Date());
 
 
