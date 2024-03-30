@@ -92,6 +92,8 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
             }
         });
 
+    
+
     }
 
     private void showComments(Context context, int itemIndex) {

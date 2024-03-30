@@ -29,5 +29,8 @@ public class ApiClientFactory {
         return GetApiClientSeed().create(UserApi.class);
     }
     public static ObservationApi GetObservationApi() { return GetApiClientSeed().create(ObservationApi.class);}
+    public static CommentApi GetCommentApi() {
+        return GetApiClientSeed().create(CommentApi.class);
+    }
 
 }
