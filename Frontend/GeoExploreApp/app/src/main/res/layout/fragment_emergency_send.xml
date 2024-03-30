@@ -25,6 +25,13 @@
         android:layout_height="wrap_content"
         android:hint="Message"
         android:inputType="textMultiLine" />
+
+    <EditText
+        android:id="@+id/markerTagsText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Internal Marker Tags (Seperate by comma)" />
+
     <EditText
         android:id="@+id/latitudeText"
         android:layout_width="match_parent"
@@ -37,6 +44,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Longitude" />
+
 
     <Button
         android:id="@+id/sendEmergencyButton"

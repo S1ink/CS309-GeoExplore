@@ -20,7 +20,6 @@ import com.google.gson.Gson;
 import java.util.Date;
 
 import test.connect.geoexploreapp.model.AlertMarker;
-import test.connect.geoexploreapp.model.EmergencyMessage;
 import test.connect.geoexploreapp.model.User;
 import test.connect.geoexploreapp.websocket.WebSocketManager;
 
@@ -36,7 +35,7 @@ public class EmergencySendFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    private EditText titleText, messageText, latitudeText, longitudeText;
+    private EditText titleText, messageText, latitudeText, longitudeText, tagsText;
     private User loggedInUser;
 
     // TODO: Rename and change types of parameters
@@ -78,13 +77,14 @@ public class EmergencySendFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_emergency_dash, container, false);
+        View view = inflater.inflate(R.layout.fragment_emergency_send, container, false);
         WebSocketManager.getInstance().connectWebSocket("wss://socketsbay.com/wss/v2/1/demo/"); // CHANGE URL FOR WEBSOCKET
 
         latitudeText = view.findViewById(R.id.latitudeText);
         longitudeText = view.findViewById(R.id.longitudeText);
         titleText = view.findViewById(R.id.titleText);
         messageText = view.findViewById(R.id.messageText);
+        tagsText = view.findViewById(R.id.markerTagsText);
 
 
         SharedViewModel viewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
@@ -112,7 +112,6 @@ public class EmergencySendFragment extends Fragment {
         backButton.setOnClickListener(v -> getParentFragmentManager().popBackStack());
 
         setLocationButton.setOnClickListener(v -> {
-
             viewModel.setCreateEmergencyNotification(true);
             Log.d("EmergencyDashFragment","Emergency was set to true");
             MapsActivity mapsFragment = new MapsActivity();

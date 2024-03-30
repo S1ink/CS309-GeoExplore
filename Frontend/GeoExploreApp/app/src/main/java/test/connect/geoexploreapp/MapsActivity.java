@@ -415,7 +415,6 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
             promptForObservationId();
             bottomSheetDialog.dismiss();
         });
-
         btnObservationUpdate.setOnClickListener(v -> {
             observationUpdateTextView.setVisibility(View.VISIBLE);
             isUpdateObservationMode = true;

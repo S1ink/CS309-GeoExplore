@@ -73,8 +73,12 @@ public class EmergencyDashboardFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_emergency_dashboard, container, false);
         Button getAllAlertsButton = view.findViewById(R.id.getAllAlertsBtn);
         Button getAlertByIdButton = view.findViewById(R.id.getAlertByIdBtn);
+        Button backButton = view.findViewById(R.id.backButton);
         EditText alertIdEditText = view.findViewById(R.id.alertIdEditText);
         alertInfoTextView = view.findViewById(R.id.alertInfoTextview);
+
+
+        backButton.setOnClickListener(v -> getParentFragmentManager().popBackStack());
 
         getAllAlertsButton.setOnClickListener(new View.OnClickListener() {
             @Override
