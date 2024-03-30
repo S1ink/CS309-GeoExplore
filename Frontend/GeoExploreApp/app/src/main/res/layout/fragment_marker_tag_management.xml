@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -9,6 +8,54 @@
         android:id="@+id/backButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="back" />
+        android:text="Back"
+        android:layout_alignParentTop="true" />
 
-</FrameLayout>
+    <TextView
+        android:id="@+id/tagInfoTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tag operations result will appear here"
+        android:layout_below="@id/backButton"
+        android:gravity="center_horizontal"
+        android:textAlignment="center" />
+
+    <LinearLayout
+        android:id="@+id/bottomPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_alignParentBottom="true"
+        android:padding="16dp">
+
+        <EditText
+            android:id="@+id/tagIdEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter Tag Id (for specific operations)"
+            android:inputType="number"/>
+
+        <EditText
+            android:id="@+id/tagNameEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter Tag Name (for create/update)"
+            android:inputType="text"/>
+
+        <Button
+            android:id="@+id/menuButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tag Options"
+            android:layout_gravity="center"
+            android:onClick="showTagOptionsPopup"/>
+
+        <Button
+            android:id="@+id/getAllTagsBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Get All Tags"
+            android:layout_gravity="center"/>
+
+    </LinearLayout>
+</RelativeLayout>

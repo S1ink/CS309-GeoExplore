@@ -31,13 +31,13 @@ public interface MarkerTagApi {
     Call<MarkerTag> updateMarkerTag(@Path("id") Long id, @Body MarkerTag updated);
 
     @DELETE("marker_tags/{id}")
-    Call<MarkerTag> deleteMarkerTag(@Path("id") Long Id);
+    Call<Void> deleteMarkerTagById(@Path("id") Long Id);
 
     @GET("marker_tags")
     Call<List<MarkerTag>> getAllMarkerTags();
 
     @GET("marker_tags/{id}")
-    Call<Optional<User>> getMarkerTag(@Path("id") Long id);
+    Call<MarkerTag> getMarkerTagById(@Path("id") Long id);
 
     @GET("marker_tags/{id}/reports")
     Call<List<ReportMarker>> getReportsForTag(@Path("id") Long tagId);
