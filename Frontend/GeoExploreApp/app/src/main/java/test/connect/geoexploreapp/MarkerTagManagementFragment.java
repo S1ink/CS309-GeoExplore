@@ -80,11 +80,15 @@ public class MarkerTagManagementFragment extends Fragment {
 
         Button backButton = view.findViewById(R.id.backButton);
         tagIdEditText = view.findViewById(R.id.tagIdEditText);
-        tagInfoTextView = view.findViewById(R.id.tagInfoTextView);
-        backButton.setOnClickListener(v -> getParentFragmentManager().popBackStack());
-
-
         Button getAllTagsButton = view.findViewById(R.id.getAllTagsBtn);
+        Button menuButton = view.findViewById(R.id.menuButton);
+        tagInfoTextView = view.findViewById(R.id.tagInfoTextView);
+
+        backButton.setOnClickListener(v -> getParentFragmentManager().popBackStack());
+        menuButton.setOnClickListener(v -> showTagOptionsPopup(v));
+
+
+
 
         getAllTagsButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -102,7 +106,7 @@ public class MarkerTagManagementFragment extends Fragment {
         popup.setOnMenuItemClickListener(item -> {
             int itemId = item.getItemId();
 
-            if (itemId == R.id.action_get_alert_by_id) {
+            if (itemId == R.id.action_get_tag_by_id) {
                 String IdString = tagIdEditText.getText().toString();
                 if(!IdString.isEmpty()){
                     try{
@@ -116,7 +120,7 @@ public class MarkerTagManagementFragment extends Fragment {
                     Toast.makeText(getContext(),"Enter Valid ID", Toast.LENGTH_LONG).show();
                 }
                 return true;
-            } else if (itemId == R.id.action_delete_alert_by_id) {
+            } else if (itemId == R.id.action_delete_tag_by_id) {
                 String IdString = tagIdEditText.getText().toString();
                 if(!IdString.isEmpty()){
                     try{
@@ -157,7 +161,7 @@ public class MarkerTagManagementFragment extends Fragment {
         markerTagApi.getMarkerTagById(id).enqueue(new SlimCallback<>(markerTag -> {
             if (markerTag != null) {
                 StringBuilder tagInfo = new StringBuilder();
-                tagInfo.append("ID: ").append(markerTag.getId()).append(", Title: ").append("\n");
+                tagInfo.append("ID: ").append(markerTag.getId()).append(", Name: ").append(markerTag.getName()).append("\n");
                 if (getActivity() != null) {
                     StringBuilder finalTagInfo = tagInfo;
                     getActivity().runOnUiThread(() -> tagInfoTextView.setText(finalTagInfo));

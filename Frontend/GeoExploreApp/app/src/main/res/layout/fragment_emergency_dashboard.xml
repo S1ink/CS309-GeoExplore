@@ -16,10 +16,11 @@
         android:id="@+id/alertInfoTextview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Alerts will appear here"
         android:layout_below="@id/backButton"
         android:gravity="center_horizontal"
-        android:textAlignment="center" />
+        android:text="Alerts will appear here"
+        android:textAlignment="center"
+        android:textSize="20sp" />
 
     <LinearLayout
         android:id="@+id/bottomPanel"
