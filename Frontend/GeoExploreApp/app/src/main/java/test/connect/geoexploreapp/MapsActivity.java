@@ -354,17 +354,15 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         bottomSheetDialog.setContentView(R.layout.bottom_sheet_menu);
 
 
-        Button btnReportCreate = bottomSheetDialog.findViewById(R.id.btn_report_create);
+
         Button btnReportRead = bottomSheetDialog.findViewById(R.id.btn_report_read);
         Button btnReportUpdate = bottomSheetDialog.findViewById(R.id.btn_report_update);
         Button btnReportDelete = bottomSheetDialog.findViewById(R.id.btn_report_delete);
         Button btnReportList = bottomSheetDialog.findViewById(R.id.btn_report_list);
-        Button btnEventCreate = bottomSheetDialog.findViewById(R.id.btn_event_create);
         Button btnEventRead = bottomSheetDialog.findViewById(R.id.btn_event_read);
         Button btnEventUpdate = bottomSheetDialog.findViewById(R.id.btn_event_update);
         Button btnEventDelete = bottomSheetDialog.findViewById(R.id.btn_event_delete);
         Button btnEventList = bottomSheetDialog.findViewById(R.id.btn_event_list);
-        Button btnObservationAdd = bottomSheetDialog.findViewById(R.id.btn_observation_add);
         Button btnObservationRead = bottomSheetDialog.findViewById(R.id.btn_observation_read);
         Button btnObservationUpdate = bottomSheetDialog.findViewById(R.id.btn_observation_update); //not updating
         Button btnObservationDelete = bottomSheetDialog.findViewById(R.id.btn_observation_delete);
@@ -454,6 +452,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         newReportMarker.setCreator(loggedInUser);
         newReportMarker.setTime_created(new Date());
         newReportMarker.setTime_updated(new Date());
+        newReportMarker.setTags(markerTags);
 
         reportMarkerApi.addReport(newReportMarker).enqueue(new SlimCallback<>(createdReportMarker -> {
             LatLng position = new LatLng(createdReportMarker.getLatitude(), createdReportMarker.getLongitude());
@@ -553,6 +552,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         observation.setTime_created(new Date());
         observation.setTime_updated(new Date());
         observation.setDescription(observationDescription);
+        observation.setTags(markerTags);
 
         observationApi.saveObs(observation).enqueue(new SlimCallback<>(obs -> {
             LatLng position = new LatLng(obs.getLatitude(), obs.getLongitude());
@@ -656,6 +656,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         newEventMarker.setTime_created(new Date());
         newEventMarker.setTime_updated(new Date());
         newEventMarker.setCity_department(cityDepartment);
+        newEventMarker.setTags(markerTags);
 
         reportMarkerApi.addEvent(newEventMarker).enqueue(new SlimCallback<>(createdEventMarker -> {
             LatLng position = new LatLng(createdEventMarker.getLatitude(), createdEventMarker.getLongitude());
@@ -920,9 +921,6 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
 
         builder.show();
     }
-
-
-
 
     private void promptUserToUpdateEvent(Long Id,LatLng latLng) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
