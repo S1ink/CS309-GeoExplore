@@ -49,6 +49,7 @@ import org.json.JSONObject;
 import org.w3c.dom.Text;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -63,6 +64,7 @@ import test.connect.geoexploreapp.api.ReportMarkerApi;
 import test.connect.geoexploreapp.api.SlimCallback;
 import test.connect.geoexploreapp.model.AlertMarker;
 import test.connect.geoexploreapp.model.EventMarker;
+import test.connect.geoexploreapp.model.MarkerTag;
 import test.connect.geoexploreapp.model.Observation;
 import test.connect.geoexploreapp.model.ReportMarker;
 import test.connect.geoexploreapp.model.User;
@@ -182,15 +184,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
-                if(isCreateReportMode){
-                    promptForNewReportTitle(latLng);
-                    isCreateReportMode = false;
-                    reportCreateTextView.setVisibility(View.GONE);
-                }else if(isCreateEventMode){
-                    promptForNewEventTitle(latLng);
-                    isCreateEventMode = false;
-                    eventCreateTextView.setVisibility(View.GONE);
-                }else if(isUpdateReportMode){
+                if(isUpdateReportMode){
                     isUpdateReportMode = false;
                     reportIdStatus = 3;
                     promptForReportId(latLng);
@@ -200,10 +194,6 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
                     eventIdStatus = 3;
                     promptForEventId(latLng);
                     eventUpdateTextView.setVisibility(View.GONE);
-                }else if(isCreateObservationMode){
-                    promptForNewObservationTitle(latLng);
-                    isCreateObservationMode=false;
-                    observationCreateTextView.setVisibility(View.GONE);
                 }else if(isUpdateObservationMode){
                     isUpdateObservationMode = false;
                     observationIdStatus = 3;
@@ -300,6 +290,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         EditText editTextTitle = view.findViewById(R.id.editTextTitle);
         EditText editTextDescription = view.findViewById(R.id.editTextDescription);
         EditText editTextCityDepartment = view.findViewById(R.id.editTextCityDepartment);
+        EditText editTextMarkerTag = view.findViewById(R.id.editTextMarkerTag);
 
         if ("Report".equals(type)) {
             editTextDescription.setVisibility(View.GONE); // Hide description for Report
@@ -322,15 +313,18 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
                         String title = editTextTitle.getText().toString().trim();
                         String description = editTextDescription.getText().toString().trim();
                         String cityDepartment = editTextCityDepartment.getText().toString().trim();
+                        String markerTagsInput = editTextMarkerTag.getText().toString().trim();
+
+                        List<MarkerTag> markerTags = parseMarkerTags(markerTagsInput);
 
                         if("Report".equals(type)){
-                            createNewReport(latLng, title);
+                            createNewReport(latLng, title, markerTags);
 
                         }else if("Event".equals(type)){
-                            createNewEvent(latLng, title, cityDepartment);
+                            createNewEvent(latLng, title, cityDepartment, markerTags);
 
                         }else{
-                            createNewObservation(latLng, title,description );
+                            createNewObservation(latLng, title,description, markerTags);
                         }
 
                     }
@@ -339,6 +333,22 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
 
         AlertDialog dialog = builder.create();
         dialog.show();
+    }
+
+    private List<MarkerTag> parseMarkerTags(String input) {
+        List<MarkerTag> markerTags = new ArrayList<>();
+        if (input != null && !input.isEmpty()) {
+            String[] tags = input.split(",");
+            for (String tag : tags) {
+                String trimmedTag = tag.trim();
+                if (!trimmedTag.isEmpty()) {
+                    MarkerTag newTag = new MarkerTag();
+                    newTag.setName(trimmedTag);
+                    markerTags.add(newTag);
+                }
+            }
+        }
+        return markerTags;
     }
 
     private void showBottomSheetDialog() {
@@ -456,7 +466,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
     }
     
     // Report CRUDL
-    private void createNewReport(final LatLng latLng, String reportTitle) {
+    private void createNewReport(final LatLng latLng, String reportTitle, List<MarkerTag> markerTags) {
         ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
 
         ReportMarker newReportMarker = new ReportMarker();
@@ -554,7 +564,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
     }
 
     // Observation CRUDL
-    private void createNewObservation(final LatLng latLng, String observationTitle, String observationDescription) {
+    private void createNewObservation(final LatLng latLng, String observationTitle, String observationDescription, List<MarkerTag> markerTags) {
         ObservationApi observationApi = ApiClientFactory.GetObservationApi();
 
         Observation observation = new Observation();
@@ -657,7 +667,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
     }
 
     // Event CRUDL
-    private void createNewEvent(final LatLng latLng, String eventTitle, String cityDepartment) {
+    private void createNewEvent(final LatLng latLng, String eventTitle, String cityDepartment, List<MarkerTag> markerTags) {
         EventMarkerApi reportMarkerApi = ApiClientFactory.getEventMarkerApi();
 
         EventMarker newEventMarker = new EventMarker();
@@ -933,89 +943,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         builder.show();
     }
 
-    private void promptForNewReportTitle(final LatLng latLng) {
-        final EditText input = new EditText(getActivity());
-        input.setInputType(InputType.TYPE_CLASS_TEXT);
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("Enter Report Title")
-                .setView(input)
-                .setPositiveButton("Submit", (dialog, which) -> {
-                    String reportTitle = input.getText().toString();
-                    createNewReport(latLng, reportTitle);
-                })
-                .setNegativeButton("Cancel", (dialog, which) -> dialog.cancel())
-                .show();
-    }
 
-    private void promptForNewObservationTitle(final LatLng latLng) {
-        final EditText title = new EditText(getActivity());
-        title.setInputType(InputType.TYPE_CLASS_TEXT);
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("Enter Observation Title")
-                .setView(title)
-                .setPositiveButton("Next", (dialog, which) -> {
-                    String observationTitle = title.getText().toString();
-                    promptForObservationDescription(latLng, observationTitle);
-                })
-                .setNegativeButton("Cancel", (dialog, which) -> dialog.cancel())
-                .show();
-    }
-
-    private void promptForObservationDescription(LatLng latLng, String observationTitle) {
-        final EditText descriptionInput = new EditText(getActivity());
-        descriptionInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
-        descriptionInput.setLines(5);
-        descriptionInput.setMaxLines(10);
-        descriptionInput.setGravity(Gravity.START | Gravity.TOP);
-
-        AlertDialog.Builder descriptionDialogBuilder = new AlertDialog.Builder(getActivity());
-        descriptionDialogBuilder.setTitle("Enter Observation Description")
-                .setView(descriptionInput)
-                .setPositiveButton("Submit", (dialog, which) -> {
-                    String observationDescription = descriptionInput.getText().toString();
-                    createNewObservation(latLng, observationTitle, observationDescription);
-                })
-                .setNegativeButton("Cancel", (dialog, which) -> dialog.cancel())
-                .show();
-
-    }
-
-    private void promptForNewEventTitle(final LatLng latLng) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle("New Event");
-
-        LinearLayout layout = new LinearLayout(getActivity());
-        layout.setOrientation(LinearLayout.VERTICAL);
-
-        final EditText titleInput = new EditText(getActivity());
-        titleInput.setHint("New Title");
-        layout.addView(titleInput);
-
-        final EditText cityDepartmentInput = new EditText(getActivity());
-        cityDepartmentInput.setHint("New City Department");
-        layout.addView(cityDepartmentInput);
-
-        builder.setView(layout);
-
-
-        builder.setPositiveButton("Update", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                String newTitle = titleInput.getText().toString();
-                String newCityDepartment = cityDepartmentInput.getText().toString();
-                createNewEvent(latLng, newTitle, newCityDepartment);
-            }
-        });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
-
-        builder.show();
-    }
 
 
     private void promptUserToUpdateEvent(Long Id,LatLng latLng) {
