@@ -7,9 +7,11 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.PopupMenu;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,7 +41,7 @@ public class MarkerTagManagementFragment extends Fragment {
     private String mParam1;
     private String mParam2;
     private TextView tagInfoTextView;
-    private EditText tagIdEditText;
+    private EditText tagIdEditText, tagNameEditText;
 
     public MarkerTagManagementFragment() {
         // Required empty public constructor
@@ -80,66 +82,47 @@ public class MarkerTagManagementFragment extends Fragment {
 
         Button backButton = view.findViewById(R.id.backButton);
         tagIdEditText = view.findViewById(R.id.tagIdEditText);
-        Button getAllTagsButton = view.findViewById(R.id.getAllTagsBtn);
-        Button menuButton = view.findViewById(R.id.menuButton);
         tagInfoTextView = view.findViewById(R.id.tagInfoTextView);
+        tagNameEditText = view.findViewById(R.id.tagNameEditText);
+
 
         backButton.setOnClickListener(v -> getParentFragmentManager().popBackStack());
-        menuButton.setOnClickListener(v -> showTagOptionsPopup(v));
 
 
+        String[] operations = new String[]{"Create", "Read", "Update", "Delete", "List"};
+        Spinner tagOperationSpinner = view.findViewById(R.id.tagOperationSpinner);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, operations);
+        tagOperationSpinner.setAdapter(adapter);
 
 
-        getAllTagsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                displayAllTags();
+        Button confirmOperationBtn = view.findViewById(R.id.confirmOperationBtn);
+        confirmOperationBtn.setOnClickListener(v -> {
+            String selectedOperation = tagOperationSpinner.getSelectedItem().toString();
+            switch (selectedOperation) {
+                case "Create":
+                    createTag();
+                    break;
+                case "Read":
+                    displayTagByID();
+                    break;
+                case "Update":
+                    updateTagByID();
+                    break;
+                case "Delete":
+                    deleteTagByID();
+                    break;
+                case "List":
+                    displayAllTags();
+                    break;
             }
         });
+
+
 
         return view;
     }
 
-    public void showTagOptionsPopup(View view) {
-        PopupMenu popup = new PopupMenu(getContext(), view);
-        popup.inflate(R.menu.tag_options_menu);
-        popup.setOnMenuItemClickListener(item -> {
-            int itemId = item.getItemId();
 
-            if (itemId == R.id.action_get_tag_by_id) {
-                String IdString = tagIdEditText.getText().toString();
-                if(!IdString.isEmpty()){
-                    try{
-                        Long id = Long.parseLong(IdString);
-                        displayTagByID(id);
-                    } catch(NumberFormatException e){
-                        Toast.makeText(getContext(),"Enter Valid ID", Toast.LENGTH_LONG).show();
-
-                    }
-                }else {
-                    Toast.makeText(getContext(),"Enter Valid ID", Toast.LENGTH_LONG).show();
-                }
-                return true;
-            } else if (itemId == R.id.action_delete_tag_by_id) {
-                String IdString = tagIdEditText.getText().toString();
-                if(!IdString.isEmpty()){
-                    try{
-                        Long id = Long.parseLong(IdString);
-                        deleteTagByID(id);
-                    } catch(NumberFormatException e){
-                        Toast.makeText(getContext(),"Enter Valid ID", Toast.LENGTH_LONG).show();
-
-                    }
-                }else {
-                    Toast.makeText(getContext(),"Enter Valid ID", Toast.LENGTH_LONG).show();
-                }
-                return true;
-            } else {
-                return false;
-            }
-        });
-        popup.show();
-    }
 
     private void displayAllTags() {
         MarkerTagApi markerTagApi = ApiClientFactory.getMarkerTagApi();
@@ -155,41 +138,120 @@ public class MarkerTagManagementFragment extends Fragment {
         }, "GetAllTags"));
     }
 
-    private void displayTagByID(Long id) {
-        MarkerTagApi markerTagApi = ApiClientFactory.getMarkerTagApi();
-
-        markerTagApi.getMarkerTagById(id).enqueue(new SlimCallback<>(markerTag -> {
-            if (markerTag != null) {
-                StringBuilder tagInfo = new StringBuilder();
-                tagInfo.append("ID: ").append(markerTag.getId()).append(", Name: ").append(markerTag.getName()).append("\n");
-                if (getActivity() != null) {
-                    StringBuilder finalTagInfo = tagInfo;
-                    getActivity().runOnUiThread(() -> tagInfoTextView.setText(finalTagInfo));
-                }
+    private void displayTagByID() {
+        String idString = tagIdEditText.getText().toString();
+        if (!idString.isEmpty()) {
+            try {
+                Long id = Long.parseLong(idString);
+                MarkerTagApi markerTagApi = ApiClientFactory.getMarkerTagApi();
+                markerTagApi.getMarkerTagById(id).enqueue(new SlimCallback<>(markerTag -> {
+                    if (markerTag != null) {
+                        String tagInfo = "ID: " + markerTag.getId() + ", Name: " + markerTag.getName();
+                        tagInfoTextView.setText(tagInfo);
+                    }
+                }, "getTagByID"));
+            } catch (NumberFormatException e) {
+                Toast.makeText(getContext(), "Enter a valid ID", Toast.LENGTH_LONG).show();
             }
-        }, "getTagByID"));
+        } else {
+            Toast.makeText(getContext(), "ID cannot be empty", Toast.LENGTH_LONG).show();
+        }
     }
 
-    private void deleteTagByID(Long id){
-        MarkerTagApi markerTagApi = ApiClientFactory.getMarkerTagApi();
-        markerTagApi.deleteMarkerTagById(id).enqueue(new Callback<Void>() {
-            @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
-                if(response.isSuccessful()){
-                    String deleteSuccessText = "Tag with ID: " + id + " deleted successfully";
-                    tagInfoTextView.setText(deleteSuccessText);
+    private void deleteTagByID() {
+        String idString = tagIdEditText.getText().toString();
+        if (!idString.isEmpty()) {
+            try {
+                Long id = Long.parseLong(idString);
+                MarkerTagApi markerTagApi = ApiClientFactory.getMarkerTagApi();
+                markerTagApi.deleteMarkerTagById(id).enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> response) {
+                        if (response.isSuccessful()) {
+                            String deleteSuccessText = "Tag with ID: " + id + " deleted successfully";
+                            tagInfoTextView.setText(deleteSuccessText);
+                        } else {
+                            Toast.makeText(getActivity(), "Failed to delete tag", Toast.LENGTH_SHORT).show();
+                        }
+                    }
 
-                } else{
-                    Toast.makeText(getActivity(), "Failed to delete tag", Toast.LENGTH_SHORT).show();
-                }
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        Toast.makeText(getActivity(), "Error deleting tag: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } catch (NumberFormatException e) {
+                Toast.makeText(getContext(), "Enter a valid ID", Toast.LENGTH_LONG).show();
             }
-
-            @Override
-            public void onFailure(Call<Void> call, Throwable t) {
-                Toast.makeText(getActivity(), "Error deleting tag", Toast.LENGTH_SHORT).show();
-            }
-        });
-
+        } else {
+            Toast.makeText(getContext(), "ID cannot be empty", Toast.LENGTH_LONG).show();
+        }
     }
 
+    private void updateTagByID() {
+        String idString = tagIdEditText.getText().toString();
+        String newName = tagNameEditText.getText().toString();
+
+        if (!idString.isEmpty() && !newName.isEmpty()) {
+            try {
+                Long id = Long.parseLong(idString);
+                MarkerTag updatedTag = new MarkerTag();
+                updatedTag.setName(newName);
+
+                MarkerTagApi markerTagApi = ApiClientFactory.getMarkerTagApi();
+                markerTagApi.updateMarkerTag(id, updatedTag).enqueue(new Callback<MarkerTag>() {
+                    @Override
+                    public void onResponse(Call<MarkerTag> call, Response<MarkerTag> response) {
+                        if (response.isSuccessful()) {
+                            String updateSuccessText = "Tag with ID: " + id + " updated successfully to " + newName;
+                            tagInfoTextView.setText(updateSuccessText);
+                            Toast.makeText(getActivity(), updateSuccessText, Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(getActivity(), "Failed to update tag", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<MarkerTag> call, Throwable t) {
+                        Toast.makeText(getActivity(), "Error updating tag", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } catch (NumberFormatException e) {
+                Toast.makeText(getContext(), "Enter a valid ID", Toast.LENGTH_LONG).show();
+            }
+        } else {
+            Toast.makeText(getContext(), "ID and new name cannot be empty", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void createTag() {
+        String tagName = tagNameEditText.getText().toString().trim();
+
+        if (!tagName.isEmpty()) {
+            MarkerTagApi markerTagApi = ApiClientFactory.getMarkerTagApi();
+
+            MarkerTag newTag = new MarkerTag();
+            newTag.setName(tagName);
+            markerTagApi.addMarkerTag(newTag).enqueue(new Callback<MarkerTag>() {
+                @Override
+                public void onResponse(Call<MarkerTag> call, Response<MarkerTag> response) {
+                    if (response.isSuccessful()) {
+                        MarkerTag createdTag = response.body();
+                        String successMessage = "Tag created successfully with ID: " + createdTag.getId();
+                        tagInfoTextView.setText(successMessage);
+                        Toast.makeText(getActivity(), successMessage, Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getActivity(), "Failed to create tag", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<MarkerTag> call, Throwable t) {
+                    Toast.makeText(getActivity(), "Error creating tag: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else {
+            Toast.makeText(getContext(), "Tag name cannot be empty", Toast.LENGTH_LONG).show();
+        }
+    }
 }
