@@ -194,23 +194,20 @@ public class EventCommentWebsocket {//This is both the comment controller and ch
          * @param message The message to be broadcasted to all users.
          */
         private void broadcast (String message, CommentEntity sender){
-            commentRepository.save(new CommentEntity(sender.getUserId(),sender.getPostId(), "Event",message));
-            try {
-
-            } catch(Exception e) {
-                System.out.println(e);
-            }
+            CommentEntity toSave = new CommentEntity(sender.getUserId(),sender.getPostId(), "Event" ,message);
+            commentRepository.save(toSave);
                 sessionUserMap.forEach((session, user) -> {
                     try {
 
-                        //session.getBasicRemote().sendText(message);
+                        session.getBasicRemote().sendText(message);
                         if (sender.getPostId().equals(user.getPostId())) {
-                            usernameSessionMap.get(user.getUserId()).getBasicRemote().sendText(message);
-                            final EventMarker tempEvent = this.eventRepository.findById(currCommentor.getPostId()).get();
-                            final CommentEntity u = this.commentRepository.findById(currCommentor.getPostId()).get();
-                            tempEvent.getComments().add(u); 	// if successful add
-                             u.setPertainsEventMarker(tempEvent);
+                            //usernameSessionMap.get(user.getUserId()).getBasicRemote().sendText(message);
+                            final EventMarker tempEvent = this.eventRepository.findById(toSave.getId()).get();
+                            //final CommentEntity u = this.commentRepository.findById(currCommentor.getPostId()).get();
+                            tempEvent.getComments().add(toSave); 	// if successful add
+                             toSave.setPertainsEventMarker(tempEvent);
                             eventRepository.save(tempEvent);
+                            commentRepository.save(toSave);
                         }
 
 

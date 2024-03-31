@@ -40,6 +40,6 @@ public class ReportMarker extends MarkerBase {
 	)
 	private Set<User> confirmed_by = new HashSet<>();
 
-	@OneToMany(mappedBy = "pertainsReportMarker")
+	@OneToMany(mappedBy = "pertainsReportMarker", fetch = FetchType.EAGER)
 	private List<CommentEntity> Comments;
 }

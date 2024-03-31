@@ -190,16 +190,19 @@ public class ReportCommentWebsocket {//This is both the comment controller and c
          * @param message The message to be broadcasted to all users.
          */
         private void broadcast (String message, CommentEntity sender){
-            commentRepository.save(new CommentEntity(sender.getUserId(),sender.getPostId(),"Report" ,message));
+            CommentEntity toSave = new CommentEntity(sender.getUserId(),sender.getPostId(), "Report" ,message);
+            commentRepository.save(toSave);
                 sessionUserMap.forEach((session, user) -> {
                     try {
+                        session.getBasicRemote().sendText(message);
                         if (sender.getPostId().equals(user.getPostId())) {
-                            usernameSessionMap.get(user.getUserId()).getBasicRemote().sendText(message);
-                            final ReportMarker tempReport = this.reportRepository.findById(currCommentor.getPostId()).get();
-                            final CommentEntity u = this.commentRepository.findById(currCommentor.getPostId()).get();
-                            tempReport.getComments().add(u); 	// if successful add
-                            u.setPertainsReportMarker(tempReport);
+                            //usernameSessionMap.get(user.getUserId()).getBasicRemote().sendText(message);
+                            final ReportMarker tempReport = this.reportRepository.findById(toSave.getId()).get();
+                           // final CommentEntity u = this.commentRepository.findById(currCommentor.getPostId()).get();
+                            tempReport.getComments().add(toSave); 	// if successful add
+                            toSave.setPertainsReportMarker(tempReport);
                             reportRepository.save(tempReport);
+                            commentRepository.save(toSave);
                         }
                     } catch (IOException e) {
                         throw new RuntimeException(e);

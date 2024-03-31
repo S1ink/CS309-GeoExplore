@@ -197,14 +197,16 @@ public class ObservationCommentWebsocket {//This is both the comment controller 
                 sessionUserMap.forEach((session, user) -> {
                     try {
 
-                        //session.getBasicRemote().sendText(message);
+                        session.getBasicRemote().sendText(message);
                         if (sender.getPostId().equals(user.getPostId())) {
-                            usernameSessionMap.get(user.getUserId()).getBasicRemote().sendText(message);
+                            //usernameSessionMap.get(user.getUserId()).getBasicRemote().sendText(message);
                             final ObservationMarker tempObservation = this.observationRepository.findById(currCommentor.getPostId()).get();
-                            final CommentEntity u = this.commentRepository.findById(currCommentor.getPostId()).get();
-                            tempObservation.getComments().add(u); 	// if successful add
-                            u.setPertainsObservationMarker(tempObservation);
+                            logger.info("Made it into adding to observation repository");
+                            //final CommentEntity u = this.commentRepository.findById(toSave.getId()).get();
+                            tempObservation.getComments().add(toSave); 	// if successful add
+                            toSave.setPertainsObservationMarker(tempObservation);
                             observationRepository.save(tempObservation);
+                            commentRepository.save(toSave);
                         }
 
                     } catch (IOException e) {

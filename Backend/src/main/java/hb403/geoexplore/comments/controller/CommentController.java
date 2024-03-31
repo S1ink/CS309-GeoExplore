@@ -86,7 +86,7 @@ public class CommentController {
         List<CommentEntity> getAllComments = commentRepository.findAll();
         ArrayList<CommentEntity> commentEntitiesOnPost = new ArrayList<CommentEntity>();
         for (int i = 0; i < getAllComments().size();i++) {
-            if (getAllComments.get(i).getPostType().equals("Observation")){
+             if (getAllComments.get(i).getPostType().equals("Observation")){
                 if(getAllComments.get(i).getPostId().equals(postId));
                 commentEntitiesOnPost.add(getAllComments.get(i));
             }
@@ -100,10 +100,11 @@ public class CommentController {
         List<CommentEntity> getAllComments = commentRepository.findAll();
         ArrayList<CommentEntity> commentEntitiesOnPost = new ArrayList<CommentEntity>();
         for (int i = 0; i < getAllComments().size();i++) {
-            if (getAllComments.get(i).getPostType().equals("Event")){
+             if (getAllComments.get(i).getPostType().equals("Event")){
                 if(getAllComments.get(i).getPostId().equals(postId));
                 commentEntitiesOnPost.add(getAllComments.get(i));
             }
+
         }
         return commentEntitiesOnPost;
     }
@@ -116,7 +117,7 @@ public class CommentController {
         List<CommentEntity> getAllComments = commentRepository.findAll();
         ArrayList<CommentEntity> commentEntitiesOnPost = new ArrayList<CommentEntity>();
         for (int i = 0; i < getAllComments().size();i++) {
-            if (getAllComments.get(i).getPostType().equals("Report")){
+             if (getAllComments.get(i).getPostType().equals("Report")){
                 if(getAllComments.get(i).getPostId().equals(postId));
                 commentEntitiesOnPost.add(getAllComments.get(i));
             }

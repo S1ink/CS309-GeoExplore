@@ -34,6 +34,8 @@ public class CommentEntity {
         @OneToMany(mappedBy = "ObservationMarker")
         protected ArrayList<ObservationMarker> postLinker;*/
     @Getter
+    @Setter
+    @JsonIgnore
        @ManyToOne
        @JoinTable(
                name = "Observation_pertains",
@@ -41,6 +43,8 @@ public class CommentEntity {
                inverseJoinColumns = @JoinColumn(name = "marker_id"))
        ObservationMarker pertainsObservationMarker;
     @Getter
+    @Setter
+    @JsonIgnore
     @ManyToOne
     @JoinTable(
             name = "Event_pertains",
@@ -48,6 +52,8 @@ public class CommentEntity {
             inverseJoinColumns = @JoinColumn(name = "marker_id"))
     EventMarker pertainsEventMarker;
     @Getter
+    @Setter
+    @JsonIgnore
     @ManyToOne
     @JoinTable(
             name = "Report_pertains",
@@ -65,17 +71,18 @@ public class CommentEntity {
         @Getter
         @Column
         private String userId;
-
+        @Getter
+        @Setter
         @Column
         private String comment;
+
+        @Setter
         @Column
         private String postType;
         public CommentEntity(Long Commentid,Long PostID,  String userId,String type, String comment) {
         this.id = Commentid;
         this.postId = PostID;
-        if (type.equals("Report") || type.equals("Observation") || type.equals("Event")) {
-            this.postType = type;
-        }
+        this.postType = type;
         this.userId = userId;
         this.comment= comment;
         }
@@ -98,19 +105,14 @@ public class CommentEntity {
 
         }
 
-    public void setPostId(Long postId) {
-        this.postId = postId;
+    public String getPostType() {
+        if (postType == null){
+            return "Not in post";
     }
-
-    public String getComment() {
-        return comment;
+        else {
+            return postType;
+        }
     }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
-
 
     @Override
         public String toString(){
