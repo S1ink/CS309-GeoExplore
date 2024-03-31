@@ -5,6 +5,7 @@ import hb403.geoexplore.UserStorage.entity.User;
 
 import java.util.*;
 
+import hb403.geoexplore.comments.Entity.CommentEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -38,6 +39,7 @@ public class EventMarker extends MarkerBase {
 		}
 	)
 	private Set<User> attendees = new HashSet<>();
-
+	@OneToMany(mappedBy = "pertainsEventMarker")
+	private List<CommentEntity> Comments;
 
 }

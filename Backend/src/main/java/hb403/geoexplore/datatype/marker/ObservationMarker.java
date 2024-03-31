@@ -46,9 +46,11 @@ public class ObservationMarker extends MarkerBase {
 	/*@ManyToOne
 	@JoinColumn(name="postLinker", nullable=false)
 	protected CommentEntity comments;		// jsonignore just trying to link the comments to a post*/
-	/*@ManyToMany(mappedBy = "pertainsObservationMarker")
-	private List<CommentEntity> pertains;*/
-	@ManyToMany(
+	@Getter
+	@Setter
+	@OneToMany(mappedBy = "pertainsObservationMarker")
+	private List<CommentEntity> Comments;
+	/*@ManyToMany(
 			fetch = FetchType.EAGER,
 			cascade = { CascadeType.PERSIST, CascadeType.MERGE }
 	)
@@ -68,6 +70,6 @@ public class ObservationMarker extends MarkerBase {
 			}
 	)
 	private Set<CommentEntity> postIds = new HashSet<>();
-
+	*/
 
 }
