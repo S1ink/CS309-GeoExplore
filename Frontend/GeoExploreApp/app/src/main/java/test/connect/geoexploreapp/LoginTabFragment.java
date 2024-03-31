@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.gson.Gson;
 
@@ -68,19 +69,16 @@ public class LoginTabFragment extends Fragment {
     }
 
     private void showAlert(String message) {
-        // Context should be getActivity() since you're in a fragment
         new AlertDialog.Builder(getActivity())
                 .setMessage(message)
                 .setTitle("Alert")
-                .setPositiveButton("OK", null) // Optionally, add an OnClickListener
+                .setPositiveButton("OK", null)
                 .create()
                 .show();
     }
 
     private void isValidCredentials(String email, String password, CredentialsCallback callback) {
-        // CHECK IF USER EXISTS HERE
         if (email.isEmpty() || password.isEmpty()) {
-            // Immediate feedback for empty fields
             callback.onResult(false);
             return;
         }
@@ -106,11 +104,15 @@ public class LoginTabFragment extends Fragment {
     }
     private void startMainActivity(User newUser) {
         Intent intent = new Intent(getActivity(), MainActivity.class);
+        Gson gson = new Gson();
+        String userJson = gson.toJson(newUser);
+        intent.putExtra("UserJson",userJson);
         intent.putExtra("UserName", newUser.getName());
         intent.putExtra("UserEmail", newUser.getEmailId());
        // intent.putExtra("UserID", newUser.getId());
+        intent.putExtra("IsAdmin", newUser.getIsAdmin());
         startActivity(intent);
-        getActivity().finish(); // Call finish on the Activity, not the Fragment
+        getActivity().finish();
     }
 }
 

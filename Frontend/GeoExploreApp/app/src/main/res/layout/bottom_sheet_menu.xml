@@ -5,11 +5,6 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <Button
-        android:id="@+id/btn_event_create"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Create Event" />
 
 
     <Button
@@ -38,12 +33,6 @@
         android:text="List All Events" />
 
 
-    <Button
-        android:id="@+id/btn_report_create"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Create Report" />
-
 
     <Button
         android:id="@+id/btn_report_read"
@@ -69,12 +58,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="List All Reports" />
-
-    <Button
-        android:id="@+id/btn_observation_add"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Create an Observation" />
 
     <Button
         android:id="@+id/btn_observation_read"

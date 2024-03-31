@@ -3,10 +3,14 @@ package test.connect.geoexploreapp;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -37,11 +41,10 @@ public class SettingsActivity extends Fragment {
      * @return A new instance of fragment SettingsActivity.
      */
     // TODO: Rename and change types and number of parameters
-    public static SettingsActivity newInstance(String param1, String param2) {
+    public static SettingsActivity newInstance(boolean isAdmin) {
         SettingsActivity fragment = new SettingsActivity();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putBoolean("IsAdmin", isAdmin); // get user admin status
         fragment.setArguments(args);
         return fragment;
     }
@@ -59,6 +62,68 @@ public class SettingsActivity extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.activity_settings, container, false);
+        View view = inflater.inflate(R.layout.activity_settings, container, false);
+
+        Bundle args = getArguments();
+
+        boolean isAdmin = false;
+
+        if(args != null){
+            isAdmin = args.getBoolean("IsAdmin",false);
+            Log.d("SettingsActivity", "isAdmin: " + isAdmin);
+
+            Button btnSendEmergency = view.findViewById(R.id.sendEmergencyButton);
+            Button btnEmergencyDashboard = view.findViewById(R.id.emergencyDashButton);
+            Button btnMarkerTagManagement = view.findViewById(R.id.markerTagMngmtBtn);
+
+
+            if (isAdmin) {
+                btnSendEmergency.setVisibility(View.VISIBLE);
+                btnEmergencyDashboard.setVisibility(View.VISIBLE);
+                btnMarkerTagManagement.setVisibility(View.VISIBLE);
+                btnSendEmergency.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Fragment emergencySendFragment = new EmergencySendFragment();
+                        FragmentManager fragmentManager = getParentFragmentManager();
+                        FragmentTransaction transaction = fragmentManager.beginTransaction();
+                        transaction.replace(R.id.frame, emergencySendFragment);
+                        transaction.addToBackStack(null);
+                        transaction.commit();
+                    }
+                });
+
+                btnEmergencyDashboard.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Fragment emergencyDashboardFragment = new EmergencyDashboardFragment();
+                        FragmentManager fragmentManager = getParentFragmentManager();
+                        FragmentTransaction transaction = fragmentManager.beginTransaction();
+                        transaction.replace(R.id.frame, emergencyDashboardFragment);
+                        transaction.addToBackStack(null);
+                        transaction.commit();
+                    }
+                });
+
+                btnMarkerTagManagement.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Fragment markerTagManagementFragment = new MarkerTagManagementFragment();
+                        FragmentManager fragmentManager = getParentFragmentManager();
+                        FragmentTransaction transaction = fragmentManager.beginTransaction();
+                        transaction.replace(R.id.frame, markerTagManagementFragment);
+                        transaction.addToBackStack(null);
+                        transaction.commit();
+                    }
+                });
+            } else {
+                btnSendEmergency.setVisibility(View.GONE);
+                btnEmergencyDashboard.setVisibility(View.GONE);
+            }
+        }
+
+
+
+        return view;
     }
 }
