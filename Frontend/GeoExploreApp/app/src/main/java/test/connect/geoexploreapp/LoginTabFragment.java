@@ -92,8 +92,6 @@ public class LoginTabFragment extends Fragment {
                 boolean passwordMatch = password != null && password.equals(temp.getPassword());
                 if (emailMatch && passwordMatch) {
                     Log.d("LoginCheck", "Match found");
-                    SharedViewModel viewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
-                    viewModel.setLoggedInUser(temp);
                     startMainActivity(temp);
                     callback.onResult(true);
                     return;
@@ -106,6 +104,9 @@ public class LoginTabFragment extends Fragment {
     }
     private void startMainActivity(User newUser) {
         Intent intent = new Intent(getActivity(), MainActivity.class);
+        Gson gson = new Gson();
+        String userJson = gson.toJson(newUser);
+        intent.putExtra("UserJson",userJson);
         intent.putExtra("UserName", newUser.getName());
         intent.putExtra("UserEmail", newUser.getEmailId());
        // intent.putExtra("UserID", newUser.getId());

@@ -74,11 +74,13 @@ public class SettingsActivity extends Fragment {
 
             Button btnSendEmergency = view.findViewById(R.id.sendEmergencyButton);
             Button btnEmergencyDashboard = view.findViewById(R.id.emergencyDashButton);
+            Button btnMarkerTagManagement = view.findViewById(R.id.markerTagMngmtBtn);
 
 
             if (isAdmin) {
                 btnSendEmergency.setVisibility(View.VISIBLE);
                 btnEmergencyDashboard.setVisibility(View.VISIBLE);
+                btnMarkerTagManagement.setVisibility(View.VISIBLE);
                 btnSendEmergency.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -98,6 +100,18 @@ public class SettingsActivity extends Fragment {
                         FragmentManager fragmentManager = getParentFragmentManager();
                         FragmentTransaction transaction = fragmentManager.beginTransaction();
                         transaction.replace(R.id.frame, emergencyDashboardFragment);
+                        transaction.addToBackStack(null);
+                        transaction.commit();
+                    }
+                });
+
+                btnMarkerTagManagement.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Fragment markerTagManagementFragment = new MarkerTagManagementFragment();
+                        FragmentManager fragmentManager = getParentFragmentManager();
+                        FragmentTransaction transaction = fragmentManager.beginTransaction();
+                        transaction.replace(R.id.frame, markerTagManagementFragment);
                         transaction.addToBackStack(null);
                         transaction.commit();
                     }

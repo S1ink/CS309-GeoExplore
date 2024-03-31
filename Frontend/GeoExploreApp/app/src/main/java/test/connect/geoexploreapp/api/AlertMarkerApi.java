@@ -3,6 +3,7 @@ package test.connect.geoexploreapp.api;
 import java.util.List;
 
 import retrofit2.Call;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
 import test.connect.geoexploreapp.model.AlertMarker;
@@ -16,4 +17,8 @@ public interface AlertMarkerApi {
     // crud[L] - Get a list of all the alerts in the database
     @GET("geomap/alerts")
     Call<List<AlertMarker>> GetAllAlertMarker();
+
+    // cru[D]l - Delete an alert in the database by it's id
+    @DELETE("geomap/alerts/{id}")
+    Call<Void> deleteAlertById(@Path("id") Long id);
 }
