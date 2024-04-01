@@ -33,7 +33,7 @@ public class Observation implements FeedItem{
         this.id = id;
     }
 
-    public double getLatitude() {
+    public double getIo_latitude() {
         return latitude;
     }
 
@@ -41,7 +41,7 @@ public class Observation implements FeedItem{
         this.latitude = latitude;
     }
 
-    public double getLongitude() {
+    public double getIo_longitude() {
         return longitude;
     }
 

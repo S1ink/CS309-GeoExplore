@@ -3,7 +3,6 @@ package test.connect.geoexploreapp;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
@@ -44,9 +43,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
 import org.java_websocket.handshake.ServerHandshake;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -99,9 +95,6 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
 
         View view = inflater.inflate(R.layout.activity_maps, container, false);
 
-        WebSocketManager.getInstance().connectWebSocket("wss://socketsbay.com/wss/v2/1/demo/"); // CHANGE URL FOR WEBSOCKET
-        WebSocketManager.getInstance().setWebSocketListener(this);
-
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map);
         if (mapFragment != null) {
@@ -113,20 +106,23 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
 
         viewModel.getCreateEmergencyNotification().observe(getViewLifecycleOwner(), isCreateEmergency -> {
             isCreateEmergencyNotification = isCreateEmergency;
-//            if (isCreateEmergency) {
-//                Log.d("Maps","Emergency notfication supposedly good");
-//            }
         });
 
         viewModel.getLoggedInUser().observe(getViewLifecycleOwner(), loggedInUser -> {
             this.loggedInUser = loggedInUser;
+            if (loggedInUser != null){
+                String userID = String.valueOf(loggedInUser.getId());
+                WebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/live/alerts/" + userID); // CHANGE URL FOR WEBSOCKET wss://socketsbay.com/wss/v2/1/demo/
+                WebSocketManager.getInstance().setWebSocketListener(this);
+            }else {
+                Log.e("WebSocket", "Logged in user is null. Cannot establish WebSocket connection.");
+            }
         });
 
 
         reportCreateTextView = view.findViewById(R.id.activity_maps_report_create_text_view);
         eventCreateTextView = view.findViewById(R.id.activity_maps_event_create_text_view);
         observationCreateTextView = view.findViewById(R.id.activity_maps_observation_create_text_view);
-
         reportUpdateTextView = view.findViewById(R.id.activity_maps_report_update_text_view);
         eventUpdateTextView = view.findViewById(R.id.activity_maps_event_update_text_view);
         observationUpdateTextView = view.findViewById(R.id.activity_maps_observation_update_text_view);
@@ -155,6 +151,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         } catch (JsonSyntaxException e) {
             e.printStackTrace();
         }
+
     }
 
     @Override
@@ -446,8 +443,8 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
 
         ReportMarker newReportMarker = new ReportMarker();
-        newReportMarker.setLatitude(latLng.latitude);
-        newReportMarker.setLongitude(latLng.longitude);
+        newReportMarker.setIo_latitude(latLng.latitude);
+        newReportMarker.setIo_longitude(latLng.longitude);
         newReportMarker.setTitle(reportTitle);
         newReportMarker.setCreator(loggedInUser);
         newReportMarker.setTime_created(new Date());
@@ -455,7 +452,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         newReportMarker.setTags(markerTags);
 
         reportMarkerApi.addReport(newReportMarker).enqueue(new SlimCallback<>(createdReportMarker -> {
-            LatLng position = new LatLng(createdReportMarker.getLatitude(), createdReportMarker.getLongitude());
+            LatLng position = new LatLng(createdReportMarker.getIo_latitude(), createdReportMarker.getIo_longitude());
             mMap.addMarker(new MarkerOptions()
                     .position(position)
                     .title(createdReportMarker.getId() + " " + createdReportMarker.getTitle())
@@ -473,7 +470,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
 
         reportMarkerApi.getReportById(id).enqueue(new SlimCallback<>(reportMarker -> {
             if (reportMarker != null) {
-                LatLng position = new LatLng(reportMarker.getLatitude(), reportMarker.getLongitude());
+                LatLng position = new LatLng(reportMarker.getIo_latitude(), reportMarker.getIo_longitude());
                 mMap.clear();
                 mMap.addMarker(new MarkerOptions()
                         .position(position)
@@ -489,8 +486,8 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         ReportMarker updatedReportMarker = new ReportMarker();
         updatedReportMarker.setTitle(newTitle);
         updatedReportMarker.setTime_updated(new Date());
-        updatedReportMarker.setLatitude(latLng.latitude);
-        updatedReportMarker.setLongitude(latLng.longitude);
+        updatedReportMarker.setIo_latitude(latLng.latitude);
+        updatedReportMarker.setIo_longitude(latLng.longitude);
 
         reportMarkerApi.updateReportById(id, updatedReportMarker).enqueue(new SlimCallback<>(updatedReport -> {
             if (updatedReport != null) {
@@ -531,7 +528,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         reportMarkerApi.GetAllReportMarker().enqueue(new SlimCallback<>(reportMarkers -> {
             mMap.clear();
             for (ReportMarker reportMarker : reportMarkers) {
-                LatLng position = new LatLng(reportMarker.getLatitude(), reportMarker.getLongitude());
+                LatLng position = new LatLng(reportMarker.getIo_latitude(), reportMarker.getIo_longitude());
                 mMap.addMarker(new MarkerOptions()
                         .position(position)
                         .title(reportMarker.getId() + " " + reportMarker.getTitle())
@@ -555,7 +552,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         observation.setTags(markerTags);
 
         observationApi.saveObs(observation).enqueue(new SlimCallback<>(obs -> {
-            LatLng position = new LatLng(obs.getLatitude(), obs.getLongitude());
+            LatLng position = new LatLng(obs.getIo_latitude(), obs.getIo_longitude());
             mMap.addMarker(new MarkerOptions()
                     .position(position)
                     .title(obs.getId() + " " + obs.getTitle())
@@ -574,7 +571,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
 
         observationApi.getObs(id).enqueue(new SlimCallback<>(obj -> {
             if (obj != null) {
-                LatLng position = new LatLng(obj.getLatitude(), obj.getLongitude());
+                LatLng position = new LatLng(obj.getIo_latitude(), obj.getIo_longitude());
                 mMap.clear();
                 mMap.addMarker(new MarkerOptions()
                         .position(position)
@@ -635,7 +632,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         observationApi.getAllObs().enqueue(new SlimCallback<>(obs -> {
             mMap.clear();
             for (Observation ob : obs) {
-                LatLng position = new LatLng(ob.getLatitude(), ob.getLongitude());
+                LatLng position = new LatLng(ob.getIo_latitude(), ob.getIo_longitude());
                 mMap.addMarker(new MarkerOptions()
                         .position(position)
                         .title(ob.getId() + " " + ob.getTitle())
@@ -659,7 +656,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         newEventMarker.setTags(markerTags);
 
         reportMarkerApi.addEvent(newEventMarker).enqueue(new SlimCallback<>(createdEventMarker -> {
-            LatLng position = new LatLng(createdEventMarker.getLatitude(), createdEventMarker.getLongitude());
+            LatLng position = new LatLng(createdEventMarker.getIo_latitude(), createdEventMarker.getIo_longitude());
             mMap.addMarker(new MarkerOptions()
                     .position(position)
                     .title(createdEventMarker.getId() + " " + createdEventMarker.getTitle() + " Department: " + createdEventMarker.getCity_department())
@@ -677,7 +674,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
 
         eventMarkerApi.getEventById(id).enqueue(new SlimCallback<>(eventMarker -> {
             if (eventMarker != null) {
-                LatLng position = new LatLng(eventMarker.getLatitude(), eventMarker.getLongitude());
+                LatLng position = new LatLng(eventMarker.getIo_latitude(), eventMarker.getIo_longitude());
                 mMap.clear();
                 mMap.addMarker(new MarkerOptions()
                         .position(position)
@@ -737,7 +734,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         eventMarkerApi.GetAllEventMarker().enqueue(new SlimCallback<>(eventMarkers -> {
             mMap.clear();
             for (EventMarker eventMarker : eventMarkers) {
-                LatLng position = new LatLng(eventMarker.getLatitude(), eventMarker.getLongitude());
+                LatLng position = new LatLng(eventMarker.getIo_latitude(), eventMarker.getIo_longitude());
                 mMap.addMarker(new MarkerOptions()
                         .position(position)
                         .title(eventMarker.getId() + " " + eventMarker.getTitle() + " Department: " + eventMarker.getCity_department())
