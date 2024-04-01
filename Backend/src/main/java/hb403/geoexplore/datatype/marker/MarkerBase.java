@@ -41,7 +41,7 @@ public abstract class MarkerBase {
 	protected Point location;			// lat/long as stored in the tables -- not serialized to json (@JsonIgnore)
 
 	@Transient
-	protected Double io_lattitude = 0.0;		// lat as serialized/deserialized -- not stored in the tables (@Transient)
+	protected Double io_latitude = 0.0;		// lat as serialized/deserialized -- not stored in the tables (@Transient)
 	@Transient
 	protected Double io_longitude = 0.0;		// long as serialize/deserialized -- not stored in the tables (@Transient)
 
@@ -88,12 +88,12 @@ public abstract class MarkerBase {
 
 	/** Synchronize the stored table location and IO lat/long values (copies from the IO variables */
 	public void enforceLocationIO() {
-		this.location = new Point(new Coordinate(this.io_lattitude, this.io_longitude), new PrecisionModel(), 0);
+		this.location = new Point(new Coordinate(this.io_latitude, this.io_longitude), new PrecisionModel(), 0);
 	}
 	/** Synchronize the stored table location and IO lat/long values (copies from the table entry) */
 	public void enforceLocationTable() {
 		if(this.location != null) {
-			this.io_lattitude = this.location.getX();
+			this.io_latitude = this.location.getX();
 			this.io_longitude = this.location.getY();
 		}
 	}

@@ -36,7 +36,9 @@ public class ObservationController {
         if (observation != null) {
             observation.nullifyId();
             observation.enforceLocationIO();
-            return this.obs_repo.save(observation);
+            final ObservationMarker obs = this.obs_repo.save(observation);
+            obs.enforceLocationTable();
+            return obs;
         }
         return null;
     }
@@ -64,7 +66,9 @@ public class ObservationController {
         if (id != null && observation != null){
             observation.setId(id);
             observation.enforceLocationIO();
-            return this.obs_repo.save(observation);
+            final ObservationMarker obs = this.obs_repo.save(observation);
+            obs.enforceLocationTable();
+            return obs;
         }
         return null;
     }
