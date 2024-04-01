@@ -45,7 +45,7 @@ public abstract class MarkerBase {
 	@Transient
 	protected Double io_longitude = 0.0;		// long as serialize/deserialized -- not stored in the tables (@Transient)
 
-	@OneToOne(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.MERGE })	// caused an error - might have to implement per-entity
+	@ManyToOne(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.MERGE })	// caused an error - might have to implement per-entity
 	@JoinColumn(name = "creator_user_id", referencedColumnName = "user_id")
 	protected User creator;		// jsonignore (just send id?)
 
