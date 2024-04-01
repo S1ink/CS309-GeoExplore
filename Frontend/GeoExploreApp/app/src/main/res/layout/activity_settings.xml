@@ -18,29 +18,38 @@
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:layout_gravity="center"/>
 
-        <!-- Setting Option 1 -->
         <Button
-            android:id="@+id/buttonOption1"
+            android:id="@+id/sendEmergencyButton"
             android:layout_width="310dp"
             android:layout_height="60dp"
             android:layout_marginTop="20dp"
-            android:text="Option 1"
-            android:textSize="18sp"
-            android:textColor="@color/white"
-            android:background="@drawable/button"/>
-
-        <!-- Setting Option 2 -->
-        <Button
-            android:id="@+id/emergencyDashButton"
-            android:layout_width="310dp"
-            android:layout_height="60dp"
-            android:layout_marginTop="20dp"
-            android:text="Emergency Dashboard"
+            android:text="Send Emergency Alert"
             android:visibility="gone"
             android:textSize="18sp"
             android:textColor="@color/white"
             android:background="@drawable/button"/>
 
-        <!-- Additional Options Here -->
+        <Button
+            android:id="@+id/emergencyDashButton"
+            android:layout_width="310dp"
+            android:layout_height="60dp"
+            android:layout_marginTop="20dp"
+            android:text="Emergency Alert Dashboard"
+            android:visibility="gone"
+            android:textSize="18sp"
+            android:textColor="@color/white"
+            android:background="@drawable/button"/>
+
+        <Button
+            android:id="@+id/markerTagMngmtBtn"
+            android:layout_width="310dp"
+            android:layout_height="60dp"
+            android:layout_marginTop="20dp"
+            android:text="Marker Tag Management"
+            android:visibility="gone"
+            android:textSize="18sp"
+            android:textColor="@color/white"
+            android:background="@drawable/button"/>
+
 
     </LinearLayout>

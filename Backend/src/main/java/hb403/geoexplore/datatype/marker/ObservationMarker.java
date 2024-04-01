@@ -17,7 +17,7 @@ import lombok.*;
 @Getter
 @Setter
 public class ObservationMarker extends MarkerBase {
-	
+
 	@ManyToMany(
 		fetch = FetchType.EAGER,
 		cascade = { CascadeType.PERSIST, CascadeType.MERGE }
@@ -39,9 +39,12 @@ public class ObservationMarker extends MarkerBase {
 	)
 	private Set<User> confirmed_by = new HashSet<>();
 
-	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "posts")
-	@JsonIgnore
-	private Set<CommentEntity> comments = new HashSet<>();
+
+
+	@Getter
+	@Setter
+	@OneToMany(mappedBy = "pertainsObservationMarker", fetch = FetchType.EAGER)
+	private List<CommentEntity> Comments;
 
 
 }

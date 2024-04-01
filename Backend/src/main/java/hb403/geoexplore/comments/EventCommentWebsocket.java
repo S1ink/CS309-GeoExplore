@@ -1,38 +1,66 @@
 package hb403.geoexplore.comments;
-import java.io.IOException;
-import java.util.Hashtable;
-import java.util.Map;
-
 
 import hb403.geoexplore.UserStorage.entity.User;
+import hb403.geoexplore.UserStorage.entity.UserGroup;
+import hb403.geoexplore.UserStorage.repository.UserRepository;
 import hb403.geoexplore.comments.CommentRepo.CommentRepository;
 import hb403.geoexplore.comments.Entity.CommentEntity;
-import hb403.geoexplore.comments.controller.CommentController;
-
-import io.micrometer.observation.transport.SenderContext;
-import jakarta.websocket.OnClose;
-import jakarta.websocket.OnError;
-import jakarta.websocket.OnMessage;
-import jakarta.websocket.OnOpen;
-import jakarta.websocket.Session;
+import hb403.geoexplore.datatype.marker.EventMarker;
+import hb403.geoexplore.datatype.marker.repository.EventRepository;
+import hb403.geoexplore.datatype.marker.repository.ObservationRepository;
+import hb403.geoexplore.datatype.marker.repository.ReportRepository;
+import jakarta.websocket.*;
 import jakarta.websocket.server.PathParam;
 import jakarta.websocket.server.ServerEndpoint;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
+import java.util.Hashtable;
+import java.util.Map;
 
-@ServerEndpoint("/observations/comments/{userid}/{postid}")
+
+@ServerEndpoint("/events/comments/{userid}/{postid}")
 @Component
 @RestController
-public class CommentWebsocket {//This is both the comment controller and chat websocket
-    private CommentEntity currUser;
+public class EventCommentWebsocket {//This is both the comment controller and chat websocket
+    private CommentEntity currCommentor;
+
+    private String Type;
+    private static CommentRepository commentRepository;
+
+    private static ObservationRepository observationRepository;
+
+    private static UserRepository userRepository;
+    private static EventRepository eventRepository;
+    private static ReportRepository reportRepository;
 
     @Autowired
-    CommentRepository commentRepository;
+    public void autoCommentRepository(CommentRepository repo) {
+        EventCommentWebsocket.commentRepository = repo;
+    }
+
+    @Autowired
+    public void autoObservationRepository(ObservationRepository repo) {
+        EventCommentWebsocket.observationRepository = repo;
+    }
+
+    @Autowired
+    public void autoUserRepository(UserRepository repo) {
+        EventCommentWebsocket.userRepository = repo;
+    }
+
+    @Autowired
+    public void autoEventRepository(EventRepository repo){
+        EventCommentWebsocket.eventRepository = repo;}
+
+    @Autowired
+    public void autoReportRepository(ReportRepository repo){
+        EventCommentWebsocket.reportRepository = repo;}
+
     // Store all socket session and their corresponding username
     // Two maps for the ease of retrieval by key
     private static Map<Session, String> sessionUsernameMap = new Hashtable<>();
@@ -43,7 +71,7 @@ public class CommentWebsocket {//This is both the comment controller and chat we
     private static Map<CommentEntity, Session> UserSessionMap = new Hashtable<>();
 
     // server side logger
-    private final Logger logger = LoggerFactory.getLogger(CommentWebsocket.class);
+    private final Logger logger = LoggerFactory.getLogger(EventCommentWebsocket.class);
 
     /**
      * This method is called when a new WebSocket connection is established.
@@ -53,12 +81,13 @@ public class CommentWebsocket {//This is both the comment controller and chat we
      * @param postid  id of post for storing
      */
     @OnOpen
-    public void onOpen(Session session, @PathParam("userid") String userid, @PathParam("postid") long postid) throws IOException {
+    public void onOpen(Session session, @PathParam("userid") String userid, @PathParam("postid") long postid, @PathParam("postType") String postType) throws IOException {
 
         // server side log
         logger.info("[onOpen] User " + userid + " joined session on post " + postid);
 
-        this.currUser = new CommentEntity(userid, postid);
+        this.currCommentor = new CommentEntity(userid, postid);
+        this.Type = postType;
         // map current session with username
         sessionUsernameMap.put(session, userid);
         //sessionObservationMap.put (session,postid);
@@ -69,8 +98,8 @@ public class CommentWebsocket {//This is both the comment controller and chat we
 
         //users to filter by user id and postid this is more of a commentor entity, will need to clean this up before
         // big demo will hopefully replace both of the other pairs of hash tables
-        sessionUserMap.put(session, currUser);
-        UserSessionMap.put(currUser, session);
+        sessionUserMap.put(session, currCommentor);
+        UserSessionMap.put(currCommentor, session);
     }
 
     /**
@@ -84,8 +113,8 @@ public class CommentWebsocket {//This is both the comment controller and chat we
 
         // get the username by session
         CommentEntity tempuser = sessionUserMap.get(session);
-        String tempuserid = tempuser.getUserid();
-        Long tempPostId = tempuser.getPostid();
+        String tempuserid = tempuser.getUserId();
+        Long tempPostId = tempuser.getPostId();
 
         // server side log
         logger.info("[onMessage] " + tempuserid + ": " + message);
@@ -102,13 +131,10 @@ public class CommentWebsocket {//This is both the comment controller and chat we
             }
             String destUserName = split_msg[0].substring(1);    //@username and get rid of @
             String actualMessage = actualMessageBuilder.toString();
-            sendMessageToPArticularUser(destUserName, "[DM from " + currUser.getUserid() + "]: " + actualMessage + " from post " + currUser.getPostid());
-            sendMessageToPArticularUser(currUser.getUserid(), "[DM from " + currUser.getUserid() + "]: " + actualMessage + " from post " + currUser.getPostid());
+            sendMessageToPArticularUser(destUserName, "[DM from " + currCommentor.getUserId() + "]: " + actualMessage + " from post " + currCommentor.getPostId());
+            sendMessageToPArticularUser(currCommentor.getUserId(), "[DM from " + currCommentor.getUserId() + "]: " + actualMessage + " from post " + currCommentor.getPostId());
         } else { // Message to whole chat underneath observation
-            //postSessionMap.get(currUser.getPostid()).getBasicRemote().sendText(message);
-            //sendMessageToPArticularObservation (currUser.getPostid(), message);
             broadcast(message, tempuser);
-            //this.postid = currUser.getPostid();
             }
         }
 
@@ -122,14 +148,12 @@ public class CommentWebsocket {//This is both the comment controller and chat we
 
             // get the username from session-username mapping
             CommentEntity user = sessionUserMap.get(session);
-            String username = user.getUserid();
+            String username = user.getUserId();
             // server side log
             logger.info("[onClose] " + username);
-
             // remove user from memory mappings
             sessionUserMap.remove(session);
             UserSessionMap.remove(username);
-
             // send the message to chat
             //broadcast(username + " disconnected");
         }
@@ -147,7 +171,7 @@ public class CommentWebsocket {//This is both the comment controller and chat we
             CommentEntity temp = sessionUserMap.get(session);
 
             // do error handling here
-            logger.info("[onError]" + temp.getUserid() + ": " + throwable.getMessage());
+            logger.info("[onError]" + temp.getUserId() + ": " + throwable.getMessage());
         }
 
         /**
@@ -170,18 +194,22 @@ public class CommentWebsocket {//This is both the comment controller and chat we
          * @param message The message to be broadcasted to all users.
          */
         private void broadcast (String message, CommentEntity sender){
-            /*
-            sessionUserMap.put(session, currUser);
-        UserSessionMap.put(currUser, session);
-             */
-            //sessionObservationMap.forEach((session, postid) -> {
+            CommentEntity toSave = new CommentEntity(sender.getUserId(),sender.getPostId(), "Event" ,message);
+            commentRepository.save(toSave);
                 sessionUserMap.forEach((session, user) -> {
                     try {
-                        //commentRepository.save(new CommentEntity(currUser,message));
-                        //session.getBasicRemote().sendText(message);
-                        if (sender.getPostid().equals(user.getPostid())) {
-                            usernameSessionMap.get(user.getUserid()).getBasicRemote().sendText(message);
+
+                        session.getBasicRemote().sendText(message);
+                        if (sender.getPostId().equals(user.getPostId())) {
+                            //usernameSessionMap.get(user.getUserId()).getBasicRemote().sendText(message);
+                            final EventMarker tempEvent = this.eventRepository.findById(toSave.getId()).get();
+                            //final CommentEntity u = this.commentRepository.findById(currCommentor.getPostId()).get();
+                            tempEvent.getComments().add(toSave); 	// if successful add
+                             toSave.setPertainsEventMarker(tempEvent);
+                            eventRepository.save(tempEvent);
+                            commentRepository.save(toSave);
                         }
+
 
                     } catch (IOException e) {
                         throw new RuntimeException(e);

@@ -17,28 +17,35 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 
-import test.connect.geoexploreapp.model.EmergencyMessage;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import test.connect.geoexploreapp.model.AlertMarker;
+import test.connect.geoexploreapp.model.MarkerTag;
+import test.connect.geoexploreapp.model.User;
 import test.connect.geoexploreapp.websocket.WebSocketManager;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link EmergencyDashFragment#newInstance} factory method to
+ * Use the {@link EmergencySendFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class EmergencyDashFragment extends Fragment {
+public class EmergencySendFragment extends Fragment {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    private EditText titleText, messageText, latitudeText, longitudeText;
+    private EditText titleText, messageText, latitudeText, longitudeText, tagsText;
+    private User loggedInUser;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
 
-    public EmergencyDashFragment() {
+    public EmergencySendFragment() {
         // Required empty public constructor
     }
 
@@ -51,8 +58,8 @@ public class EmergencyDashFragment extends Fragment {
      * @return A new instance of fragment EmergencyDashFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static EmergencyDashFragment newInstance(String param1, String param2) {
-        EmergencyDashFragment fragment = new EmergencyDashFragment();
+    public static EmergencySendFragment newInstance(String param1, String param2) {
+        EmergencySendFragment fragment = new EmergencySendFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -73,13 +80,14 @@ public class EmergencyDashFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_emergency_dash, container, false);
+        View view = inflater.inflate(R.layout.fragment_emergency_send, container, false);
         WebSocketManager.getInstance().connectWebSocket("wss://socketsbay.com/wss/v2/1/demo/"); // CHANGE URL FOR WEBSOCKET
 
         latitudeText = view.findViewById(R.id.latitudeText);
         longitudeText = view.findViewById(R.id.longitudeText);
         titleText = view.findViewById(R.id.titleText);
         messageText = view.findViewById(R.id.messageText);
+        tagsText = view.findViewById(R.id.markerTagsText);
 
 
         SharedViewModel viewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
@@ -95,6 +103,11 @@ public class EmergencyDashFragment extends Fragment {
         });
 
 
+        viewModel.getLoggedInUser().observe(getViewLifecycleOwner(), loggedUser -> {
+            loggedInUser = loggedUser;
+        });
+
+
 
         Button backButton = view.findViewById(R.id.backButton);
         Button setLocationButton = view.findViewById(R.id.setLocationButton);
@@ -102,7 +115,6 @@ public class EmergencyDashFragment extends Fragment {
         backButton.setOnClickListener(v -> getParentFragmentManager().popBackStack());
 
         setLocationButton.setOnClickListener(v -> {
-
             viewModel.setCreateEmergencyNotification(true);
             Log.d("EmergencyDashFragment","Emergency was set to true");
             MapsActivity mapsFragment = new MapsActivity();
@@ -126,11 +138,29 @@ public class EmergencyDashFragment extends Fragment {
                 return;
             }
 
-            EmergencyMessage emergencyMsg = new EmergencyMessage(title, message, Double.parseDouble(latitude), Double.parseDouble(longitude));
+
+            AlertMarker alertMarker = new AlertMarker();
+            alertMarker.setTitle(title);
+            alertMarker.setDescription(message);
+            alertMarker.setLatitude(Double.parseDouble(latitude));
+            alertMarker.setLongitude(Double.parseDouble(longitude));
+            alertMarker.setCreator(loggedInUser);
+            alertMarker.setTime_created(new Date());
+
+            if (!tagsText.getText().toString().trim().isEmpty()) {
+                String[] tagArray = tagsText.getText().toString().trim().split(",");
+                List<MarkerTag> markerTags = new ArrayList<>();
+                for (String tag : tagArray) {
+                    MarkerTag markerTag = new MarkerTag();
+                    markerTag.setName(tag.trim());
+                    markerTags.add(markerTag);
+                }
+                alertMarker.setTags(markerTags);
+            }
 
 
             Gson gson = new Gson();
-            String jsonMessage = gson.toJson(emergencyMsg);
+            String jsonMessage = gson.toJson(alertMarker);
 
 
             WebSocketManager.getInstance().sendMessage(jsonMessage);

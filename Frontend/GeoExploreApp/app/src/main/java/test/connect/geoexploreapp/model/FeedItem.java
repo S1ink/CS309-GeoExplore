@@ -11,7 +11,7 @@ public interface FeedItem {
     String getDescription();
     String getType();
     String getDepartment();
-    Date getDate();
+    Date getTime_created();
     String getLocation();
 
     List<Comment> getComments();

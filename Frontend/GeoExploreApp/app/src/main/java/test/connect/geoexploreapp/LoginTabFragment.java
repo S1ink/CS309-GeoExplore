@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.gson.Gson;
 
@@ -103,6 +104,9 @@ public class LoginTabFragment extends Fragment {
     }
     private void startMainActivity(User newUser) {
         Intent intent = new Intent(getActivity(), MainActivity.class);
+        Gson gson = new Gson();
+        String userJson = gson.toJson(newUser);
+        intent.putExtra("UserJson",userJson);
         intent.putExtra("UserName", newUser.getName());
         intent.putExtra("UserEmail", newUser.getEmailId());
        // intent.putExtra("UserID", newUser.getId());
