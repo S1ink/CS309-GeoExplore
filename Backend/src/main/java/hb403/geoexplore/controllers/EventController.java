@@ -34,7 +34,9 @@ public class EventController {
 		if(event != null) {
 			event.nullifyId();
 			event.enforceLocationIO();
-			return this.events_repo.save(event);
+			final EventMarker e = this.events_repo.save(event);
+			e.enforceLocationTable();
+			return e;
 		}
 		return null;
 	}
@@ -60,7 +62,9 @@ public class EventController {
 		if(id != null && event != null) {
 			event.setId(id);
 			event.enforceLocationIO();
-			return this.events_repo.save(event);
+			final EventMarker e = this.events_repo.save(event);
+			e.enforceLocationTable();
+			return e;
 		}
 		return null;
 	}
