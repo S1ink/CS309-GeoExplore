@@ -44,7 +44,11 @@ public class UserGroup {
 	// group owner? -- this will make the User class a little messy
 	// tags for filtering?
 
-
+	/*what it looks like in user
+	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "members")
+    @JsonIgnore
+    private Set<UserGroup> groups = new HashSet<>();
+	 */
 
 	public UserGroup() {}
 
