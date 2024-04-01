@@ -3,31 +3,36 @@ package test.connect.geoexploreapp.model;
 import java.util.List;
 
 public class Comment {
-    private List<User> user;
-    /*@OneToMany(mappedBy = "id", cascade = CascadeType.ALL)
-    private List<ObservationEntity> observationEntities;*/
+    private Long id;
     private Long commentid;
-    private String userEmailid;
+    private String userId;
     private String comment;
-    private Long postid;
+    private Long postId;
+    private String postType;
+
+    public Comment(String adduserId, Long addpostid, String type, String Addcomment) {
+        this.userId = adduserId;
+        this.postId = addpostid;
+        this.postType = type;
+        this.comment = Addcomment;
+
+    }
+
+    public Comment( String Userid,Long postId) {
+        this.userId = Userid;
+        this.postId = postId;
+    }
 
     public Comment() {
 
     }
 
-    public Comment(String comment, String userEmailid, Long postid) {
-        this.comment = comment;
-        this.userEmailid=userEmailid;
-        this.postid=postid;
+    public Long getId() {
+        return id;
     }
 
-
-    public List<User> getUser() {
-        return user;
-    }
-
-    public void setUser(List<User> user) {
-        this.user = user;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Long getCommentid() {
@@ -38,12 +43,12 @@ public class Comment {
         this.commentid = commentid;
     }
 
-    public String getUserEmailid() {
-        return userEmailid;
+    public String getUserId() {
+        return userId;
     }
 
-    public void setUserEmailid(String userEmailid) {
-        this.userEmailid = userEmailid;
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getComment() {
@@ -55,10 +60,18 @@ public class Comment {
     }
 
     public Long getPostid() {
-        return postid;
+        return postId;
     }
 
     public void setPostid(Long postid) {
-        this.postid = postid;
+        this.postId = postid;
+    }
+
+    public String getPostType() {
+        return postType;
+    }
+
+    public void setPostType(String postType) {
+        this.postType = postType;
     }
 }

@@ -1,36 +1,28 @@
 package test.connect.geoexploreapp.model;
 
-import static java.security.AccessController.getContext;
-
-import android.location.Address;
-import android.location.Geocoder;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 public class EventMarker implements FeedItem{
     private long id;
     private double latitude;
     private double longitude;
+    private User creator;
     private String title;
     private String city_department;
-    private Date date;
+    private Date time_created;
+    private Date time_updated;
+    private String meta;
     private String address;
 
-    private List<Comment> comments;
-
     public EventMarker() {
-        this.date = new Date();
-        this.comments = new ArrayList<>();
+        this.time_created = new Date();
     }
 
     public long getId() {
         return id;
     }
-
 
     public void setId(long id) {
         this.id = id;
@@ -72,8 +64,8 @@ public class EventMarker implements FeedItem{
     }
 
     @Override
-    public Date getDate() {
-        return date;
+    public Date getTime_created() {
+        return time_created;
     }
 
     @Override
@@ -82,20 +74,18 @@ public class EventMarker implements FeedItem{
         return address;
     }
 
-    @Override
-    public List<Comment> getComments() {
-        return comments;
-    }
-
-    public void setComments(List<Comment> comments) {
-        this.comments = comments;
-    }
     public void setLocation(String address)  {
-        this.address =address;
+        this.address = address;
     }
 
-    public void setDate(Date date) {
-        this.date= date;
+
+    @Override
+    public Long getPostID() {
+        return id;
+    }
+
+    public void setTime_created(Date time_created) {
+        this.time_created = time_created;
     }
 
     public void setTitle(String title) {
@@ -110,5 +100,28 @@ public class EventMarker implements FeedItem{
         this.city_department = city_department;
     }
 
+    public User getCreator() {
+        return creator;
+    }
+
+    public void setCreator(User creator) {
+        this.creator = creator;
+    }
+
+    public Date getTime_updated() {
+        return time_updated;
+    }
+
+    public void setTime_updated(Date time_updated) {
+        this.time_updated = time_updated;
+    }
+
+    public String getMeta() {
+        return meta;
+    }
+
+    public void setMeta(String meta) {
+        this.meta = meta;
+    }
 
 }

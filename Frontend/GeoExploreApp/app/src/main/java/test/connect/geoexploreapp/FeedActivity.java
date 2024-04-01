@@ -33,25 +33,25 @@ import test.connect.geoexploreapp.model.EventMarker;
 import test.connect.geoexploreapp.model.FeedItem;
 import test.connect.geoexploreapp.model.Observation;
 import test.connect.geoexploreapp.model.ReportMarker;
+import test.connect.geoexploreapp.model.User;
 
 public class FeedActivity extends Fragment {
     private RecyclerView recyclerView;
     private TextView noItemsDisplay;
     private List<FeedItem> allItems = new ArrayList<>();
     private FeedAdapter adapter;
+    private static User user;
     private static Bundle args;
     public FeedActivity() {
         // Required empty public constructor
     }
 
 
-    public static FeedActivity newInstance(String userName) {
+    public static FeedActivity newInstance(User user) {
         FeedActivity fragment = new FeedActivity();
         args = new Bundle();
-        args.putString("UserName", userName);
-
+        args.putSerializable("UserObject", user);
         fragment.setArguments(args);
-
         return fragment;
     }
 
@@ -77,38 +77,48 @@ public class FeedActivity extends Fragment {
          noItemsDisplay = view.findViewById(R.id.noItems);
          recyclerView = view.findViewById(R.id.recyclerViewFeed);
          recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-         adapter = new FeedAdapter(allItems, args.getString("UserName", "user"), getActivity());
+        if (getArguments() != null) {
+            user = (User) getArguments().getSerializable("UserObject");
+        }
+         adapter = new FeedAdapter(allItems, user, getActivity());
          recyclerView.setAdapter(adapter);
          getFeedItems();
     }
 
     // Implement getFeedItems() to retrieve your data
-    private List<FeedItem> getFeedItems() {
-        EventMarkerApi eventMarkerApi = ApiClientFactory.getEventMarkerApi();
-        ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
-        ObservationApi observationApi = ApiClientFactory.GetObservationApi();
+    private void getFeedItems() {
+        allItems.clear();
+        fetchReports();
+        fetchEvents();
+        fetchObservations();
 
-        // Fetch reports
+    }
+
+    private void fetchReports() {
+        ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
         reportMarkerApi.GetAllReportMarker().enqueue(new SlimCallback<>(reportMarkers -> {
             allItems.addAll(reportMarkers);
             updateUI(adapter, allItems);
         }, "GetAllReports"));
+    }
+
+    private void fetchEvents() {
+        EventMarkerApi eventMarkerApi = ApiClientFactory.getEventMarkerApi();
 
         // Fetch EventMarkers
         eventMarkerApi.GetAllEventMarker().enqueue(new SlimCallback<>(eventMarkers -> {
             allItems.addAll(eventMarkers);
             updateUI(adapter, allItems);
-            }, "GetAllEvents"));
+        }, "GetAllEvents"));
+    }
 
-        // Fetch observations
+    private void fetchObservations() {
+        ObservationApi observationApi = ApiClientFactory.GetObservationApi();
         observationApi.getAllObs().enqueue(new SlimCallback<>(observations -> {
             allItems.addAll(observations);
             updateUI(adapter, allItems);
         }, "GetAllObservations"));
-
-        return allItems;
     }
-
     private void updateUI(FeedAdapter adapter, List<FeedItem> allItems) {
         adapter.setItems(allItems);
         adapter.notifyDataSetChanged();

@@ -34,7 +34,21 @@ public interface CommentApi {
     @GET("comment/list")
     Call<List<Comment>> getAllComments();
 
+    //List of all comments under a specific Observation
+    @GET("observation/comments/{postId}")
+    Call<List<Comment>> getCommentsForObs(@Path("postId") Long postId);
+
+    //List of all comments under a specific Event
+    @GET("observation/comments/{postId}")
+    Call<List<Comment>> getCommentsForEvents(@Path("postId") Long postId);
+
+    //List of all comments under a specific Reports
+    @GET("observation/comments/{postId}")
+    Call<List<Comment>> getCommentsForReports(@Path("postId") Long postId);
+
 }
+
+
 //public class CommentController {
 //    @Autowired
 //    CommentRepository commentRepository;
