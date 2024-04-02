@@ -55,8 +55,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     private EditText commentEditText;
     private Button sendCommentButton;
     private Button cancelCommentButton;
-    private String comment;
-    private Map<FeedItemKey, List<Comment>> commentsMap = new HashMap<>();
     private User user;
     private  FeedItem item;
     private Context context;
@@ -80,8 +78,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     @Override
     public void onBindViewHolder(@NonNull FeedViewHolder holder, @SuppressLint("RecyclerView") int position) {
        item= items.get(position);
-        FeedItemKey key = new FeedItemKey(item.getType(), item.getPostID());
-
 
         if (item.getDepartment() == null || item.getDepartment().isEmpty()) {
             holder.department.setVisibility(View.GONE);
@@ -103,8 +99,8 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
        // holder.location.setText("Address: " + item.getLocation());
 
         holder.commentsRecyclerView.setLayoutManager(new LinearLayoutManager(holder.itemView.getContext()));
-        getComments(item.getType(), item.getPostID());
-        List<Comment> commentsForThisItem = commentsMap.getOrDefault(key, new ArrayList<>());
+
+        List<Comment> commentsForThisItem = item.getComments();
         CommentAdapter commentAdapter = new CommentAdapter(commentsForThisItem, user, this);
         holder.commentsRecyclerView.setAdapter(commentAdapter);
         holder.commentButton.setOnClickListener(new View.OnClickListener() {
@@ -114,27 +110,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
                 Log.d("item check", String.valueOf(position));
             }
         });
-    }
-
-    private void getComments(String type, Long postId) {
-        CommentApi commentApi = ApiClientFactory.GetCommentApi();
-        FeedItemKey key = new FeedItemKey(type, postId);
-
-        if (!commentsMap.containsKey(key)) {
-            SlimCallback<List<Comment>> callback = new SlimCallback<>(comments -> {
-                commentsMap.put(key, comments);
-                Log.d("FeedAdapter", "Comments fetched successfully for type: " + type + ", postId: " + postId);
-                notifyDataSetChanged();
-            }, type + "_" + postId);
-
-            if ("Report".equals(type)) {
-                commentApi.getCommentsForReports(postId).enqueue(callback);
-            } else if ("Observation".equals(type)) {
-                commentApi.getCommentsForObs(postId).enqueue(callback);
-            } else if ("Event".equals(type)) {
-                commentApi.getCommentsForEvents(postId).enqueue(callback);
-            }
-        }
     }
 
     private void showComments(Context context, int itemIndex) {
@@ -150,7 +125,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         cancelCommentButton = dialog.findViewById(R.id.buttonCancel);
 
         builder.setView(dialog).setTitle("Comments");
-
         AlertDialog dialogView = builder.create();
 
         sendCommentButton.setOnClickListener(new View.OnClickListener() {
@@ -167,10 +141,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
                         WebSocketManager.getInstance().sendMessage(sendCommentJson);
                         Log.d("WebSocket", "Message sent: " + commentText);
 
-                        FeedItemKey key = new FeedItemKey(sendComment.getPostType(), item.getPostID());
-                        List<Comment> commentsForPost = commentsMap.getOrDefault(key, new ArrayList<>());
-                        commentsForPost.add(sendComment);
-                        commentsMap.put(key, commentsForPost);
+                      item.getComments().add(sendComment);
                         notifyItemChanged(itemIndex);
                     } catch (Exception e) {
                         Log.e("WebSocket", "Error sending message: " + e.getMessage());
@@ -215,37 +186,24 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     public void onWebSocketMessage(String message) {
         Log.d("WebSocket", "Received message: " + message);
 
-       //message show up in the recycler view
         Activity activity = (Activity) context;
         if(message.length()>0 && message!=null&&message.contains("postid")&&message.contains("userEmailid")&&message.contains("comment")) {
             activity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    try {
+
                         Comment newComment = new Gson().fromJson(message, Comment.class);
-                        FeedItemKey key = new FeedItemKey(newComment.getPostType(), newComment.getPostid());
-                        List<Comment> commentsForPost = commentsMap.getOrDefault(key, new ArrayList<>());
-                        commentsForPost.add(newComment);
-                        commentsMap.put(key, commentsForPost);
-
-                        for (int i = 0; i < items.size(); i++) {
-                            FeedItem item = items.get(i);
-                            if (item.getPostID().equals(newComment.getPostid()) && item.getType().equals(newComment.getPostType())) {
-                                notifyItemChanged(i);
-                                break;
-                            }
+                    for (FeedItem item : items) {
+                        if (item.getPostID().equals(newComment.getPostid()) && item.getType().equals(newComment.getPostType())) {
+                            item.getComments().add(newComment);
+                            notifyDataSetChanged();
+                            break;
                         }
-
-
-                    } catch (JsonSyntaxException e) {
-                        Log.e("WebSocket", "Error parsing message: " + e.getMessage());
-                        throw new RuntimeException(e);
                     }
+
                 }
             });
         }
-
-
     }
 
     @Override
@@ -264,14 +222,17 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         commentApi.deleteComment(commentId).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                Log.d("Delete response", String.valueOf(response.body()));
                 if (response.isSuccessful()) {
-                    commentsMap.remove(position);
-                    notifyDataSetChanged();
-                    Toast.makeText(context, "Comment deleted successfully", Toast.LENGTH_SHORT).show();
+                    // Iterate through items to find and remove the comment
+                    for (FeedItem item : items) {
+                        List<Comment> comments = item.getComments();
+                        if (comments.removeIf(comment -> comment.getId().equals(commentId))) {
+                            notifyDataSetChanged();
+                            Toast.makeText(context, "Comment deleted successfully", Toast.LENGTH_SHORT).show();
+                            break;
+                        }
+                    }
                 } else {
-                    Log.d("Delete response", String.valueOf(response.errorBody()));
-
                     Toast.makeText(context, "Failed to delete comment", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -284,28 +245,31 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     }
 
     @Override
-    public void onEditComment(Comment comment, String newComment) {
+    public void onEditComment(Comment updatedComment, String newComment) {
         CommentApi commentApi = ApiClientFactory.GetCommentApi();
-        comment.setComment(newComment);
-        Log.d("Updating...", comment.getComment());
-
-        commentApi.updateComment(comment.getId(), comment).enqueue(new Callback<Comment>() {
+        updatedComment.setComment(newComment); // Assuming updatedComment is the comment passed with updated content
+        commentApi.updateComment(updatedComment.getId(), updatedComment).enqueue(new Callback<Comment>() {
             @Override
             public void onResponse(Call<Comment> call, Response<Comment> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    new Handler(Looper.getMainLooper()).post(() -> {
-                        Toast.makeText(context, "Comment updated successfully", Toast.LENGTH_SHORT).show();
-                    });
-                    Log.d("Update", "Updated correctly");
+                if (response.isSuccessful()) {
+                    for (FeedItem item : items) {
+                        List<Comment> comments = item.getComments();
+                        comments.forEach(comment -> {
+                            if (comment.getId().equals(updatedComment.getId())) {
+                                comment.setComment(newComment);
+                            }
+                        });
+                    }
+                    notifyDataSetChanged(); // Refresh the entire list, or target a specific update if possible
+                    new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(context, "Comment updated successfully", Toast.LENGTH_SHORT).show());
                 } else {
-                    Log.d("Update failed", response.message());
+                    Toast.makeText(context, "Failed to update comment", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<Comment> call, Throwable t) {
-                 t.getCause();
-
+                Toast.makeText(context, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }

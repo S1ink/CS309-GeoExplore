@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import test.connect.geoexploreapp.api.ApiClientFactory;
+import test.connect.geoexploreapp.api.CommentApi;
 import test.connect.geoexploreapp.api.EventMarkerApi;
 import test.connect.geoexploreapp.api.ObservationApi;
 import test.connect.geoexploreapp.api.ReportMarkerApi;
@@ -97,9 +98,22 @@ public class FeedActivity extends Fragment {
     private void fetchReports() {
         ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
         reportMarkerApi.GetAllReportMarker().enqueue(new SlimCallback<>(reportMarkers -> {
-            allItems.addAll(reportMarkers);
+            for (ReportMarker reportMarker : reportMarkers) {
+                allItems.add(reportMarker);
+                fetchCommentsForReport(reportMarker);
+            }
+
             updateUI(adapter, allItems);
         }, "GetAllReports"));
+    }
+
+    private void fetchCommentsForReport(ReportMarker reportMarker) {
+        CommentApi commentApi = ApiClientFactory.GetCommentApi();
+        commentApi.getCommentsForReports(reportMarker.getId()).enqueue(new SlimCallback<>(comments -> {
+            reportMarker.setComments(comments);
+            updateUI(adapter, allItems);
+
+        }, "GetCommentsForReport"));
     }
 
     private void fetchEvents() {
@@ -107,18 +121,44 @@ public class FeedActivity extends Fragment {
 
         // Fetch EventMarkers
         eventMarkerApi.GetAllEventMarker().enqueue(new SlimCallback<>(eventMarkers -> {
-            allItems.addAll(eventMarkers);
+            for (EventMarker eventMarker : eventMarkers) {
+                allItems.add(eventMarker);
+                fetchCommentsForEvent(eventMarker);
+            }
             updateUI(adapter, allItems);
         }, "GetAllEvents"));
+    }
+
+    private void fetchCommentsForEvent(EventMarker eventMarker) {
+        CommentApi commentApi = ApiClientFactory.GetCommentApi();
+        commentApi.getCommentsForEvents(eventMarker.getId()).enqueue(new SlimCallback<>(comments -> {
+            eventMarker.setComments(comments);
+            updateUI(adapter, allItems);
+
+        }, "GetCommentsForEvent"));
     }
 
     private void fetchObservations() {
         ObservationApi observationApi = ApiClientFactory.GetObservationApi();
         observationApi.getAllObs().enqueue(new SlimCallback<>(observations -> {
-            allItems.addAll(observations);
+            for (Observation obs : observations) {
+                allItems.add(obs);
+                fetchCommentsForObservation(obs);
+            }
             updateUI(adapter, allItems);
         }, "GetAllObservations"));
     }
+
+    private void fetchCommentsForObservation(Observation obs) {
+        CommentApi commentApi = ApiClientFactory.GetCommentApi();
+
+        commentApi.getCommentsForObs(obs.getId()).enqueue(new SlimCallback<>(comments -> {
+            obs.setComments(comments);
+            updateUI(adapter, allItems);
+
+        }, "GetCommentsForObs"));
+    }
+
     private void updateUI(FeedAdapter adapter, List<FeedItem> allItems) {
         adapter.setItems(allItems);
         adapter.notifyDataSetChanged();
@@ -129,4 +169,5 @@ public class FeedActivity extends Fragment {
             noItemsDisplay.setVisibility(View.GONE);
         }
     }
+
 }

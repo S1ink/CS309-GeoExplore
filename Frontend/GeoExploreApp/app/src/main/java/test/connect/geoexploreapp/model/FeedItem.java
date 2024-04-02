@@ -14,5 +14,6 @@ public interface FeedItem {
     Date getTime_created();
     String getLocation();
     Long getPostID();
+    List<Comment> getComments();
 
 }

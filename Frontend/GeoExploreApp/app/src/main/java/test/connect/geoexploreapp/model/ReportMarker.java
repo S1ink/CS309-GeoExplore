@@ -16,9 +16,11 @@ public class ReportMarker implements FeedItem{
     private String meta;
     private List<User> confirmed_by;
     private String address;
+    private List<Comment> comments;
 
     public ReportMarker() {
         this.time_created = new Date();
+        this.comments = new ArrayList<>();
     }
 
     public long getId() {
@@ -72,7 +74,15 @@ public class ReportMarker implements FeedItem{
     public void setTime_created(Date time_created) {
         this.time_created = time_created;
     }
+    @Override
+    public List<Comment> getComments() {
+        return comments;
+    }
 
+
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
+    }
     public void setTitle(String title) {
         this.title = title;
     }

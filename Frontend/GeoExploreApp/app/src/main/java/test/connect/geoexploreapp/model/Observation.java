@@ -17,9 +17,12 @@ public class Observation implements FeedItem{
     private String meta;
     private User confirmed_by;
     private String address;
+    private List<Comment> comments;
 
     public Observation(){
         this.time_created = new Date();
+        this.comments = new ArrayList<>();
+
     }
 
     public Long getId() {
@@ -80,6 +83,16 @@ public class Observation implements FeedItem{
     @Override
     public Long getPostID() {
         return id;
+    }
+
+    @Override
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
     }
 
 
