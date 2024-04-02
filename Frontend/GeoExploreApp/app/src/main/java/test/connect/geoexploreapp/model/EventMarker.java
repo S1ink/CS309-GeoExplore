@@ -72,11 +72,7 @@ public class EventMarker implements FeedItem{
         return time_created;
     }
 
-    @Override
-    public String getLocation()  {
 
-        return address;
-    }
 
     public void setLocation(String address)  {
         this.address = address;

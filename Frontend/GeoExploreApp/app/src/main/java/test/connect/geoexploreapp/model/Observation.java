@@ -75,10 +75,6 @@ public class Observation implements FeedItem{
         return time_created;
     }
 
-    @Override
-    public String getLocation()  {
-        return address;
-    }
 
     @Override
     public List<Comment> getComments() {

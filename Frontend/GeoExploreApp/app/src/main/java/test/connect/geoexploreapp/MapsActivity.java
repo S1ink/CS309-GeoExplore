@@ -447,8 +447,8 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         newReportMarker.setIo_longitude(latLng.longitude);
         newReportMarker.setTitle(reportTitle);
         newReportMarker.setCreator(loggedInUser);
-        newReportMarker.setTime_created(new Date());
-        newReportMarker.setTime_updated(new Date());
+//        newReportMarker.setTime_created(new Date());
+//        newReportMarker.setTime_updated(new Date());
         newReportMarker.setTags(markerTags);
 
         reportMarkerApi.addReport(newReportMarker).enqueue(new SlimCallback<>(createdReportMarker -> {
@@ -459,11 +459,6 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
                     .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_report_24)));
         }, "CreateNewReport"));
 
-        try {
-            newReportMarker.setLocation(getLocation(latLng.latitude,latLng.longitude));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
     private void displayReportByID(Long id) {
         ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
@@ -559,12 +554,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
                     .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_photo_camera_24)));
         }, "CreateNewObservation"));
 
-        try {
-            observation.setLocation(getLocation(latLng.latitude,latLng.longitude));
-            Log.d("location found for observation", observation.getLocation());
-        } catch (IOException e) {
-            Log.d("location not found for observation", observation.getLocation());;
-        }
+
     }
     private void displayObservationByID(Long id) {
         ObservationApi observationApi = ApiClientFactory.GetObservationApi();

@@ -12,7 +12,7 @@ public interface FeedItem {
     String getType();
     String getDepartment();
     Date getTime_created();
-    String getLocation();
+
 
     List<Comment> getComments();
 
