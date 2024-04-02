@@ -15,11 +15,10 @@ public class EventMarker implements FeedItem{
     private Date time_updated;
     private String meta;
     private List<MarkerTag> tags;
-    private String address;
+//    private String address;
     private List<Comment> comments;
 
     public EventMarker() {
-        this.time_created = new Date();
         this.comments = new ArrayList<>();
         this.tags = new ArrayList<>();
     }
@@ -74,9 +73,9 @@ public class EventMarker implements FeedItem{
 
 
 
-    public void setLocation(String address)  {
-        this.address = address;
-    }
+//    public void setLocation(String address)  {
+//        this.address = address;
+//    }
 
     @Override
     public List<Comment> getComments() {

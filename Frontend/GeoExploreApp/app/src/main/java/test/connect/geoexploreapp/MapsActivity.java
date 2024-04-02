@@ -480,7 +480,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
 
         ReportMarker updatedReportMarker = new ReportMarker();
         updatedReportMarker.setTitle(newTitle);
-        updatedReportMarker.setTime_updated(new Date());
+//        updatedReportMarker.setTime_updated(new Date());
         updatedReportMarker.setIo_latitude(latLng.latitude);
         updatedReportMarker.setIo_longitude(latLng.longitude);
 
@@ -541,8 +541,8 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         observation.setLongitude(latLng.longitude);
         observation.setCreator(loggedInUser);
         observation.setTitle(observationTitle);
-        observation.setTime_created(new Date());
-        observation.setTime_updated(new Date());
+//        observation.setTime_created(new Date());
+//        observation.setTime_updated(new Date());
         observation.setDescription(observationDescription);
         observation.setTags(markerTags);
 
@@ -579,7 +579,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         updatedObservation.setTitle(newTitle);
         updatedObservation.setLatitude(latLng.latitude);
         updatedObservation.setLongitude(latLng.longitude);
-        updatedObservation.setTime_updated(new Date());
+//        updatedObservation.setTime_updated(new Date());
         updatedObservation.setDescription(newDescription);
         Log.d("Updating...", updatedObservation.getTitle() + " "+ updatedObservation.getId()+" " +updatedObservation.getDescription());
         observationApi.updateObs(id, updatedObservation).enqueue(new SlimCallback<>(obs -> {
@@ -653,11 +653,11 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
                     .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_celebration_24)));
         }, "CreateNewEvent"));
 
-        try {
-            newEventMarker.setLocation(getLocation(latLng.latitude,latLng.longitude));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            newEventMarker.setLocation(getLocation(latLng.latitude,latLng.longitude));
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
     }
     private void displayEventByID(Long id) {
         EventMarkerApi eventMarkerApi = ApiClientFactory.getEventMarkerApi();

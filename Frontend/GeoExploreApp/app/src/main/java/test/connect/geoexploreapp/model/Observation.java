@@ -16,7 +16,7 @@ public class Observation implements FeedItem{
     private String meta;
     private List<MarkerTag> tags;
     private User confirmed_by;
-    private String address;
+//    private String address;
     private List<Comment> comments;
 
     public Observation(){
@@ -85,9 +85,9 @@ public class Observation implements FeedItem{
         this.comments= comments;
     }
 
-    public void setLocation(String address)  {
-        this.address =address;
-    }
+//    public void setLocation(String address)  {
+//        this.address =address;
+//    }
     public void setTime_created(Date time_created) {
         this.time_created = time_created;
     }
