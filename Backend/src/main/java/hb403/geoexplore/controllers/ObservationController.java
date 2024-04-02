@@ -1,6 +1,12 @@
 package hb403.geoexplore.controllers;
 
+import hb403.geoexplore.UserStorage.entity.User;
+import hb403.geoexplore.UserStorage.repository.UserRepository;
+import hb403.geoexplore.datatype.MarkerTag;
+import hb403.geoexplore.datatype.marker.AlertMarker;
 import hb403.geoexplore.datatype.marker.ObservationMarker;
+import hb403.geoexplore.datatype.marker.ReportMarker;
+import hb403.geoexplore.datatype.marker.repository.MarkerTagRepository;
 import hb403.geoexplore.datatype.marker.repository.ObservationRepository;
 import hb403.geoexplore.util.GeometryUtil;
 
@@ -17,6 +23,10 @@ public class ObservationController {
 
     @Autowired
     protected ObservationRepository obs_repo;
+    @Autowired
+    protected MarkerTagRepository tags_repo;
+    @Autowired
+    protected UserRepository users_repo;
 
 
     // C of Crudl, adds observation to repo
@@ -26,7 +36,9 @@ public class ObservationController {
         if (observation != null) {
             observation.nullifyId();
             observation.enforceLocationIO();
-            return this.obs_repo.save(observation);
+            final ObservationMarker obs = this.obs_repo.save(observation);
+            obs.enforceLocationTable();
+            return obs;
         }
         return null;
     }
@@ -54,7 +66,9 @@ public class ObservationController {
         if (id != null && observation != null){
             observation.setId(id);
             observation.enforceLocationIO();
-            return this.obs_repo.save(observation);
+            final ObservationMarker obs = this.obs_repo.save(observation);
+            obs.enforceLocationTable();
+            return obs;
         }
         return null;
     }
@@ -102,6 +116,44 @@ public class ObservationController {
 		} catch(Exception e) {
 			System.out.println("ObservationMarker.getObservationsWithinBounds(): Encountered exception! -- " + e.getMessage());
 			// continue >>> (return null)
+		}
+		return null;
+	}
+
+
+
+    @Operation(summary = "Add a prexisting tag by its id to a marker by its id")
+	@PostMapping(path = "geomap/observations/{id}/tags")
+	public @ResponseBody ObservationMarker addTagToMarkerById(@PathVariable Long id, @RequestBody Long tag_id) {
+		if(id != null && tag_id != null) {
+			try {
+				final MarkerTag t = this.tags_repo.findById(tag_id).get();
+				final ObservationMarker m = this.obs_repo.findById(id).get();
+				if(m.getTags().add(t)) {
+					this.obs_repo.save(m);
+					return m;
+				}
+			} catch(Exception e) {
+
+			}
+		}
+		return null;
+	}
+
+    @Operation(summary = "Add a prexisting user by id as a confirmation to a marker by its id")
+	@PostMapping(path = "geomap/observations/{id}/confirmations")
+	public @ResponseBody ObservationMarker addUserToConfirmedById(@PathVariable Long id, @RequestBody Long user_id) {
+		if(id != null && user_id != null) {
+			try {
+				final ObservationMarker m = this.obs_repo.findById(id).get();
+				final User u = this.users_repo.findById(user_id).get();
+				if(m.getConfirmed_by().add(u)) {
+					this.obs_repo.save(m);
+					return m;
+				}
+			} catch(Exception e) {
+
+			}
 		}
 		return null;
 	}

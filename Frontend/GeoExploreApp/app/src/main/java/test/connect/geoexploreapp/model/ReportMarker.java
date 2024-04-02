@@ -14,6 +14,7 @@ public class ReportMarker implements FeedItem{
     private Date time_created;
     private Date time_updated;
     private String meta;
+    private List<MarkerTag> tags;
     private List<User> confirmed_by;
     private String address;
     private List<Comment> comments;
@@ -21,6 +22,7 @@ public class ReportMarker implements FeedItem{
     public ReportMarker() {
         this.time_created = new Date();
         this.comments = new ArrayList<>();
+        this.tags = new ArrayList<>();
     }
 
     public long getId() {
@@ -108,23 +110,6 @@ public class ReportMarker implements FeedItem{
     public void setCreator(User creator) {
         this.creator = creator;
     }
-
-    public Date getTime_updated() {
-        return time_updated;
-    }
-
-    public void setTime_updated(Date time_updated) {
-        this.time_updated = time_updated;
-    }
-
-    public String getMeta() {
-        return meta;
-    }
-
-    public void setMeta(String meta) {
-        this.meta = meta;
-    }
-
 
     public List<User> getConfirmed_by() {
         return confirmed_by;

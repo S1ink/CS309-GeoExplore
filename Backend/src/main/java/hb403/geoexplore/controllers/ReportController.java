@@ -1,6 +1,12 @@
 package hb403.geoexplore.controllers;
 
+import hb403.geoexplore.UserStorage.entity.User;
+import hb403.geoexplore.UserStorage.repository.UserRepository;
+import hb403.geoexplore.datatype.MarkerTag;
+import hb403.geoexplore.datatype.marker.EventMarker;
+import hb403.geoexplore.datatype.marker.ObservationMarker;
 import hb403.geoexplore.datatype.marker.ReportMarker;
+import hb403.geoexplore.datatype.marker.repository.MarkerTagRepository;
 import hb403.geoexplore.datatype.marker.repository.ReportRepository;
 import hb403.geoexplore.util.GeometryUtil;
 
@@ -17,6 +23,10 @@ public class ReportController {
 	
 	@Autowired
 	protected ReportRepository reports_repo;
+	@Autowired
+    protected MarkerTagRepository tags_repo;
+	@Autowired
+	protected UserRepository users_repo;
 
 
 	/** [C]rudl - Add a new report to the database */
@@ -26,7 +36,9 @@ public class ReportController {
 		if(report != null) {
 			report.nullifyId();
 			report.enforceLocationIO();
-			return this.reports_repo.save(report);
+			final ReportMarker r = this.reports_repo.save(report);
+			r.enforceLocationTable();
+			return r;
 		}
 		return null;
 	}
@@ -52,7 +64,9 @@ public class ReportController {
 		if(id != null && report != null) {
 			report.setId(id);
 			report.enforceLocationIO();
-			return this.reports_repo.save(report);
+			final ReportMarker r = this.reports_repo.save(report);
+			r.enforceLocationTable();
+			return r;
 		}
 		return null;
 	}
@@ -99,6 +113,44 @@ public class ReportController {
 		} catch(Exception e) {
 			System.out.println("ReportMarker.getReportsWithinBounds(): Encountered exception! -- " + e.getMessage());
 			// continue >>> (return null)
+		}
+		return null;
+	}
+
+
+
+	@Operation(summary = "Add a prexisting tag by its id to a marker by its id")
+	@PostMapping(path = "geomap/reports/{id}/tags")
+	public @ResponseBody ReportMarker addTagToMarkerById(@PathVariable Long id, @RequestBody Long tag_id) {
+		if(id != null && tag_id != null) {
+			try {
+				final MarkerTag t = this.tags_repo.findById(tag_id).get();
+				final ReportMarker m = this.reports_repo.findById(id).get();
+				if(m.getTags().add(t)) {
+					this.reports_repo.save(m);
+					return m;
+				}
+			} catch(Exception e) {
+
+			}
+		}
+		return null;
+	}
+
+	@Operation(summary = "Add a prexisting user by id as a confirmation to a marker by its id")
+	@PostMapping(path = "geomap/reports/{id}/confirmations")
+	public @ResponseBody ReportMarker addUserToConfirmedById(@PathVariable Long id, @RequestBody Long user_id) {
+		if(id != null && user_id != null) {
+			try {
+				final ReportMarker m = this.reports_repo.findById(id).get();
+				final User u = this.users_repo.findById(user_id).get();
+				if(m.getConfirmed_by().add(u)) {
+					this.reports_repo.save(m);
+					return m;
+				}
+			} catch(Exception e) {
+
+			}
 		}
 		return null;
 	}

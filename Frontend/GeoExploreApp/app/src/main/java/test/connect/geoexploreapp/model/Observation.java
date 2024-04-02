@@ -1,6 +1,5 @@
 package test.connect.geoexploreapp.model;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -15,6 +14,7 @@ public class Observation implements FeedItem{
     private Date time_created;
     private Date time_updated;
     private String meta;
+    private List<MarkerTag> tags;
     private User confirmed_by;
     private String address;
     private List<Comment> comments;
@@ -22,7 +22,7 @@ public class Observation implements FeedItem{
     public Observation(){
         this.time_created = new Date();
         this.comments = new ArrayList<>();
-
+        this.tags = new ArrayList<>();
     }
 
     public Long getId() {
@@ -130,6 +130,13 @@ public class Observation implements FeedItem{
         this.meta = meta;
     }
 
+    public List<MarkerTag> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<MarkerTag> tags) {
+        this.tags = tags;
+    }
 
     public User getConfirmed_by() {
         return confirmed_by;

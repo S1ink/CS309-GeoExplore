@@ -86,7 +86,7 @@ public class AlertWebSocket {
 			try {
 				Double lat = node.get("lattitude").doubleValue();
 				Double lng = node.get("longitude").doubleValue();
-				entity.setIo_lattitude(lat);
+				entity.setIo_latitude(lat);
 				entity.setIo_longitude(lng);
 				entity.enforceLocationIO();
 			} catch(Exception e) {}
@@ -112,7 +112,7 @@ public class AlertWebSocket {
 			entity.getId(),
 			entity.getTitle(),
 			entity.getDescription(),
-			entity.getIo_lattitude(),
+			entity.getIo_latitude(),
 			entity.getIo_longitude(),
 			entity.getMeta()
 		);
