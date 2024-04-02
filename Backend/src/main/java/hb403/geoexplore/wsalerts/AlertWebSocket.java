@@ -84,8 +84,8 @@ public class AlertWebSocket {
 			try { String title = node.get("title").textValue();		entity.setTitle(title);			} catch(Exception e) {}
 			try { String desc = node.get("description").textValue();	entity.setDescription(desc);	} catch(Exception e) {}
 			try {
-				Double lat = node.get("lattitude").doubleValue();
-				Double lng = node.get("longitude").doubleValue();
+				Double lat = node.get("io_latitude").doubleValue();
+				Double lng = node.get("io_longitude").doubleValue();
 				entity.setIo_latitude(lat);
 				entity.setIo_longitude(lng);
 				entity.enforceLocationIO();
@@ -105,8 +105,8 @@ public class AlertWebSocket {
 			"	\"id\": %d," +
 			"	\"title\": \"%s\"," +
 			"	\"description\": \"%s\"," +
-			"	\"lattitude\": %f," +
-			"	\"longitude\": %f," +
+			"	\"io_latitude\": %f," +
+			"	\"io_longitude\": %f," +
 			"	\"meta\": \"%s\"" +
 			"}",
 			entity.getId(),
