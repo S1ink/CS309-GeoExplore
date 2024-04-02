@@ -1,10 +1,7 @@
 package test.connect.geoexploreapp.model;
 
-import java.util.List;
-
 public class Comment {
     private Long id;
-    private Long commentid;
     private String userId;
     private String comment;
     private Long postId;
@@ -35,13 +32,6 @@ public class Comment {
         this.id = id;
     }
 
-    public Long getCommentid() {
-        return commentid;
-    }
-
-    public void setCommentid(Long commentid) {
-        this.commentid = commentid;
-    }
 
     public String getUserId() {
         return userId;

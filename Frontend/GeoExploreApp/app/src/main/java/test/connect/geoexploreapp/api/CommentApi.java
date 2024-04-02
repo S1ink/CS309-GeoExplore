@@ -39,11 +39,11 @@ public interface CommentApi {
     Call<List<Comment>> getCommentsForObs(@Path("postId") Long postId);
 
     //List of all comments under a specific Event
-    @GET("observation/comments/{postId}")
+    @GET("event/comments/{postId}")
     Call<List<Comment>> getCommentsForEvents(@Path("postId") Long postId);
 
     //List of all comments under a specific Reports
-    @GET("observation/comments/{postId}")
+    @GET("report/comments/{postId}")
     Call<List<Comment>> getCommentsForReports(@Path("postId") Long postId);
 
 }

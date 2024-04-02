@@ -28,8 +28,11 @@ import com.google.gson.JsonSyntaxException;
 
 import org.java_websocket.handshake.ServerHandshake;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -40,6 +43,7 @@ import test.connect.geoexploreapp.api.CommentApi;
 import test.connect.geoexploreapp.api.ObservationApi;
 import test.connect.geoexploreapp.api.SlimCallback;
 import test.connect.geoexploreapp.model.Comment;
+import test.connect.geoexploreapp.model.EventMarker;
 import test.connect.geoexploreapp.model.FeedItem;
 import test.connect.geoexploreapp.model.Observation;
 import test.connect.geoexploreapp.model.User;
@@ -52,10 +56,10 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     private Button sendCommentButton;
     private Button cancelCommentButton;
     private String comment;
+    private Map<FeedItemKey, List<Comment>> commentsMap = new HashMap<>();
     private User user;
     private  FeedItem item;
     private Context context;
-    private List<Comment> comments = new ArrayList<>();
     private CommentAdapter commentAdapter;
 
     public FeedAdapter(List<FeedItem> items, User user, Context context) {
@@ -76,6 +80,8 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     @Override
     public void onBindViewHolder(@NonNull FeedViewHolder holder, @SuppressLint("RecyclerView") int position) {
        item= items.get(position);
+        FeedItemKey key = new FeedItemKey(item.getType(), item.getPostID());
+
 
         if (item.getDepartment() == null || item.getDepartment().isEmpty()) {
             holder.department.setVisibility(View.GONE);
@@ -97,11 +103,9 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
        // holder.location.setText("Address: " + item.getLocation());
 
         holder.commentsRecyclerView.setLayoutManager(new LinearLayoutManager(holder.itemView.getContext()));
-        //get Comments using Read
-
         getComments(item.getType(), item.getPostID());
-
-        commentAdapter = new CommentAdapter(comments, user, (CommentActionListener) this);
+        List<Comment> commentsForThisItem = commentsMap.getOrDefault(key, new ArrayList<>());
+        CommentAdapter commentAdapter = new CommentAdapter(commentsForThisItem, user, this);
         holder.commentsRecyclerView.setAdapter(commentAdapter);
         holder.commentButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -114,33 +118,23 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
 
     private void getComments(String type, Long postId) {
         CommentApi commentApi = ApiClientFactory.GetCommentApi();
+        FeedItemKey key = new FeedItemKey(type, postId);
 
-        if(type.equals("Report")){
-            commentApi.getCommentsForReports(postId).enqueue(new SlimCallback<>(reportComments->{
-                for (Comment reportComment : reportComments) {
-                    comments.add(reportComment);
-                }
-            }, "getCommentsForReports"));
+        if (!commentsMap.containsKey(key)) {
+            SlimCallback<List<Comment>> callback = new SlimCallback<>(comments -> {
+                commentsMap.put(key, comments);
+                Log.d("FeedAdapter", "Comments fetched successfully for type: " + type + ", postId: " + postId);
+                notifyDataSetChanged();
+            }, type + "_" + postId);
 
-
-
-        }else if(type.equals("Observation")){
-            commentApi.getCommentsForObs(postId).enqueue(new SlimCallback<>(obsComments->{
-                for (Comment obsComment : obsComments) {
-                    comments.add(obsComment);
-                }
-            }, "getCommentsForReports"));
-
-        }else if(type.equals("Event")){
-            commentApi.getCommentsForEvents(postId).enqueue(new SlimCallback<>(eventComments->{
-                for (Comment eventComment : eventComments) {
-                    comments.add(eventComment);
-                }
-            }, "getCommentsForReports"));
-
+            if ("Report".equals(type)) {
+                commentApi.getCommentsForReports(postId).enqueue(callback);
+            } else if ("Observation".equals(type)) {
+                commentApi.getCommentsForObs(postId).enqueue(callback);
+            } else if ("Event".equals(type)) {
+                commentApi.getCommentsForEvents(postId).enqueue(callback);
+            }
         }
-
-
     }
 
     private void showComments(Context context, int itemIndex) {
@@ -162,19 +156,22 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         sendCommentButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                comment = commentEditText.getText().toString().trim();
-                if(comment.length()>0 && comment!=null) {
+                String commentText = commentEditText.getText().toString().trim();
+                if(!commentText.isEmpty()) {
                     try {
                         FeedItem item = items.get(itemIndex);
 
-                        Comment sendComment = new Comment(user.getEmailId(), item.getPostID(), item.getType(), comment);
+                        Comment sendComment = new Comment(user.getEmailId(), item.getPostID(), item.getType(), commentText);
 
                         String sendCommentJson = gson.toJson(sendComment);
                         WebSocketManager.getInstance().sendMessage(sendCommentJson);
-                        Log.d("WebSocket", "Message sent: " + comment);
-                        //
-                        comments.add(sendComment);
-                        notifyDataSetChanged();
+                        Log.d("WebSocket", "Message sent: " + commentText);
+
+                        FeedItemKey key = new FeedItemKey(sendComment.getPostType(), item.getPostID());
+                        List<Comment> commentsForPost = commentsMap.getOrDefault(key, new ArrayList<>());
+                        commentsForPost.add(sendComment);
+                        commentsMap.put(key, commentsForPost);
+                        notifyItemChanged(itemIndex);
                     } catch (Exception e) {
                         Log.e("WebSocket", "Error sending message: " + e.getMessage());
                     }
@@ -225,14 +222,23 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
                 @Override
                 public void run() {
                     try {
-
                         Comment newComment = new Gson().fromJson(message, Comment.class);
+                        FeedItemKey key = new FeedItemKey(newComment.getPostType(), newComment.getPostid());
+                        List<Comment> commentsForPost = commentsMap.getOrDefault(key, new ArrayList<>());
+                        commentsForPost.add(newComment);
+                        commentsMap.put(key, commentsForPost);
 
-                        comments.add(newComment);
-                      notifyDataSetChanged();
-                        //display comment
+                        for (int i = 0; i < items.size(); i++) {
+                            FeedItem item = items.get(i);
+                            if (item.getPostID().equals(newComment.getPostid()) && item.getType().equals(newComment.getPostType())) {
+                                notifyItemChanged(i);
+                                break;
+                            }
+                        }
+
 
                     } catch (JsonSyntaxException e) {
+                        Log.e("WebSocket", "Error parsing message: " + e.getMessage());
                         throw new RuntimeException(e);
                     }
                 }
@@ -258,11 +264,14 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         commentApi.deleteComment(commentId).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                Log.d("Delete response", String.valueOf(response.body()));
                 if (response.isSuccessful()) {
-                    comments.remove(position);
-                    notifyItemRemoved(position);
+                    commentsMap.remove(position);
+                    notifyDataSetChanged();
                     Toast.makeText(context, "Comment deleted successfully", Toast.LENGTH_SHORT).show();
                 } else {
+                    Log.d("Delete response", String.valueOf(response.errorBody()));
+
                     Toast.makeText(context, "Failed to delete comment", Toast.LENGTH_SHORT).show();
                 }
             }

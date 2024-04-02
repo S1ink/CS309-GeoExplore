@@ -3,6 +3,7 @@ package test.connect.geoexploreapp;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.ResponseBody;
@@ -30,15 +32,12 @@ import test.connect.geoexploreapp.model.User;
 
 public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentViewHolder> {
     private List<Comment> comments;
-    private EditText commentEditText;
-    private Button sendCommentButton;
-    private Button cancelCommentButton;
     private User user;
     private CommentActionListener listener;
 
     public CommentAdapter(List<Comment> comments, User user, CommentActionListener listener) {
         this.comments = comments;
-        this.user = user;
+       this.user = user;
         this.listener = listener;
     }
 
@@ -53,7 +52,9 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
     @Override
     public void onBindViewHolder(@NonNull CommentViewHolder holder, int position) {
         Comment item = comments.get(position);
-        holder.commentUser.setText(user.getName());
+        int num = item.getUserId().indexOf("@");
+        String userName = item.getUserId().substring(0,num);
+        holder.commentUser.setText(userName);
         holder.comment.setText(item.getComment());
 
         boolean isUserCommenter = item.getUserId().equals(user.getEmailId());
@@ -74,6 +75,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         holder.deleteButton.setOnClickListener(v -> {
             if (listener != null) {
                 int pos = holder.getAdapterPosition();
+                Log.d("delete test", String.valueOf(pos));
                 if(pos != RecyclerView.NO_POSITION) {
                     deleteCommentPrompt(v.getContext(), pos);
                 }
@@ -82,8 +84,11 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
 
     }
 
+
     private void deleteCommentPrompt(Context context, int position) {
         Comment comment = comments.get(position);
+comment.setId(100L);
+        Log.d("delete", String.valueOf(comment.getId()) + comment.getUserId() + comment.getComment() + comment.getPostid()+comment.getPostType());
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Are you sure you want to delete this comment?")
@@ -97,6 +102,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
 
     }
 
+
     private void editCommentPrompt(Context context,  Comment comment) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         final EditText input = new EditText(context);
@@ -107,6 +113,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
                 .setPositiveButton("Update", (dialog, which) -> {
                     String editedCommentText = input.getText().toString();
                     if(editedCommentText.length()!=0) {
+                      //  edit();
                         listener.onEditComment(comment, editedCommentText);
                     }
                 })
