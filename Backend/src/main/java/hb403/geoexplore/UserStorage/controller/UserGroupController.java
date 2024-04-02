@@ -144,6 +144,13 @@ public class UserGroupController {
 	}
 
 
+	@Operation(summary = "gets number of group members to display under name on group page if there is one?")
+	@GetMapping(path = "user/usergroup/{group_id}/num")
+	public @ResponseBody int memberCount(@PathVariable long group_id){
+        return group_repo.getById(group_id).getMembers().size();
+	}
+
+
 	// find by name?
 
 
