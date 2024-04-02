@@ -44,7 +44,7 @@ public class ObservationMarker extends MarkerBase {
 
 	@Getter
 	@Setter
-	@OneToMany(mappedBy = "pertainsObservationMarker", fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "pertainsObservationMarker", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
 	private List<CommentEntity> Comments;
 
 	@Getter

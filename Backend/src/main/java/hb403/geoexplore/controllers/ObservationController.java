@@ -81,12 +81,6 @@ public class ObservationController {
             try {
                 final ObservationMarker ref = this.getObs(id);
                 this.obs_repo.deleteById(id);
-                if (ref.getComments()!= null) {
-                    List<CommentEntity> commentsToDelete = ref.getComments();
-                    commentsToDelete.forEach(comment -> {
-                        commentRepository.deleteById(comment.getId());
-                    });
-                }
                 ref.enforceLocationTable();
                 return ref;
             } catch(Exception e) {

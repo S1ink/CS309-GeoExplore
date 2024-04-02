@@ -110,7 +110,18 @@ public class UserGroupController {
 	@Operation(summary = "Deletes a user from the userGroup without deleting them from the user repo")
 	@DeleteMapping(path = "user/usergroups/{group_id}/{user_id}/")
 	public @ResponseBody String deleteUser(@PathVariable Long group_id, @PathVariable Long user_id){
-
+		try {
+			UserGroup tempGroup = group_repo.findById(group_id).get();
+			Set<User> tempUsers = tempGroup.getMembers();
+			tempUsers.forEach(user -> {
+				if (user.getId().equals(user_id)) {
+					tempUsers.remove(user);
+				}
+			});
+		}
+		catch (Exception e){
+			System.out.println(e);
+		}
 		return "successfully deleted user from group";
 	}
 

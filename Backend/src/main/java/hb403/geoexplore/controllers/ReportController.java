@@ -78,12 +78,12 @@ public class ReportController {
 			try {
 				final ReportMarker ref = this.getReportById(id);
 				this.reports_repo.deleteById(id);
-				if (ref.getComments()!= null) {
+				/*if (ref.getComments()!= null) {
 					List<CommentEntity> commentsToDelete = ref.getComments();
 					commentsToDelete.forEach(comment -> {
 						commentRepository.deleteById(comment.getId());
 					});
-				}
+				}*/
 				ref.enforceLocationTable();
 				return ref;
 			} catch(Exception e) {
