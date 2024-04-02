@@ -3,7 +3,6 @@ package test.connect.geoexploreapp;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
@@ -44,9 +43,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
 import org.java_websocket.handshake.ServerHandshake;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -113,16 +109,13 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
 
         viewModel.getCreateEmergencyNotification().observe(getViewLifecycleOwner(), isCreateEmergency -> {
             isCreateEmergencyNotification = isCreateEmergency;
-//            if (isCreateEmergency) {
-//                Log.d("Maps","Emergency notfication supposedly good");
-//            }
         });
 
         viewModel.getLoggedInUser().observe(getViewLifecycleOwner(), loggedInUser -> {
             this.loggedInUser = loggedInUser;
             if (loggedInUser != null){
                 String userID = String.valueOf(loggedInUser.getId());
-                WebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/live/alerts/" + userID); // CHANGE URL FOR WEBSOCKET wss://socketsbay.com/wss/v2/1/demo/
+                WebSocketManager.getInstance().connectWebSocket("wss://socketsbay.com/wss/v2/1/demo/"); // CHANGE URL FOR WEBSOCKET "ws://coms-309-005.class.las.iastate.edu:8080/live/alerts/" + userID
                 WebSocketManager.getInstance().setWebSocketListener(this);
             }else {
                 Log.e("WebSocket", "Logged in user is null. Cannot establish WebSocket connection.");
@@ -158,7 +151,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
             AlertMarker alertMarker = new Gson().fromJson(message, AlertMarker.class);
 
             showEmergencyNotification(alertMarker.getTitle(), alertMarker.getDescription(),
-                    alertMarker.getLatitude(), alertMarker.getLongitude());
+                    alertMarker.getIo_latitude(), alertMarker.getIo_longitude());
         } catch (JsonSyntaxException e) {
             e.printStackTrace();
         }

@@ -8,8 +8,8 @@ public class AlertMarker {
     private long id;
     private String title;
     private String description;
-    private double latitude;
-    private double longitude;
+    private double io_latitude;
+    private double io_longitude;
     private User creator;
     private Date time_created;
     private Date time_updated;
@@ -45,20 +45,20 @@ public class AlertMarker {
         this.description = description;
     }
 
-    public double getLatitude() {
-        return latitude;
+    public double getIo_latitude() {
+        return io_latitude;
     }
 
-    public void setLatitude(double latitude) {
-        this.latitude = latitude;
+    public void setIo_latitude(double io_latitude) {
+        this.io_latitude = io_latitude;
     }
 
-    public double getLongitude() {
-        return longitude;
+    public double getIo_longitude() {
+        return io_longitude;
     }
 
-    public void setLongitude(double longitude) {
-        this.longitude = longitude;
+    public void setIo_longitude(double io_longitude) {
+        this.io_longitude = io_longitude;
     }
 
     public User getCreator() {
