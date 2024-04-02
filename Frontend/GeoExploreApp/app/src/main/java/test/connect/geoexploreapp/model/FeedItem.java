@@ -5,14 +5,14 @@ import java.util.Date;
 import java.util.List;
 
 public interface FeedItem {
-    double getLatitude();
-    double getLongitude();
+    double getIo_latitude();
+    double getIo_longitude();
+
     String getTitle();
     String getDescription();
     String getType();
     String getDepartment();
     Date getTime_created();
-    String getLocation();
     Long getPostID();
     List<Comment> getComments();
 

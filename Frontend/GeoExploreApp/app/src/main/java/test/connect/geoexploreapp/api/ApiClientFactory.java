@@ -13,7 +13,7 @@ public class ApiClientFactory {
         if(apiClientSeed == null){
 
             apiClientSeed = new Retrofit.Builder()
-                    .baseUrl("https://67d7f572-57ac-492a-8502-49174d854116.mock.pstmn.io/") // Server url here with / at the end http://coms-309-005.class.las.iastate.edu:8080
+                    .baseUrl("https://49ae9138-a209-4fcb-a23e-4fe7e33f32cf.mock.pstmn.io/") // Server url here with / at the end http://coms-309-005.class.las.iastate.edu:8080
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
         }
@@ -27,5 +27,12 @@ public class ApiClientFactory {
     public static CommentApi GetCommentApi() {
         return GetApiClientSeed().create(CommentApi.class);
     }
+    public static AlertMarkerApi getAlertMarkerApi(){ return GetApiClientSeed().create(AlertMarkerApi.class);}
+    public static MarkerTagApi getMarkerTagApi(){ return GetApiClientSeed().create(MarkerTagApi.class);}
+
+    public static UserApi GetUserApi(){return GetApiClientSeed().create(UserApi.class);}
+
+
+
 
 }

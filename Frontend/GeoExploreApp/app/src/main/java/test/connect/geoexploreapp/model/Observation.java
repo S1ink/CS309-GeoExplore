@@ -16,7 +16,7 @@ public class Observation implements FeedItem{
     private String meta;
     private List<MarkerTag> tags;
     private User confirmed_by;
-    private String address;
+    //    private String address;
     private List<Comment> comments;
 
     public Observation(){
@@ -33,7 +33,7 @@ public class Observation implements FeedItem{
         this.id = id;
     }
 
-    public double getLatitude() {
+    public double getIo_latitude() {
         return latitude;
     }
 
@@ -41,7 +41,7 @@ public class Observation implements FeedItem{
         this.latitude = latitude;
     }
 
-    public double getLongitude() {
+    public double getIo_longitude() {
         return longitude;
     }
 
@@ -76,29 +76,23 @@ public class Observation implements FeedItem{
     }
 
     @Override
-    public String getLocation()  {
-        return address;
-    }
-
-    @Override
     public Long getPostID() {
         return id;
     }
+
 
     @Override
     public List<Comment> getComments() {
         return comments;
     }
 
-
     public void setComments(List<Comment> comments) {
-        this.comments = comments;
+        this.comments= comments;
     }
 
-
-    public void setLocation(String address)  {
-        this.address =address;
-    }
+    //    public void setLocation(String address)  {
+//        this.address =address;
+//    }
     public void setTime_created(Date time_created) {
         this.time_created = time_created;
     }
@@ -145,5 +139,4 @@ public class Observation implements FeedItem{
     public void setConfirmed_by(User confirmed_by) {
         this.confirmed_by = confirmed_by;
     }
-
 }

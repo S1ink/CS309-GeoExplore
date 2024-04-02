@@ -35,11 +35,7 @@ public class MainActivity extends AppCompatActivity {
         boolean isAdmin = getIntent().getBooleanExtra("IsAdmin",false);
 
 
-        if(userJson!= null){
-            Gson gson = new Gson();
-
-            User user = gson.fromJson(userJson,User.class);
-
+        if(user!= null){
             SharedViewModel viewModel = new ViewModelProvider(this).get(SharedViewModel.class);
 
             viewModel.setLoggedInUser(user);
