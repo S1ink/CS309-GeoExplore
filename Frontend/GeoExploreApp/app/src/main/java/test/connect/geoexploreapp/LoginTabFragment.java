@@ -104,13 +104,7 @@ public class LoginTabFragment extends Fragment {
     }
     private void startMainActivity(User newUser) {
         Intent intent = new Intent(getActivity(), MainActivity.class);
-        Gson gson = new Gson();
-        String userJson = gson.toJson(newUser);
-        intent.putExtra("UserJson",userJson);
-        intent.putExtra("UserName", newUser.getName());
-        intent.putExtra("UserEmail", newUser.getEmailId());
-       // intent.putExtra("UserID", newUser.getId());
-        intent.putExtra("IsAdmin", newUser.getIsAdmin());
+        intent.putExtra("UserObject", newUser);
         startActivity(intent);
         getActivity().finish();
     }

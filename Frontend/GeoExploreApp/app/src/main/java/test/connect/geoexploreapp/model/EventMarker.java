@@ -82,10 +82,17 @@ public class EventMarker implements FeedItem{
         this.address = address;
     }
 
+
+    @Override
+    public Long getPostID() {
+        return id;
+    }
+
     @Override
     public List<Comment> getComments() {
         return comments;
     }
+
 
     public void setComments(List<Comment> comments) {
         this.comments = comments;
@@ -109,6 +116,26 @@ public class EventMarker implements FeedItem{
 
     public User getCreator() {
         return creator;
+    }
+
+    public void setCreator(User creator) {
+        this.creator = creator;
+    }
+
+    public Date getTime_updated() {
+        return time_updated;
+    }
+
+    public void setTime_updated(Date time_updated) {
+        this.time_updated = time_updated;
+    }
+
+    public String getMeta() {
+        return meta;
+    }
+
+    public void setMeta(String meta) {
+        this.meta = meta;
     }
 
     public void setCreator(User creator) {

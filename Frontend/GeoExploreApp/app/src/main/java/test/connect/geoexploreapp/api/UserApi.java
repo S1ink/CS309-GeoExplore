@@ -19,7 +19,7 @@ public interface UserApi {
     Call<User> UserCreate(@Body User newUser);
 
     @GET("user/{id}")
-    Call<Optional<User>> getUser(@Path("id") Long id);
+    Call<User> getUser(@Path("id") Long id);
 
     @PUT("user/{id}/update")
     Call<User> updateUser(@Path("id") Long id, @Body User updated);

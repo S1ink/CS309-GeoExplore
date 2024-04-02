@@ -81,13 +81,20 @@ public class Observation implements FeedItem{
     }
 
     @Override
+    public Long getPostID() {
+        return id;
+    }
+
+    @Override
     public List<Comment> getComments() {
         return comments;
     }
 
+
     public void setComments(List<Comment> comments) {
-        this.comments= comments;
+        this.comments = comments;
     }
+
 
     public void setLocation(String address)  {
         this.address =address;
@@ -138,4 +145,5 @@ public class Observation implements FeedItem{
     public void setConfirmed_by(User confirmed_by) {
         this.confirmed_by = confirmed_by;
     }
+
 }

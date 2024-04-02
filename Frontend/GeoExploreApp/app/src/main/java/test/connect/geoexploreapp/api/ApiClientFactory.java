@@ -24,10 +24,8 @@ public class ApiClientFactory {
     public static ReportMarkerApi getReportMarkerApi(){ return GetApiClientSeed().create(ReportMarkerApi.class);}
     public static EventMarkerApi getEventMarkerApi(){ return GetApiClientSeed().create(EventMarkerApi.class);}
     public static ObservationApi GetObservationApi() { return GetApiClientSeed().create(ObservationApi.class);}
-    public static AlertMarkerApi getAlertMarkerApi(){ return GetApiClientSeed().create(AlertMarkerApi.class);}
-    public static MarkerTagApi getMarkerTagApi(){ return GetApiClientSeed().create(MarkerTagApi.class);}
-
-    public static UserApi GetUserApi(){return GetApiClientSeed().create(UserApi.class);}
-
+    public static CommentApi GetCommentApi() {
+        return GetApiClientSeed().create(CommentApi.class);
+    }
 
 }

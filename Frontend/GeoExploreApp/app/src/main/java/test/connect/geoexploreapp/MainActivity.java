@@ -18,6 +18,7 @@ import test.connect.geoexploreapp.websocket.WebSocketManager;
 public class MainActivity extends AppCompatActivity {
 
     ActivityMainBinding binding;
+    User user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,12 +26,13 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        user = (User) getIntent().getSerializableExtra("UserObject");
+
+
         String userName = getIntent().getStringExtra("UserName");
+        Long userId = getIntent().getLongExtra("UserID",-1);
         String userEmail = getIntent().getStringExtra("UserEmail");
         boolean isAdmin = getIntent().getBooleanExtra("IsAdmin",false);
-
-        String userJson = getIntent().getStringExtra("UserJson");
-        //Long userId= getIntent().getLongExtra("UserId",-1);
 
 
         if(userJson!= null){
@@ -55,16 +57,16 @@ public class MainActivity extends AppCompatActivity {
             int itemId = item.getItemId();
 
             if (itemId == R.id.profile) {
-                ProfileActivity profileFragment = ProfileActivity.newInstance(userName, userEmail,isAdmin);
+                ProfileActivity profileFragment = ProfileActivity.newInstance(user.getName(), user.getEmailId(),user.getIsAdmin());
                 replaceFragment(profileFragment);
             } else if (itemId == R.id.maps) {
                 replaceFragment(new MapsActivity());
             } else if(itemId == R.id.show_feed){
                 WebSocketManager.getInstance().connectWebSocket("wss://socketsbay.com/wss/v2/1/demo/"); //URL ADD LATER
-                FeedActivity feedActivity = FeedActivity.newInstance(userName);
+                FeedActivity feedActivity = FeedActivity.newInstance(user);
                 replaceFragment(feedActivity);
             } else if (itemId == R.id.settings) {
-                SettingsActivity settingsFragment = SettingsActivity.newInstance(isAdmin);
+                SettingsActivity settingsFragment = SettingsActivity.newInstance(user.getIsAdmin());
                 replaceFragment(settingsFragment);
             }
 
