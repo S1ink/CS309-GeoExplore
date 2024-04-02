@@ -1,21 +1,24 @@
 package hb403.geoexplore.comments.controller;
 
-import hb403.geoexplore.UserStorage.entity.User;
-import hb403.geoexplore.UserStorage.entity.UserGroup;
 import hb403.geoexplore.UserStorage.repository.UserRepository;
 import hb403.geoexplore.comments.CommentRepo.CommentRepository;
 import hb403.geoexplore.comments.Entity.CommentEntity;
 
-import hb403.geoexplore.comments.ObservationCommentWebsocket;
+import hb403.geoexplore.datatype.marker.EventMarker;
 import hb403.geoexplore.datatype.marker.ObservationMarker;
+import hb403.geoexplore.datatype.marker.ReportMarker;
+import hb403.geoexplore.datatype.marker.repository.EventRepository;
 import hb403.geoexplore.datatype.marker.repository.ObservationRepository;
+import hb403.geoexplore.datatype.marker.repository.ReportRepository;
 import io.swagger.v3.oas.annotations.Operation;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.nio.ByteBuffer;
+import javax.swing.text.html.Option;
+import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 @RestController
@@ -23,41 +26,94 @@ public class CommentController {
     @Autowired
     CommentRepository commentRepository;
     public static ObservationRepository observationRepository;
+    public static ReportRepository reportRepository;
+    public static EventRepository eventRepository;
     @Autowired
     public void autoObservationRepository(ObservationRepository repo) {
         CommentController.observationRepository = repo;
     }
     @Autowired
-    UserRepository userRepository;
+    public void autoReportRepository(ReportRepository repo) {
+        CommentController.reportRepository = repo;
+    }
+    @Autowired
+    public void autoEventRepository(EventRepository repo) {
+        CommentController.eventRepository = repo;
+    }
     
     //C of Crudl
     @Operation(summary = "Add a new comment to the database")
-    @PostMapping(path = "/comment/store")
-    public @ResponseBody CommentEntity commentStore (@RequestBody CommentEntity newComment){
+    @PostMapping(path = "/comment/store/{postType}") //Observation, Event, or Report with capital
+    public @ResponseBody CommentEntity commentStore (@RequestBody CommentEntity newComment, @PathVariable String postType){
+        CommentEntity toSave = new CommentEntity(newComment.getUserId(),newComment.getPostId(), postType , newComment.getComment());
+        commentRepository.save(toSave);
 
-        //CommentEntity newComment = new CommentEntity("emessmer", (long)53, "How do you do this?");
-        commentRepository.save(newComment);
-        System.out.print(newComment);
-        //System.out.println(newComment);
+            try {
+                    if (postType.equals("Observation")) {
+                        final ObservationMarker tempObservation = this.observationRepository.findById(newComment.getPostId()).get();
+                        tempObservation.getComments().add(toSave);
+                        toSave.setPertainsObservationMarker(tempObservation);
+                        observationRepository.save(tempObservation);
+                    }
+                    else if (postType.equals("Report")){
+                        final ReportMarker tempReport = this.reportRepository.findById(newComment.getPostId()).get();
+                        tempReport.getComments().add(toSave);
+                        toSave.setPertainsReportMarker(tempReport);
+                        reportRepository.save(tempReport);
+                    }
+                    else if(postType.equals("Event")){
+                        final EventMarker tempEvent = this.eventRepository.findById(newComment.getPostId()).get();
+                        tempEvent.getComments().add(toSave);
+                        toSave.setPertainsEventMarker(tempEvent);
+                        eventRepository.save(tempEvent);
+                    }
+                    else{
+                        System.out.println("Post type not included");
+                    }
+                commentRepository.save(toSave);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         return newComment;
     }
     //R of Crudl
     @Operation(summary = "Get a comment from the database by its id")
     @GetMapping(path = "/comment/{id}")
     public @ResponseBody CommentEntity getComment(@PathVariable Long id){
-        CommentEntity found = commentRepository.getById(id);
-        //System.out.println(found.getPostIds());
-        return found;
+        return commentRepository.getById(id);
     }
 
     //U of Crudl
     @Operation(summary = "Update a comment already in the database by its id")
     @PutMapping(path = "/comment/{id}/update")
     public @ResponseBody CommentEntity updateComment(@PathVariable Long id, @RequestBody CommentEntity updated){
-        CommentEntity updater = commentRepository.getById(id);
-        CommentEntity update = new CommentEntity(id, updated.getPostId(), updated.getUserId(), updated.getPostType(), updated.getComment());
-        commentRepository.save(updater);
-        return updated;
+        try {CommentEntity updater = commentRepository.getById(id); //making sure the comment exists in the repository
+        CommentEntity update = new CommentEntity(id, updated.getPostId(), updated.getUserId(), updated.getPostType(), updated.getComment() + " \n(comment edited)");
+        deleteComment(id);
+        commentRepository.save(update);
+            if (update.getPostType().equals("Observation")) {
+                final ObservationMarker tempObservation = observationRepository.findById(update.getPostId()).get();
+                tempObservation.getComments().add(update);
+                update.setPertainsObservationMarker(tempObservation);
+                observationRepository.save(tempObservation);
+            }
+            else if (update.getPostType().equals("Report")){
+                final ReportMarker tempReport = reportRepository.findById(update.getPostId()).get();
+                tempReport.getComments().add(update);
+                update.setPertainsReportMarker(tempReport);
+                reportRepository.save(tempReport);
+            }
+            else if(update.getPostType().equals("Event")){
+                final EventMarker tempEvent = eventRepository.findById(update.getPostId()).get();
+                tempEvent.getComments().add(update);
+                update.setPertainsEventMarker(tempEvent);
+                eventRepository.save(tempEvent);
+            }
+        return updated;}
+        catch (Exception e){
+            System.out.println(e);
+            return null;
+        }
     }
 
 
@@ -66,6 +122,47 @@ public class CommentController {
     public @ResponseBody String deleteComment(@PathVariable Long id){
         CommentEntity deleted = commentRepository.findById(id).get();
         commentRepository.deleteById(id);
+
+        if (deleted.getPostType().equals("Observation")) {
+            ObservationMarker deleteFromList = observationRepository.findById(deleted.getPostId()).get();
+            List<CommentEntity> listToDelete = deleteFromList.getComments();
+            AtomicInteger i = new AtomicInteger();
+            listToDelete.forEach(comment -> {
+                if (comment.equals(deleted)){
+                    i.getAndIncrement();
+                    listToDelete.remove(i.get());
+                }
+
+            });
+        }
+        else if (deleted.getPostType().equals("Event")) {
+            EventMarker deleteFromList = eventRepository.findById(deleted.getPostId()).get();
+            List<CommentEntity> listToDelete = deleteFromList.getComments();
+            AtomicInteger i = new AtomicInteger();
+            listToDelete.forEach(comment -> {
+                if (comment.equals(deleted)){
+                    i.getAndIncrement();
+                    listToDelete.remove(i.get());
+                }
+
+            });
+        }
+        else if (deleted.getPostType().equals("Report")){
+            ReportMarker deleteFromList = reportRepository.findById(deleted.getPostId()).get();
+            List<CommentEntity> listToDelete = deleteFromList.getComments();
+            AtomicInteger i = new AtomicInteger();
+            listToDelete.forEach(comment -> {
+                if (comment.equals(deleted)){
+                    i.getAndIncrement();
+                    listToDelete.remove(i.get());
+                }
+
+            });
+        }
+        else {
+            return "deleted from comment repo but not post";
+        }
+
         return "Successfully deleted: \n" + deleted.toString();
     }
 

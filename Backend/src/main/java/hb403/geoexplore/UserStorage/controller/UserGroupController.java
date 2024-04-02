@@ -1,8 +1,10 @@
 package hb403.geoexplore.UserStorage.controller;
 
-import java.util.List;
+import java.util.*;
 
 import hb403.geoexplore.UserStorage.repository.*;
+import hb403.geoexplore.datatype.marker.ObservationMarker;
+import hb403.geoexplore.datatype.marker.repository.ObservationRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import hb403.geoexplore.UserStorage.entity.*;
 
@@ -17,6 +19,8 @@ public class UserGroupController {
 	UserGroupRepository group_repo;
 	@Autowired
 	UserRepository user_repo;
+	@Autowired
+	ObservationRepository observationRepository;
 
 	
 	@Operation(summary = "Add a new usergroup to the database")
@@ -103,6 +107,42 @@ public class UserGroupController {
 		}
 		return null;
 	}
+	@Operation(summary = "Deletes a user from the userGroup without deleting them from the user repo")
+	@DeleteMapping(path = "user/usergroups/{group_id}/{user_id}/")
+	public @ResponseBody String deleteUser(@PathVariable Long group_id, @PathVariable Long user_id){
+
+		return "successfully deleted user from group";
+	}
+
+	@Operation(summary = "Get a list of all the members in a user group")
+	@GetMapping(path = "user/usergroups/{group_id}/memberlist")
+	public @ResponseBody ArrayList<String> listGroupMembersById(@PathVariable long group_id){
+		ArrayList<String> emailIds = new ArrayList<String>();
+		try {
+			UserGroup temp = this.group_repo.findById(group_id).get();
+			Set<User> allMembers = temp.getMembers();
+			allMembers.forEach(user  ->{
+				emailIds.add(user.getEmailId());
+			});
+		}
+		catch (Exception e){
+			System.out.println(e);
+		}
+		return emailIds;
+	}
+
+	@Operation(summary = "adds to a filter for groups to make it so they only see the observations \"reposted\" by the group")
+	@PutMapping(path = "user/userGroups/{group_id}/{observation_id}")
+	public @ResponseBody String forFilter(@PathVariable Long group_id, @PathVariable Long observation_id){
+		ObservationMarker tempObs = observationRepository.getById(observation_id);
+		UserGroup tempGroup = group_repo.getById(group_id);
+		tempGroup.addToObservations(tempObs);
+		tempObs.addToPertainsGroup(tempGroup);
+		group_repo.save(tempGroup);
+		observationRepository.save(tempObs);
+		return "added Observation " + tempObs.getId() + "to filter for group " + tempGroup.getTitle();
+	}
+
 
 	// find by name?
 

@@ -2,6 +2,7 @@ package hb403.geoexplore.datatype.marker;
 
 import hb403.geoexplore.UserStorage.entity.User;
 // import hb403.geoexplore.datatype.MarkerTag;
+import hb403.geoexplore.UserStorage.entity.UserGroup;
 import hb403.geoexplore.comments.Entity.CommentEntity;
 
 import java.util.*;
@@ -46,5 +47,18 @@ public class ObservationMarker extends MarkerBase {
 	@OneToMany(mappedBy = "pertainsObservationMarker", fetch = FetchType.EAGER)
 	private List<CommentEntity> Comments;
 
+	@Getter
+	@Setter
+	@JsonIgnore
+	@ManyToMany
+	@JoinTable(
+			name = "Observations->Group",
+			joinColumns = @JoinColumn(name = "marker_id"),
+			inverseJoinColumns = @JoinColumn(name = "group_id"))
+	private Set<UserGroup> pertainsGroup = new HashSet<>();
+
+	public void addToPertainsGroup(UserGroup group_to_add){
+		pertainsGroup.add(group_to_add);
+	}
 
 }

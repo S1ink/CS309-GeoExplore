@@ -2,6 +2,8 @@ package hb403.geoexplore.controllers;
 
 import hb403.geoexplore.UserStorage.entity.User;
 import hb403.geoexplore.UserStorage.repository.UserRepository;
+import hb403.geoexplore.comments.CommentRepo.CommentRepository;
+import hb403.geoexplore.comments.Entity.CommentEntity;
 import hb403.geoexplore.datatype.MarkerTag;
 import hb403.geoexplore.datatype.marker.AlertMarker;
 import hb403.geoexplore.datatype.marker.ObservationMarker;
@@ -27,6 +29,8 @@ public class ObservationController {
     protected MarkerTagRepository tags_repo;
     @Autowired
     protected UserRepository users_repo;
+    @Autowired
+    protected CommentRepository commentRepository;
 
 
     // C of Crudl, adds observation to repo
@@ -77,6 +81,12 @@ public class ObservationController {
             try {
                 final ObservationMarker ref = this.getObs(id);
                 this.obs_repo.deleteById(id);
+                if (ref.getComments()!= null) {
+                    List<CommentEntity> commentsToDelete = ref.getComments();
+                    commentsToDelete.forEach(comment -> {
+                        commentRepository.deleteById(comment.getId());
+                    });
+                }
                 ref.enforceLocationTable();
                 return ref;
             } catch(Exception e) {
