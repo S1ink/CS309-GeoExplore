@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 
 
@@ -28,7 +29,7 @@ import java.util.Map;
 @RestController
 public class EventCommentWebsocket {//This is both the comment controller and chat websocket
     private CommentEntity currCommentor;
-
+    private Long tableId;
     private String Type;
     private static CommentRepository commentRepository;
 
@@ -81,13 +82,17 @@ public class EventCommentWebsocket {//This is both the comment controller and ch
      * @param postid  id of post for storing
      */
     @OnOpen
-    public void onOpen(Session session, @PathParam("userid") String userid, @PathParam("postid") long postid, @PathParam("postType") String postType) throws IOException {
+    public void onOpen(Session session, @PathParam("userid") String userid, @PathParam("postid") long postid) throws IOException {
 
         // server side log
         logger.info("[onOpen] User " + userid + " joined session on post " + postid);
-
-        this.currCommentor = new CommentEntity(userid, postid);
-        this.Type = postType;
+        List<User> templist =  userRepository.findAll();
+        templist.forEach(user -> {
+            if (userid.equals(user.getEmailId())){
+                this.tableId = user.getId();
+            }
+        });
+        this.currCommentor = new CommentEntity(userid, postid,tableId);
         // map current session with username
         sessionUsernameMap.put(session, userid);
         //sessionObservationMap.put (session,postid);
@@ -120,7 +125,7 @@ public class EventCommentWebsocket {//This is both the comment controller and ch
         logger.info("[onMessage] " + tempuserid + ": " + message);
 
         // Direct message to a user using the format "@username <message>"
-        if (message.startsWith("@")) {
+       /* if (message.startsWith("@")) {
             // split by space
             String[] split_msg = message.split("\\s+");
 
@@ -131,11 +136,11 @@ public class EventCommentWebsocket {//This is both the comment controller and ch
             }
             String destUserName = split_msg[0].substring(1);    //@username and get rid of @
             String actualMessage = actualMessageBuilder.toString();
-            sendMessageToPArticularUser(destUserName, "[DM from " + currCommentor.getUserId() + "]: " + actualMessage + " from post " + currCommentor.getPostId());
-            sendMessageToPArticularUser(currCommentor.getUserId(), "[DM from " + currCommentor.getUserId() + "]: " + actualMessage + " from post " + currCommentor.getPostId());
-        } else { // Message to whole chat underneath observation
+            sendMessageToPArticularUser(destUserName, "[DM from " + currCommentor.getUserId() + "]: " + actualMessage + " from post " + currCommentor.getPostId(), currCommentor);
+            sendMessageToPArticularUser(currCommentor.getUserId(), "[DM from " + currCommentor.getUserId() + "]: " + actualMessage + " from post " + currCommentor.getPostId(), currCommentor);
+        //} else { // Message to whole chat underneath observation*/
             broadcast(message, tempuser);
-            }
+            //}
         }
 
         /**
@@ -180,13 +185,13 @@ public class EventCommentWebsocket {//This is both the comment controller and ch
          * @param username The username of the recipient.
          * @param message  The message to be sent.
          */
-        private void sendMessageToPArticularUser (String username, String message){
+        /*private void sendMessageToPArticularUser (String username, String message, CommentEntity sender){
             try {
                 usernameSessionMap.get(username).getBasicRemote().sendText(message);
             } catch (IOException e) {
                 logger.info("[DM Exception] " + e.getMessage());
             }
-        }
+        }*/
 
         /**
          * Broadcasts a message to all users in the chat.
@@ -194,7 +199,7 @@ public class EventCommentWebsocket {//This is both the comment controller and ch
          * @param message The message to be broadcasted to all users.
          */
         private void broadcast (String message, CommentEntity sender){
-            CommentEntity toSave = new CommentEntity(sender.getUserId(),sender.getPostId(), "Event" ,message);
+            CommentEntity toSave = new CommentEntity(sender.getUserId(),sender.getPostId(), "Event" ,message, sender.getUserTableId());
             commentRepository.save(toSave);
                 sessionUserMap.forEach((session, user) -> {
                     try {
@@ -204,6 +209,10 @@ public class EventCommentWebsocket {//This is both the comment controller and ch
                             //usernameSessionMap.get(user.getUserId()).getBasicRemote().sendText(message);
                             final EventMarker tempEvent = this.eventRepository.findById(toSave.getId()).get();
                             //final CommentEntity u = this.commentRepository.findById(currCommentor.getPostId()).get();
+                            final User tempUser = userRepository.findById((toSave.getUserTableId())).get();
+                            tempUser.getComments().add(toSave);
+                            toSave.setPertainsUser(tempUser);
+                            userRepository.save(tempUser);
                             tempEvent.getComments().add(toSave); 	// if successful add
                              toSave.setPertainsEventMarker(tempEvent);
                             eventRepository.save(tempEvent);

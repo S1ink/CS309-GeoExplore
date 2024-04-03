@@ -1,22 +1,23 @@
 package hb403.geoexplore.UserStorage.entity;
 
+import hb403.geoexplore.UserStorage.repository.UserRepository;
 import hb403.geoexplore.comments.Entity.CommentEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Entity
 @Table(name = "users")
 @Getter
 @Setter
 public class User {
-    //todo as of saturday, Work on this to be finished and start the observation request using this as a
-    // framework but start outside of git so it won't be too annoying
     /*
     Input for creating user {
 
@@ -26,17 +27,13 @@ public class User {
 
     }
      */
-
-
-
-
     @Basic
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)     // probably use UUID after we are done testing
     @Column(name = "user_id")
     private Long id;
     private String name;
+    @Column(name = "email_id")
     private String emailId;
 
     //String[] adminList = {"emessmer@iastate.edu","aditin@iastate.edu" ,"samr888@iastate.edu","yharb@iastate.edu"};
@@ -55,14 +52,16 @@ public class User {
     private Set<UserGroup> groups = new HashSet<>();
 
 
-
+    @Getter
+    @Setter
+    @OneToMany(mappedBy = "pertainsUser", fetch = FetchType.EAGER)
+    private List<CommentEntity> Comments;
 
     public User(Long id, String name, String emailId, String password) {
         this.id = id;
         this.name = name;
         this.emailId = emailId;
         this.password = password;
-
 
         checkIfAdmin();
         encryptPassword();

@@ -54,9 +54,9 @@ public class CommentController {
     @Operation(summary = "Update a comment already in the database by its id")
     @PutMapping(path = "/comment/{id}/update")
     public @ResponseBody CommentEntity updateComment(@PathVariable Long id, @RequestBody CommentEntity updated){
-        CommentEntity updater = commentRepository.getById(id);
-        CommentEntity update = new CommentEntity(id, updated.getPostId(), updated.getUserId(), updated.getPostType(), updated.getComment());
-        commentRepository.save(updater);
+        if (id != null && updated != null) {
+            commentRepository.save(updated);
+        }
         return updated;
     }
 
@@ -87,8 +87,9 @@ public class CommentController {
         ArrayList<CommentEntity> commentEntitiesOnPost = new ArrayList<CommentEntity>();
         for (int i = 0; i < getAllComments().size();i++) {
              if (getAllComments.get(i).getPostType().equals("Observation")){
-                if(getAllComments.get(i).getPostId().equals(postId));
-                commentEntitiesOnPost.add(getAllComments.get(i));
+                if(getAllComments.get(i).getPostId().equals(postId)) {
+                    commentEntitiesOnPost.add(getAllComments.get(i));
+                }
             }
         }
         return commentEntitiesOnPost;
@@ -101,14 +102,21 @@ public class CommentController {
         ArrayList<CommentEntity> commentEntitiesOnPost = new ArrayList<CommentEntity>();
         for (int i = 0; i < getAllComments().size();i++) {
              if (getAllComments.get(i).getPostType().equals("Event")){
-                if(getAllComments.get(i).getPostId().equals(postId));
-                commentEntitiesOnPost.add(getAllComments.get(i));
+                if(getAllComments.get(i).getPostId().equals(postId)) {
+                    commentEntitiesOnPost.add(getAllComments.get(i));
+                }
             }
 
         }
         return commentEntitiesOnPost;
     }
 
+    @Operation(summary = "Gets a list of all comments for a specific observation")
+    @GetMapping(path = "/user/comments/{userId}")
+    @ResponseBody
+    public List<CommentEntity> getCommentsForUser(@PathVariable Long userId){
+        return userRepository.getById(userId).getComments();
+    }
 
     @Operation(summary = "Gets a list of all comments for a specific event")
     @GetMapping(path = "/report/comments/{postId}")
@@ -118,8 +126,9 @@ public class CommentController {
         ArrayList<CommentEntity> commentEntitiesOnPost = new ArrayList<CommentEntity>();
         for (int i = 0; i < getAllComments().size();i++) {
              if (getAllComments.get(i).getPostType().equals("Report")){
-                if(getAllComments.get(i).getPostId().equals(postId));
-                commentEntitiesOnPost.add(getAllComments.get(i));
+                if(getAllComments.get(i).getPostId().equals(postId)) {
+                    commentEntitiesOnPost.add(getAllComments.get(i));
+                }
             }
         }
         return commentEntitiesOnPost;

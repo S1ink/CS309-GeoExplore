@@ -2,13 +2,13 @@ package hb403.geoexplore.comments.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import hb403.geoexplore.UserStorage.entity.User;
-import hb403.geoexplore.UserStorage.entity.UserGroup;
 import hb403.geoexplore.datatype.marker.EventMarker;
 import hb403.geoexplore.datatype.marker.ObservationMarker;
 import hb403.geoexplore.datatype.marker.ReportMarker;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
 
 import java.util.*;
 
@@ -17,7 +17,6 @@ import java.util.*;
 @Getter
 @Setter
 public class CommentEntity {
-
 
         @Setter
         @Getter
@@ -60,6 +59,13 @@ public class CommentEntity {
             joinColumns = @JoinColumn(name = "comment_id"),
             inverseJoinColumns = @JoinColumn(name = "marker_id"))
     ReportMarker pertainsReportMarker;
+    @JsonIgnore
+    @ManyToOne
+    @JoinTable(
+            name = "User_pertains",
+            joinColumns = @JoinColumn(name = "comment_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_table_id"))
+    User pertainsUser;
 
 
         @Getter
@@ -71,6 +77,11 @@ public class CommentEntity {
         @Getter
         @Column
         private String userId;
+        @Setter
+        @Getter
+        @JsonIgnore
+        @Column
+        private Long userTableId;
         @Getter
         @Setter
         @Column
@@ -79,26 +90,28 @@ public class CommentEntity {
         @Setter
         @Column
         private String postType;
-        public CommentEntity(Long Commentid,Long PostID,  String userId,String type, String comment) {
+        public CommentEntity(Long Commentid,Long PostID,  String userId,String type, String comment, Long userTableId) {
         this.id = Commentid;
         this.postId = PostID;
         this.postType = type;
         this.userId = userId;
         this.comment= comment;
+        this.userTableId = userTableId;
         }
 
-        public CommentEntity(String adduserId, Long addpostid, String type, String Addcomment) {
+        public CommentEntity(String adduserId, Long addpostid, String type, String Addcomment, Long userTableId) {
 //        this.id = id;
             this.userId = adduserId;
             this.postId = addpostid;
             this.postType = type;
             this.comment = Addcomment;
-
+            this.userTableId = userTableId;
         }
 
-        public CommentEntity( String Userid,Long postId) {
+        public CommentEntity( String Userid,Long postId, Long userTableId) {
         this.userId = Userid;
         this.postId = postId;
+        this.userTableId = userTableId;
         }
 
         public CommentEntity() {
