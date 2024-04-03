@@ -2,6 +2,8 @@ package hb403.geoexplore.controllers;
 
 import hb403.geoexplore.UserStorage.entity.User;
 import hb403.geoexplore.UserStorage.repository.UserRepository;
+import hb403.geoexplore.comments.CommentRepo.CommentRepository;
+import hb403.geoexplore.comments.Entity.CommentEntity;
 import hb403.geoexplore.datatype.MarkerTag;
 import hb403.geoexplore.datatype.marker.EventMarker;
 import hb403.geoexplore.datatype.marker.ObservationMarker;
@@ -27,6 +29,8 @@ public class ReportController {
     protected MarkerTagRepository tags_repo;
 	@Autowired
 	protected UserRepository users_repo;
+	@Autowired
+	protected CommentRepository commentRepository;
 
 
 	/** [C]rudl - Add a new report to the database */
@@ -36,7 +40,10 @@ public class ReportController {
 		if(report != null) {
 			report.nullifyId();
 			report.enforceLocationIO();
-			return this.reports_repo.save(report);
+			report.applyNewTimestamp();
+			final ReportMarker r = this.reports_repo.save(report);
+			r.enforceLocationTable();
+			return r;
 		}
 		return null;
 	}
@@ -62,7 +69,10 @@ public class ReportController {
 		if(id != null && report != null) {
 			report.setId(id);
 			report.enforceLocationIO();
-			return this.reports_repo.save(report);
+			report.applyUpdatedTimestamp();
+			final ReportMarker r = this.reports_repo.save(report);
+			r.enforceLocationTable();
+			return r;
 		}
 		return null;
 	}
@@ -74,6 +84,12 @@ public class ReportController {
 			try {
 				final ReportMarker ref = this.getReportById(id);
 				this.reports_repo.deleteById(id);
+				/*if (ref.getComments()!= null) {
+					List<CommentEntity> commentsToDelete = ref.getComments();
+					commentsToDelete.forEach(comment -> {
+						commentRepository.deleteById(comment.getId());
+					});
+				}*/
 				ref.enforceLocationTable();
 				return ref;
 			} catch(Exception e) {
@@ -123,6 +139,7 @@ public class ReportController {
 				final MarkerTag t = this.tags_repo.findById(tag_id).get();
 				final ReportMarker m = this.reports_repo.findById(id).get();
 				if(m.getTags().add(t)) {
+					m.applyUpdatedTimestamp();
 					this.reports_repo.save(m);
 					return m;
 				}
@@ -141,6 +158,7 @@ public class ReportController {
 				final ReportMarker m = this.reports_repo.findById(id).get();
 				final User u = this.users_repo.findById(user_id).get();
 				if(m.getConfirmed_by().add(u)) {
+					m.applyUpdatedTimestamp();
 					this.reports_repo.save(m);
 					return m;
 				}

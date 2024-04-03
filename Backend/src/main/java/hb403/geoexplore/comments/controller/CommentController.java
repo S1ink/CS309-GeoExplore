@@ -1,7 +1,5 @@
 package hb403.geoexplore.comments.controller;
 
-import hb403.geoexplore.UserStorage.entity.User;
-import hb403.geoexplore.UserStorage.entity.UserGroup;
 import hb403.geoexplore.UserStorage.repository.UserRepository;
 import hb403.geoexplore.comments.CommentRepo.CommentRepository;
 import hb403.geoexplore.comments.Entity.CommentEntity;
@@ -18,7 +16,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.nio.ByteBuffer;
+import javax.swing.text.html.Option;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -49,22 +48,44 @@ public class CommentController {
 
     //C of Crudl
     @Operation(summary = "Add a new comment to the database")
-    @PostMapping(path = "/comment/store")
-    public @ResponseBody CommentEntity commentStore (@RequestBody CommentEntity newComment){
+    @PostMapping(path = "/comment/store/{postType}") //Observation, Event, or Report with capital
+    public @ResponseBody CommentEntity commentStore (@RequestBody CommentEntity newComment, @PathVariable String postType){
+        CommentEntity toSave = new CommentEntity(newComment.getUserId(),newComment.getPostId(), postType , newComment.getComment());
+        commentRepository.save(toSave);
 
-        //CommentEntity newComment = new CommentEntity("emessmer", (long)53, "How do you do this?");
-        commentRepository.save(newComment);
-        System.out.print(newComment);
-        //System.out.println(newComment);
+            try {
+                    if (postType.equals("Observation")) {
+                        final ObservationMarker tempObservation = this.observationRepository.findById(newComment.getPostId()).get();
+                        tempObservation.getComments().add(toSave);
+                        toSave.setPertainsObservationMarker(tempObservation);
+                        observationRepository.save(tempObservation);
+                    }
+                    else if (postType.equals("Report")){
+                        final ReportMarker tempReport = this.reportRepository.findById(newComment.getPostId()).get();
+                        tempReport.getComments().add(toSave);
+                        toSave.setPertainsReportMarker(tempReport);
+                        reportRepository.save(tempReport);
+                    }
+                    else if(postType.equals("Event")){
+                        final EventMarker tempEvent = this.eventRepository.findById(newComment.getPostId()).get();
+                        tempEvent.getComments().add(toSave);
+                        toSave.setPertainsEventMarker(tempEvent);
+                        eventRepository.save(tempEvent);
+                    }
+                    else{
+                        System.out.println("Post type not included");
+                    }
+                commentRepository.save(toSave);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         return newComment;
     }
     //R of Crudl
     @Operation(summary = "Get a comment from the database by its id")
     @GetMapping(path = "/comment/{id}")
     public @ResponseBody CommentEntity getComment(@PathVariable Long id){
-        CommentEntity found = commentRepository.getById(id);
-        //System.out.println(found.getPostIds());
-        return found;
+        return commentRepository.getById(id);
     }
 
     //U of Crudl

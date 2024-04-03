@@ -2,6 +2,8 @@ package hb403.geoexplore.controllers;
 
 import hb403.geoexplore.UserStorage.entity.User;
 import hb403.geoexplore.UserStorage.repository.UserRepository;
+import hb403.geoexplore.comments.CommentRepo.CommentRepository;
+import hb403.geoexplore.comments.Entity.CommentEntity;
 import hb403.geoexplore.datatype.MarkerTag;
 import hb403.geoexplore.datatype.marker.EventMarker;
 import hb403.geoexplore.datatype.marker.repository.EventRepository;
@@ -25,6 +27,8 @@ public class EventController {
 	protected MarkerTagRepository tags_repo;
 	@Autowired
 	protected UserRepository users_repo;
+	@Autowired
+	protected CommentRepository commentRepository;
 
 
 	/** [C]rudl - Add a new event to the database */
@@ -34,7 +38,10 @@ public class EventController {
 		if(event != null) {
 			event.nullifyId();
 			event.enforceLocationIO();
-			return this.events_repo.save(event);
+			event.applyNewTimestamp();
+			final EventMarker e = this.events_repo.save(event);
+			e.enforceLocationTable();
+			return e;
 		}
 		return null;
 	}
@@ -60,7 +67,10 @@ public class EventController {
 		if(id != null && event != null) {
 			event.setId(id);
 			event.enforceLocationIO();
-			return this.events_repo.save(event);
+			event.applyUpdatedTimestamp();
+			final EventMarker e = this.events_repo.save(event);
+			e.enforceLocationTable();
+			return e;
 		}
 		return null;
 	}
@@ -122,6 +132,7 @@ public class EventController {
 				final MarkerTag t = this.tags_repo.findById(tag_id).get();
 				final EventMarker m = this.events_repo.findById(id).get();
 				if(m.getTags().add(t)) {
+					m.applyUpdatedTimestamp();
 					this.events_repo.save(m);
 					return m;
 				}
@@ -140,6 +151,7 @@ public class EventController {
 				final EventMarker m = this.events_repo.findById(id).get();
 				final User u = this.users_repo.findById(user_id).get();
 				if(m.getAttendees().add(u)) {
+					m.applyUpdatedTimestamp();
 					this.events_repo.save(m);
 					return m;
 				}

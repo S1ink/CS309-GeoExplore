@@ -8,21 +8,23 @@ public class ReportMarker implements FeedItem{
 
     private long id;
     private String title;
-    private double latitude;
-    private double longitude;
+    private String description;
+    private double io_latitude;
+    private double io_longitude;
     private User creator;
     private Date time_created;
     private Date time_updated;
     private String meta;
     private List<MarkerTag> tags;
     private List<User> confirmed_by;
-    private String address;
+    //    private String address;
     private List<Comment> comments;
 
     public ReportMarker() {
+        this.tags = new ArrayList<>();
         this.time_created = new Date();
         this.comments = new ArrayList<>();
-        this.tags = new ArrayList<>();
+
     }
 
     public long getId() {
@@ -33,20 +35,20 @@ public class ReportMarker implements FeedItem{
         this.id = id;
     }
 
-    public double getLongitude() {
-        return longitude;
+    public double getIo_longitude() {
+        return io_longitude;
     }
 
-    public void setLongitude(double longitude) {
-        this.longitude = longitude;
+    public void setIo_longitude(double io_longitude) {
+        this.io_longitude = io_longitude;
     }
 
-    public double getLatitude() {
-        return latitude;
+    public double getIo_latitude() {
+        return io_latitude;
     }
 
-    public void setLatitude(double latitude) {
-        this.latitude = latitude;
+    public void setIo_latitude(double io_latitude) {
+        this.io_latitude = io_latitude;
     }
 
     public String getTitle() {
@@ -55,7 +57,7 @@ public class ReportMarker implements FeedItem{
 
     @Override
     public String getDescription() {
-        return null;
+        return description;
     }
 
     @Override
@@ -73,6 +75,11 @@ public class ReportMarker implements FeedItem{
         return time_created;
     }
 
+    @Override
+    public Long getPostID() {
+        return id;
+    }
+
     public void setTime_created(Date time_created) {
         this.time_created = time_created;
     }
@@ -81,10 +88,10 @@ public class ReportMarker implements FeedItem{
         this.title = title;
     }
 
-    @Override
-    public String getLocation()  {
-        return address;
-    }
+
+//    public String getLocation()  {
+//        return address;
+//    }
 
     @Override
     public List<Comment> getComments() {
@@ -95,9 +102,9 @@ public class ReportMarker implements FeedItem{
         this.comments=comments;
     }
 
-    public void setLocation(String address)  {
-        this.address =address;
-    }
+//    public void setLocation(String address)  {
+//        this.address =address;
+//    }
 
     public User getCreator() {
         return creator;
@@ -138,4 +145,10 @@ public class ReportMarker implements FeedItem{
     public void setConfirmed_by(List<User> confirmed_by) {
         this.confirmed_by = confirmed_by;
     }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+
 }
