@@ -54,7 +54,7 @@ public class User {
 
     @Getter
     @Setter
-    @OneToMany(mappedBy = "pertainsUser", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "pertainsUser", fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE })
     private List<CommentEntity> Comments;
 
     public User(Long id, String name, String emailId, String password) {
