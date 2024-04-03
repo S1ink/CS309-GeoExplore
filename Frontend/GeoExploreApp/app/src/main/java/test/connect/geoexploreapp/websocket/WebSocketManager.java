@@ -6,6 +6,8 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Singleton WebSocketManager instance used for managing WebSocket connections
@@ -15,20 +17,15 @@ import java.net.URI;
  * the application's lifecycle, allowing for centralized WebSocket handling.
  */
 public class WebSocketManager {
-
     private static WebSocketManager instance;
     private MyWebSocketClient webSocketClient;
     private WebSocketListener webSocketListener;
 
+
+
+    // Singleton setup remains the same
     private WebSocketManager() {}
 
-    /**
-     * Retrieves a synchronized instance of the WebSocketManager, ensuring that
-     * only one instance of the WebSocketManager exists throughout the application.
-     * Synchronization ensures thread safety when accessing or creating the instance.
-     *
-     * @return A synchronized instance of WebSocketManager.
-     */
     public static synchronized WebSocketManager getInstance() {
         if (instance == null) {
             instance = new WebSocketManager();
@@ -36,30 +33,14 @@ public class WebSocketManager {
         return instance;
     }
 
-    /**
-     * Sets the WebSocketListener for this WebSocketManager instance. The WebSocketListener
-     * is responsible for handling WebSocket events, such as received messages and errors.
-     *
-     * @param listener The WebSocketListener to be set for this WebSocketManager.
-     */
     public void setWebSocketListener(WebSocketListener listener) {
         this.webSocketListener = listener;
     }
 
-    /**
-     * Removes the currently set WebSocketListener from this WebSocketManager instance.
-     * This action effectively disconnects the listener from handling WebSocket events.
-     */
     public void removeWebSocketListener() {
         this.webSocketListener = null;
     }
 
-    /**
-     * Initiates a WebSocket connection to the specified server URL. This method
-     * establishes a connection with the WebSocket server located at the given URL.
-     *
-     * @param serverUrl The URL of the WebSocket server to connect to.
-     */
     public void connectWebSocket(String serverUrl) {
         try {
             URI serverUri = URI.create(serverUrl);
@@ -70,58 +51,33 @@ public class WebSocketManager {
         }
     }
 
-    /**
-     * Sends a WebSocket message to the connected WebSocket server. This method allows
-     * the application to send a message to the server through the established WebSocket
-     * connection.
-     *
-     * @param message The message to be sent to the WebSocket server.
-     */
     public void sendMessage(String message) {
         if (webSocketClient != null && webSocketClient.isOpen()) {
             webSocketClient.send(message);
+        } else {
+            Log.d("WebSocket", "Connection not open. Message not sent.");
         }
     }
 
-    /**
-     * Disconnects the WebSocket connection, terminating the communication with the
-     * WebSocket server.
-     */
     public void disconnectWebSocket() {
         if (webSocketClient != null) {
             webSocketClient.close();
         }
     }
 
-
-    /**
-     * A private inner class that extends WebSocketClient and represents a WebSocket
-     * client instance tailored for specific functionalities within the WebSocketManager.
-     * This class encapsulates the WebSocketClient and provides custom behavior or
-     * handling for WebSocket communication as needed by the application.
-     */
     private class MyWebSocketClient extends WebSocketClient {
-
         private MyWebSocketClient(URI serverUri) {
             super(serverUri);
         }
 
-        /**
-         * Called when the WebSocket connection is successfully opened and a handshake
-         * with the server has been completed. This method is invoked to handle the event
-         * when the WebSocket connection becomes ready for sending and receiving messages.
-         *
-         * @param handshakedata The ServerHandshake object containing details about the
-         *                      handshake with the server.
-         */
         @Override
         public void onOpen(ServerHandshake handshakedata) {
             Log.d("WebSocket", "Connected");
             if (webSocketListener != null) {
                 webSocketListener.onWebSocketOpen(handshakedata);
             }
-        }
 
+        }
         /**
          * Called when a WebSocket message is received from the server. This method is
          * invoked to handle incoming WebSocket messages and allows the application to

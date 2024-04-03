@@ -109,10 +109,12 @@ public class FeedActivity extends Fragment {
     }
 
     private void fetchCommentsForReport(ReportMarker reportMarker) {
+        Log.d("comment fetching", " fetching for " + reportMarker.getId());
         CommentApi commentApi = ApiClientFactory.GetCommentApi();
         commentApi.getCommentsForReports(reportMarker.getId()).enqueue(new SlimCallback<>(comments -> {
             reportMarker.setComments(comments);
-            Log.d("FeedActivity", "Fetched Comments: " + comments.toString());
+            Log.d("FeedActivity", "Fetched Comments for Report " + reportMarker.getId() + ": " + comments);
+
 
             updateUI(adapter, allItems);
 

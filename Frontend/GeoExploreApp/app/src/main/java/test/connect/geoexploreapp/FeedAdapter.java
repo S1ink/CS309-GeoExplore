@@ -8,8 +8,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,20 +22,13 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -45,9 +36,6 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import test.connect.geoexploreapp.api.ApiClientFactory;
 import test.connect.geoexploreapp.api.CommentApi;
-import test.connect.geoexploreapp.api.EventMarkerApi;
-import test.connect.geoexploreapp.api.ObservationApi;
-import test.connect.geoexploreapp.api.ReportMarkerApi;
 import test.connect.geoexploreapp.api.SlimCallback;
 import test.connect.geoexploreapp.model.Comment;
 import test.connect.geoexploreapp.model.EventMarker;
@@ -72,6 +60,8 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         this.items = items;
         this.user=user;
         this.context = context;
+        WebSocketManager.getInstance().setWebSocketListener(this);
+
     }
 
     @NonNull
@@ -139,6 +129,12 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
 
     private void showComments(Context context, int itemIndex) {
         Gson gson = new Gson();
+        FeedItem item = items.get(itemIndex);
+        String itemType = item.getType().toLowerCase() + "s";
+        String wsUrl = "ws://coms-309-005.class.las.iastate.edu:8080/" + itemType + "/comments/" + user.getEmailId() + "/" + item.getPostID();
+        Log.d("URL", wsUrl);
+        WebSocketManager.getInstance().connectWebSocket(wsUrl);
+
         Log.d("Websocket Connection ","connected");
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -158,22 +154,13 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
                 String commentText = commentEditText.getText().toString().trim();
                 if(!commentText.isEmpty()) {
                     try {
-                        FeedItem item = items.get(itemIndex);
-                        String itemType = item.getType().toLowerCase() + "s";
-
-                        String wsUrl = "ws://coms-309-005.class.las.iastate.edu:8080/" + itemType + "/comments/" + user.getEmailId() + "/" + item.getPostID();
-
-                        WebSocketManager.getInstance().connectWebSocket(wsUrl);
-                        
-
-                        Comment sendComment = new Comment(user.getEmailId(), item.getPostID(), item.getType(), commentText);
-
-                        String sendCommentJson = gson.toJson(sendComment);
-                        WebSocketManager.getInstance().sendMessage(sendCommentJson);
+//                       Comment sendComment = new Comment(user.getEmailId(), item.getPostID(), item.getType(), commentText);
+//                        String sendCommentJson = gson.toJson(sendComment);
+                        WebSocketManager.getInstance().sendMessage(commentText);
                         Log.d("WebSocket", "Message sent: " + commentText);
-
-                      item.getComments().add(sendComment);
-                        notifyItemChanged(itemIndex);
+                        fetchComments(itemIndex, item, item.getType());
+//                      item.getComments().add(sendComment);
+//                        notifyItemChanged(itemIndex);
                     } catch (Exception e) {
                         Log.e("WebSocket", "Error sending message: " + e.getMessage());
                     }
@@ -192,6 +179,50 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         dialogView.show();
     }
 
+    private void fetchComments(int itemIndex, FeedItem item, String type) {
+        if(type.equals("Report")){
+            ReportMarker rep = (ReportMarker) item;
+            fetchCommentsForReport(itemIndex, rep);
+
+        }else if(type.equals("Observation")){
+            Observation obs = (Observation) item;
+            fetchCommentsForObservation(itemIndex, obs);
+
+        }else if(type.equals("Event")){
+            EventMarker event = (EventMarker) item;
+            fetchCommentsForEvent(itemIndex, event);
+
+        }
+    }
+
+    private void fetchCommentsForEvent(int itemIndex, EventMarker event) {
+        CommentApi commentApi = ApiClientFactory.GetCommentApi();
+        commentApi.getCommentsForEvents(event.getId()).enqueue(new SlimCallback<>(comments -> {
+            event.setComments(comments);
+            notifyItemChanged(itemIndex);
+
+        }, "GetCommentsForEvent"));
+    }
+
+    private void fetchCommentsForObservation(int itemIndex, Observation obs) {
+        CommentApi commentApi = ApiClientFactory.GetCommentApi();
+
+        commentApi.getCommentsForObs(obs.getId()).enqueue(new SlimCallback<>(comments -> {
+            obs.setComments(comments);
+            notifyItemChanged(itemIndex);
+
+        }, "GetCommentsForObs"));
+    }
+
+    private void fetchCommentsForReport(int itemIndex, ReportMarker rep) {
+        CommentApi commentApi = ApiClientFactory.GetCommentApi();
+        commentApi.getCommentsForReports(rep.getId()).enqueue(new SlimCallback<>(comments -> {
+            rep.setComments(comments);
+            Log.d("FeedActivity", "Fetched Comments: " + comments.toString());
+            notifyItemChanged(itemIndex);
+
+        }, "GetCommentsForReport"));
+    }
 
 
     @Override
@@ -222,14 +253,19 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
             Comment receivedComment = new Gson().fromJson(message, Comment.class);
 
             activity.runOnUiThread(() -> {
-                for (FeedItem item : items) {
-                    if (item.getPostID().equals(receivedComment.getPostid()) && item.getType().equals(receivedComment.getPostType())) {
-                        item.getComments().add(receivedComment);
-                        notifyDataSetChanged();
-                        break;
-                    }
-                }
+                setCommment(receivedComment);
             });
+        }
+    }
+
+    private void setCommment(Comment receivedComment) {
+        Log.d("trying to set comment", "pks wor");
+        for (FeedItem item : items) {
+            if (item.getPostID().equals(receivedComment.getPostid()) && item.getType().equals(receivedComment.getPostType())) {
+                item.getComments().add(receivedComment);
+                notifyDataSetChanged();
+                break;
+            }
         }
     }
 
@@ -272,26 +308,45 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     }
 
     @Override
-    public void onEditComment(Comment updatedComment, String newComment) {
+    public void onEditComment(Comment updatedComment, String newCommentText) {
+        Comment newComment = new Comment();
+        newComment.setId(updatedComment.getId()); // Set the ID of the comment to update
+        newComment.setComment(newCommentText);
+        newComment.setPostid(updatedComment.getPostid());
+        newComment.setUserId(updatedComment.getUserId());
+        newComment.setPostType(updatedComment.getPostType());
+        Gson gson = new Gson();
+        String updatedCommentJson = gson.toJson(updatedComment);
+        Log.d("UpdateComment", "Updated comment JSON: " + updatedCommentJson);
+        updateCommentInBackend(newComment);
+
+    }
+
+    private void updateCommentInBackend(Comment updatedComment) {
         CommentApi commentApi = ApiClientFactory.GetCommentApi();
-        updatedComment.setComment(newComment);
         commentApi.updateComment(updatedComment.getId(), updatedComment).enqueue(new Callback<Comment>() {
+            @Override
             public void onResponse(Call<Comment> call, Response<Comment> response) {
-                if (response.isSuccessful()) {
+                if (response.isSuccessful() && response.body() != null) {
                     Comment updatedComment = response.body();
-                    Log.d("updated", updatedComment.toString());
+                    Log.d("UpdateComment", "Comment updated successfully: " + updatedComment.getComment());
                     notifyDataSetChanged();
-                    Toast.makeText(context, "Comment updated successfully!", Toast.LENGTH_SHORT).show();
+                   Toast.makeText(context, "Comment updated successfully!", Toast.LENGTH_SHORT).show();
                 } else {
-                    // Handle request errors depending on status code (e.g., 404, 500)
-                    Toast.makeText(context, "Failed to update comment", Toast.LENGTH_SHORT).show();
+                    Log.e("UpdateComment", "Failed to update comment. Response Code: " + response.code() + ", Message: " + response.message());
+                    try {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "null";
+                        Log.e("UpdateComment", "Error Body: " + errorBody);
+                    } catch (IOException e) {
+                        Log.e("UpdateComment", "Error parsing error body", e);
+                    }
                 }
             }
 
             @Override
             public void onFailure(Call<Comment> call, Throwable t) {
-                // Handle unexpected errors
                 Toast.makeText(context, "An error occurred: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.e("UpdateComment", "Error updating comment", t.getCause());
             }
         });
     }
