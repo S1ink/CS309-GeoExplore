@@ -64,4 +64,15 @@ public class Comment {
     public void setPostType(String postType) {
         this.postType = postType;
     }
+
+    @Override
+    public String toString() {
+        return "Comment{" +
+                "id=" + id +
+                ", postId=" + postId +
+                ", userId='" + userId + '\'' +
+                ", comment='" + comment + '\'' +
+                ", postType='" + postType + '\'' +
+                '}';
+    }
 }

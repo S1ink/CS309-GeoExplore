@@ -52,8 +52,14 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
     @Override
     public void onBindViewHolder(@NonNull CommentViewHolder holder, int position) {
         Comment item = comments.get(position);
-        int num = item.getUserId().indexOf("@");
-        String userName = item.getUserId().substring(0,num);
+        Log.d("username", item.getUserId());
+        int atIndex = item.getUserId().indexOf("@");
+        String userName;
+        if (atIndex != -1) {
+            userName = item.getUserId().substring(0, atIndex);
+        } else {
+            userName = item.getUserId();
+        }
         holder.commentUser.setText(userName);
         holder.comment.setText(item.getComment());
 
@@ -87,7 +93,6 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
 
     private void deleteCommentPrompt(Context context, int position) {
         Comment comment = comments.get(position);
-comment.setId(100L);
         Log.d("delete", String.valueOf(comment.getId()) + comment.getUserId() + comment.getComment() + comment.getPostid()+comment.getPostType());
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);

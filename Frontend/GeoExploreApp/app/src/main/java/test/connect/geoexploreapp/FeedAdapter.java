@@ -6,6 +6,8 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -22,7 +24,9 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
@@ -32,6 +36,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import okhttp3.ResponseBody;
@@ -40,12 +45,15 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import test.connect.geoexploreapp.api.ApiClientFactory;
 import test.connect.geoexploreapp.api.CommentApi;
+import test.connect.geoexploreapp.api.EventMarkerApi;
 import test.connect.geoexploreapp.api.ObservationApi;
+import test.connect.geoexploreapp.api.ReportMarkerApi;
 import test.connect.geoexploreapp.api.SlimCallback;
 import test.connect.geoexploreapp.model.Comment;
 import test.connect.geoexploreapp.model.EventMarker;
 import test.connect.geoexploreapp.model.FeedItem;
 import test.connect.geoexploreapp.model.Observation;
+import test.connect.geoexploreapp.model.ReportMarker;
 import test.connect.geoexploreapp.model.User;
 import test.connect.geoexploreapp.websocket.WebSocketListener;
 import test.connect.geoexploreapp.websocket.WebSocketManager;
@@ -96,7 +104,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         holder.title.setText(item.getTitle());
         holder.type.setText(item.getType());
         holder.date.setText(item.getTime_created().toString());
-       // holder.location.setText("Address: " + item.getLocation());
+        getLocation(holder, item.getIo_latitude(),  item.getIo_longitude());
 
         holder.commentsRecyclerView.setLayoutManager(new LinearLayoutManager(holder.itemView.getContext()));
 
@@ -110,6 +118,23 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
                 Log.d("item check", String.valueOf(position));
             }
         });
+    }
+
+    private void getLocation(FeedViewHolder holder, double ioLatitude, double ioLongitude) {
+        Geocoder geocoder = new Geocoder(context, Locale.getDefault());
+        try {
+            List<Address> addresses = geocoder.getFromLocation(ioLatitude, ioLongitude, 1);
+            if (addresses != null && !addresses.isEmpty()) {
+                Address address = addresses.get(0);
+                String addressText = address.getAddressLine(0); // You might adjust this based on what parts of the address you need
+                holder.location.setText("Address: " + addressText);
+            } else {
+                holder.location.setText("Address not found");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            holder.location.setText("Error fetching address");
+        }
     }
 
     private void showComments(Context context, int itemIndex) {
@@ -134,6 +159,12 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
                 if(!commentText.isEmpty()) {
                     try {
                         FeedItem item = items.get(itemIndex);
+                        String itemType = item.getType().toLowerCase() + "s";
+
+                        String wsUrl = "ws://coms-309-005.class.las.iastate.edu:8080/" + itemType + "/comments/" + user.getEmailId() + "/" + item.getPostID();
+
+                        WebSocketManager.getInstance().connectWebSocket(wsUrl);
+                        
 
                         Comment sendComment = new Comment(user.getEmailId(), item.getPostID(), item.getType(), commentText);
 
@@ -188,19 +219,15 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
 
         Activity activity = (Activity) context;
         if(message.length()>0 && message!=null&&message.contains("postid")&&message.contains("userEmailid")&&message.contains("comment")) {
-            activity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
+            Comment receivedComment = new Gson().fromJson(message, Comment.class);
 
-                        Comment newComment = new Gson().fromJson(message, Comment.class);
-                    for (FeedItem item : items) {
-                        if (item.getPostID().equals(newComment.getPostid()) && item.getType().equals(newComment.getPostType())) {
-                            item.getComments().add(newComment);
-                            notifyDataSetChanged();
-                            break;
-                        }
+            activity.runOnUiThread(() -> {
+                for (FeedItem item : items) {
+                    if (item.getPostID().equals(receivedComment.getPostid()) && item.getType().equals(receivedComment.getPostType())) {
+                        item.getComments().add(receivedComment);
+                        notifyDataSetChanged();
+                        break;
                     }
-
                 }
             });
         }
@@ -223,7 +250,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
-                    // Iterate through items to find and remove the comment
+                    Log.d("delete", "delete successful");
                     for (FeedItem item : items) {
                         List<Comment> comments = item.getComments();
                         if (comments.removeIf(comment -> comment.getId().equals(commentId))) {
@@ -247,29 +274,24 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     @Override
     public void onEditComment(Comment updatedComment, String newComment) {
         CommentApi commentApi = ApiClientFactory.GetCommentApi();
-        updatedComment.setComment(newComment); // Assuming updatedComment is the comment passed with updated content
+        updatedComment.setComment(newComment);
         commentApi.updateComment(updatedComment.getId(), updatedComment).enqueue(new Callback<Comment>() {
-            @Override
             public void onResponse(Call<Comment> call, Response<Comment> response) {
                 if (response.isSuccessful()) {
-                    for (FeedItem item : items) {
-                        List<Comment> comments = item.getComments();
-                        comments.forEach(comment -> {
-                            if (comment.getId().equals(updatedComment.getId())) {
-                                comment.setComment(newComment);
-                            }
-                        });
-                    }
-                    notifyDataSetChanged(); // Refresh the entire list, or target a specific update if possible
-                    new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(context, "Comment updated successfully", Toast.LENGTH_SHORT).show());
+                    Comment updatedComment = response.body();
+                    Log.d("updated", updatedComment.toString());
+                    notifyDataSetChanged();
+                    Toast.makeText(context, "Comment updated successfully!", Toast.LENGTH_SHORT).show();
                 } else {
+                    // Handle request errors depending on status code (e.g., 404, 500)
                     Toast.makeText(context, "Failed to update comment", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<Comment> call, Throwable t) {
-                Toast.makeText(context, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                // Handle unexpected errors
+                Toast.makeText(context, "An error occurred: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }

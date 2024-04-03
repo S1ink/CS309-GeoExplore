@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
             } else if (itemId == R.id.maps) {
                 replaceFragment(new MapsActivity());
             } else if(itemId == R.id.show_feed){
-                WebSocketManager.getInstance().connectWebSocket("wss://socketsbay.com/wss/v2/1/demo/"); //URL ADD LATER
+//                WebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/"); //URL ADD LATER
                 FeedActivity feedActivity = FeedActivity.newInstance(user);
                 replaceFragment(feedActivity);
             } else if (itemId == R.id.settings) {
