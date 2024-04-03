@@ -79,11 +79,8 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
     private int reportIdStatus = 0; // For promptForReportID method. 1 to Read, 2 to Delete, 3 to Update
     private int eventIdStatus = 0; // For promptForEventID method. 1 to Read, 2 to Delete, 3 to Update
     private int observationIdStatus = 0; // For promptForReportID method. 1 to Read, 2 to Delete, 3 to Update
-    private TextView reportCreateTextView;
-    private TextView eventCreateTextView;
     private TextView reportUpdateTextView;
     private TextView eventUpdateTextView;
-    private TextView observationCreateTextView;
     private TextView observationUpdateTextView;
     private User loggedInUser;
 
@@ -126,11 +123,6 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
             }
         });
 
-
-
-        reportCreateTextView = view.findViewById(R.id.activity_maps_report_create_text_view);
-        eventCreateTextView = view.findViewById(R.id.activity_maps_event_create_text_view);
-        observationCreateTextView = view.findViewById(R.id.activity_maps_observation_create_text_view);
         reportUpdateTextView = view.findViewById(R.id.activity_maps_report_update_text_view);
         eventUpdateTextView = view.findViewById(R.id.activity_maps_event_update_text_view);
         observationUpdateTextView = view.findViewById(R.id.activity_maps_observation_update_text_view);
@@ -291,18 +283,18 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
 
         EditText editTextTitle = view.findViewById(R.id.editTextTitle);
         EditText editTextDescription = view.findViewById(R.id.editTextDescription);
-        EditText editTextCityDepartment = view.findViewById(R.id.editTextCityDepartment);
+//        EditText editTextCityDepartment = view.findViewById(R.id.editTextCityDepartment);
         EditText editTextMarkerTag = view.findViewById(R.id.editTextMarkerTag);
 
         if ("Report".equals(type)) {
             editTextDescription.setVisibility(View.GONE); // Hide description for Report
-            editTextCityDepartment.setVisibility(View.GONE);
+//            editTextCityDepartment.setVisibility(View.GONE);
         } else if ("Event".equals(type)) {
             editTextDescription.setVisibility(View.GONE);
-            editTextCityDepartment.setVisibility(View.VISIBLE); // Show city/department for Event
+            //editTextCityDepartment.setVisibility(View.VISIBLE); // Show city/department for Event
         } else {
             editTextDescription.setVisibility(View.VISIBLE);
-            editTextCityDepartment.setVisibility(View.GONE); // Hide city/department for Observation
+//            editTextCityDepartment.setVisibility(View.GONE); // Hide city/department for Observation
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -314,7 +306,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
                         // Here, you can access editTextTitle and editTextDescription for their values
                         String title = editTextTitle.getText().toString().trim();
                         String description = editTextDescription.getText().toString().trim();
-                        String cityDepartment = editTextCityDepartment.getText().toString().trim();
+//                        String cityDepartment = editTextCityDepartment.getText().toString().trim();
                         String markerTagsInput = editTextMarkerTag.getText().toString().trim();
 
                         List<MarkerTag> markerTags = parseMarkerTags(markerTagsInput);
@@ -323,7 +315,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
                             createNewReport(latLng, title, markerTags);
 
                         }else if("Event".equals(type)){
-                            createNewEvent(latLng, title, cityDepartment, markerTags);
+                            createNewEvent(latLng, title, markerTags);
 
                         }else{
                             createNewObservation(latLng, title,description, markerTags);
@@ -640,7 +632,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
     }
 
     // Event CRUDL
-    private void createNewEvent(final LatLng latLng, String eventTitle, String cityDepartment, List<MarkerTag> markerTags) {
+    private void createNewEvent(final LatLng latLng, String eventTitle, List<MarkerTag> markerTags) {
         EventMarkerApi reportMarkerApi = ApiClientFactory.getEventMarkerApi();
 
         EventMarker newEventMarker = new EventMarker();
@@ -682,13 +674,13 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
             }
         }, "getEventByID"));
     }
-    private void updateExistingEventByID(Long id, String newTitle, String newCityDepartment, LatLng latLng) {
+    private void updateExistingEventByID(Long id, String newTitle, LatLng latLng) {
         EventMarkerApi eventMarkerApi = ApiClientFactory.getEventMarkerApi();
 
         EventMarker updatedEventMarker = new EventMarker();
         updatedEventMarker.setTitle(newTitle);
 //        updatedEventMarker.setCity_department(newCityDepartment);
-        updatedEventMarker.setTime_updated(new Date());
+//        updatedEventMarker.setTime_updated(new Date());
         updatedEventMarker.setIo_latitude(latLng.latitude);
         updatedEventMarker.setIo_longitude(latLng.longitude);
 
@@ -928,9 +920,9 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         titleInput.setHint("New Title");
         layout.addView(titleInput);
 
-        final EditText cityDepartmentInput = new EditText(getActivity());
-        cityDepartmentInput.setHint("New City Department");
-        layout.addView(cityDepartmentInput);
+//        final EditText cityDepartmentInput = new EditText(getActivity());
+//        cityDepartmentInput.setHint("New City Department");
+//        layout.addView(cityDepartmentInput);
 
         builder.setView(layout);
 
@@ -939,8 +931,8 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String newTitle = titleInput.getText().toString();
-                String newCityDepartment = cityDepartmentInput.getText().toString();
-                updateExistingEventByID(Id, newTitle, newCityDepartment, latLng);
+//                String newCityDepartment = cityDepartmentInput.getText().toString();
+                updateExistingEventByID(Id, newTitle, latLng);
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
