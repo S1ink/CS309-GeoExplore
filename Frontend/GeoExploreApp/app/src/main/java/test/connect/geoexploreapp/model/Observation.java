@@ -8,8 +8,8 @@ public class Observation implements FeedItem{
     private Long id;
     private String title;
     private String description;
-    private double latitude;
-    private double longitude;
+    private double io_latitude;
+    private double io_longitude;
     private User creator;
     private Date time_created;
     private Date time_updated;
@@ -33,19 +33,19 @@ public class Observation implements FeedItem{
     }
 
     public double getIo_latitude() {
-        return latitude;
+        return io_latitude;
     }
 
-    public void setLatitude(double latitude) {
-        this.latitude = latitude;
+    public void setIo_latitude(double io_latitude) {
+        this.io_latitude = io_latitude;
     }
 
     public double getIo_longitude() {
-        return longitude;
+        return io_longitude;
     }
 
-    public void setLongitude(double longitude) {
-        this.longitude = longitude;
+    public void setIo_longitude(double io_longitude) {
+        this.io_longitude = io_longitude;
     }
 
     public String getTitle() {
@@ -65,10 +65,6 @@ public class Observation implements FeedItem{
         return "Observation";
     }
 
-    @Override
-    public String getDepartment() {
-        return null;
-    }
     @Override
     public Date getTime_created() {
         return time_created;

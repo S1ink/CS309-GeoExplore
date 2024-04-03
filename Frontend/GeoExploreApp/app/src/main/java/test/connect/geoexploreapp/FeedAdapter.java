@@ -79,12 +79,12 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     public void onBindViewHolder(@NonNull FeedViewHolder holder, @SuppressLint("RecyclerView") int position) {
        item= items.get(position);
 
-        if (item.getDepartment() == null || item.getDepartment().isEmpty()) {
-            holder.department.setVisibility(View.GONE);
-        } else {
-            holder.department.setVisibility(View.VISIBLE);
-            holder.department.setText(item.getDepartment());
-        }
+//        if (item.getDepartment() == null || item.getDepartment().isEmpty()) {
+//            holder.department.setVisibility(View.GONE);
+//        } else {
+//            holder.department.setVisibility(View.VISIBLE);
+//            holder.department.setText(item.getDepartment());
+//        }
 
         if (item.getDescription() == null || item.getDescription().isEmpty()) {
             holder.description.setVisibility(View.GONE);

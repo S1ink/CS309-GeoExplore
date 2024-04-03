@@ -63,10 +63,6 @@ public class ReportMarker implements FeedItem{
         return "Report";
     }
 
-    @Override
-    public String getDepartment() {
-        return null;
-    }
 
     @Override
     public Date getTime_created() {

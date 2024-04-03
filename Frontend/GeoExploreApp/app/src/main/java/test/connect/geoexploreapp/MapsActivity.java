@@ -545,8 +545,8 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         ObservationApi observationApi = ApiClientFactory.GetObservationApi();
 
         Observation observation = new Observation();
-        observation.setLatitude(latLng.latitude);
-        observation.setLongitude(latLng.longitude);
+        observation.setIo_latitude(latLng.latitude);
+        observation.setIo_longitude(latLng.longitude);
         observation.setCreator(loggedInUser);
         observation.setTitle(observationTitle);
 //        observation.setTime_created(new Date());
@@ -585,10 +585,10 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         Observation updatedObservation = new Observation();
         updatedObservation.setId(id);
         updatedObservation.setTitle(newTitle);
-        updatedObservation.setLatitude(latLng.latitude);
-        updatedObservation.setLongitude(latLng.longitude);
+        updatedObservation.setIo_latitude(latLng.latitude);
+        updatedObservation.setIo_longitude(latLng.longitude);
         //updatedObservation.setTime_updated(new Date());
-        updatedObservation.setDescription(newDescription);
+        //updatedObservation.setDescription(newDescription);
         Log.d("Updating...", updatedObservation.getTitle() + " "+ updatedObservation.getId()+" " +updatedObservation.getDescription());
         observationApi.updateObs(id, updatedObservation).enqueue(new SlimCallback<>(obs -> {
             Log.d("Update 1", "Update check");
@@ -644,20 +644,20 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         EventMarkerApi reportMarkerApi = ApiClientFactory.getEventMarkerApi();
 
         EventMarker newEventMarker = new EventMarker();
-        newEventMarker.setLatitude(latLng.latitude);
-        newEventMarker.setLongitude(latLng.longitude);
+        newEventMarker.setIo_latitude(latLng.latitude);
+        newEventMarker.setIo_longitude(latLng.longitude);
         newEventMarker.setCreator(loggedInUser);
         newEventMarker.setTitle(eventTitle);
 //        newEventMarker.setTime_created(new Date());
 //        newEventMarker.setTime_updated(new Date());
-        newEventMarker.setCity_department(cityDepartment);
+//        newEventMarker.setCity_department(cityDepartment);
         newEventMarker.setTags(markerTags);
 
         reportMarkerApi.addEvent(newEventMarker).enqueue(new SlimCallback<>(createdEventMarker -> {
             LatLng position = new LatLng(createdEventMarker.getIo_latitude(), createdEventMarker.getIo_longitude());
             mMap.addMarker(new MarkerOptions()
                     .position(position)
-                    .title(createdEventMarker.getId() + " " + createdEventMarker.getTitle() + " Department: " + createdEventMarker.getCity_department())
+                    .title(createdEventMarker.getId() + " " + createdEventMarker.getTitle())
                     .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_celebration_24)));
         }, "CreateNewEvent"));
 
@@ -676,7 +676,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
                 mMap.clear();
                 mMap.addMarker(new MarkerOptions()
                         .position(position)
-                        .title(eventMarker.getId() + " " + eventMarker.getTitle() + " Department: " + eventMarker.getCity_department())
+                        .title(eventMarker.getId() + " " + eventMarker.getTitle())
                         .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_celebration_24)));
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 10));
             }
@@ -687,10 +687,10 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
 
         EventMarker updatedEventMarker = new EventMarker();
         updatedEventMarker.setTitle(newTitle);
-        updatedEventMarker.setCity_department(newCityDepartment);
+//        updatedEventMarker.setCity_department(newCityDepartment);
         updatedEventMarker.setTime_updated(new Date());
-        updatedEventMarker.setLatitude(latLng.latitude);
-        updatedEventMarker.setLongitude(latLng.longitude);
+        updatedEventMarker.setIo_latitude(latLng.latitude);
+        updatedEventMarker.setIo_longitude(latLng.longitude);
 
 
         eventMarkerApi.updateEventById(id, updatedEventMarker).enqueue(new SlimCallback<>(updatedEvent -> {
@@ -735,7 +735,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
                 LatLng position = new LatLng(eventMarker.getIo_latitude(), eventMarker.getIo_longitude());
                 mMap.addMarker(new MarkerOptions()
                         .position(position)
-                        .title(eventMarker.getId() + " " + eventMarker.getTitle() + " Department: " + eventMarker.getCity_department())
+                        .title(eventMarker.getId() + " " + eventMarker.getTitle())
                         .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_celebration_24)));
             }
         }, "GetAllEvents"));

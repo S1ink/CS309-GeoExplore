@@ -6,11 +6,10 @@ import java.util.List;
 
 public class EventMarker implements FeedItem{
     private long id;
-    private double latitude;
-    private double longitude;
+    private double io_latitude;
+    private double io_longitude;
     private User creator;
     private String title;
-    private String city_department;
     private Date time_created;
     private Date time_updated;
     private String meta;
@@ -32,19 +31,19 @@ public class EventMarker implements FeedItem{
     }
 
     public double getIo_latitude() {
-        return latitude;
+        return io_latitude;
     }
 
-    public void setLatitude(double latitude) {
-        this.latitude = latitude;
+    public void setIo_latitude(double io_latitude) {
+        this.io_latitude = io_latitude;
     }
 
     public double getIo_longitude() {
-        return longitude;
+        return io_longitude;
     }
 
-    public void setLongitude(double longitude) {
-        this.longitude = longitude;
+    public void setIo_longitude(double io_longitude) {
+        this.io_longitude = io_longitude;
     }
 
     public String getTitle() {
@@ -59,11 +58,6 @@ public class EventMarker implements FeedItem{
     @Override
     public String getType() {
         return "Event";
-    }
-
-    @Override
-    public String getDepartment() {
-        return city_department;
     }
 
     @Override
@@ -98,13 +92,6 @@ public class EventMarker implements FeedItem{
         this.title = title;
     }
 
-    public String getCity_department() {
-        return city_department;
-    }
-
-    public void setCity_department(String city_department) {
-        this.city_department = city_department;
-    }
 
     public User getCreator() {
         return creator;
