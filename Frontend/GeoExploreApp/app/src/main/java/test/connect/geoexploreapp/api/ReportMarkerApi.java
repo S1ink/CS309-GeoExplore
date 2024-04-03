@@ -17,6 +17,9 @@ public interface ReportMarkerApi {
     @POST("geomap/reports")
     Call<ReportMarker> addReport(@Body ReportMarker reportMarker);
 
+    @POST("geomap/reports/{reportId}/tags")
+    Call<Void> addExistingTagToReport(@Path("reportId") Long reportId, @Body Long tagId);
+
     // c[R]udl - Get an report from the database by its id
     @GET("geomap/reports/{id}")
     Call<ReportMarker> getReportById(@Path("id") Long id);
