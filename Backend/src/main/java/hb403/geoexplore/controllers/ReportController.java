@@ -40,6 +40,7 @@ public class ReportController {
 		if(report != null) {
 			report.nullifyId();
 			report.enforceLocationIO();
+			report.applyNewTimestamp();
 			final ReportMarker r = this.reports_repo.save(report);
 			r.enforceLocationTable();
 			return r;
@@ -68,6 +69,7 @@ public class ReportController {
 		if(id != null && report != null) {
 			report.setId(id);
 			report.enforceLocationIO();
+			report.applyUpdatedTimestamp();
 			final ReportMarker r = this.reports_repo.save(report);
 			r.enforceLocationTable();
 			return r;
@@ -137,6 +139,7 @@ public class ReportController {
 				final MarkerTag t = this.tags_repo.findById(tag_id).get();
 				final ReportMarker m = this.reports_repo.findById(id).get();
 				if(m.getTags().add(t)) {
+					m.applyUpdatedTimestamp();
 					this.reports_repo.save(m);
 					return m;
 				}
@@ -155,6 +158,7 @@ public class ReportController {
 				final ReportMarker m = this.reports_repo.findById(id).get();
 				final User u = this.users_repo.findById(user_id).get();
 				if(m.getConfirmed_by().add(u)) {
+					m.applyUpdatedTimestamp();
 					this.reports_repo.save(m);
 					return m;
 				}

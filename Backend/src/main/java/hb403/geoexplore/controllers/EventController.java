@@ -38,6 +38,7 @@ public class EventController {
 		if(event != null) {
 			event.nullifyId();
 			event.enforceLocationIO();
+			event.applyNewTimestamp();
 			final EventMarker e = this.events_repo.save(event);
 			e.enforceLocationTable();
 			return e;
@@ -66,6 +67,7 @@ public class EventController {
 		if(id != null && event != null) {
 			event.setId(id);
 			event.enforceLocationIO();
+			event.applyUpdatedTimestamp();
 			final EventMarker e = this.events_repo.save(event);
 			e.enforceLocationTable();
 			return e;
@@ -130,6 +132,7 @@ public class EventController {
 				final MarkerTag t = this.tags_repo.findById(tag_id).get();
 				final EventMarker m = this.events_repo.findById(id).get();
 				if(m.getTags().add(t)) {
+					m.applyUpdatedTimestamp();
 					this.events_repo.save(m);
 					return m;
 				}
@@ -148,6 +151,7 @@ public class EventController {
 				final EventMarker m = this.events_repo.findById(id).get();
 				final User u = this.users_repo.findById(user_id).get();
 				if(m.getAttendees().add(u)) {
+					m.applyUpdatedTimestamp();
 					this.events_repo.save(m);
 					return m;
 				}
