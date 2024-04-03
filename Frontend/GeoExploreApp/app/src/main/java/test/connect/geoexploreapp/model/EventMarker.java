@@ -21,7 +21,6 @@ public class EventMarker implements FeedItem{
     public EventMarker() {
         this.comments = new ArrayList<>();
         this.tags = new ArrayList<>();
-        this.time_created = new Date();
     }
 
     public long getId() {

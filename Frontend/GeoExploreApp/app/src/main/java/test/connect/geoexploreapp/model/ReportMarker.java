@@ -22,9 +22,7 @@ public class ReportMarker implements FeedItem{
 
     public ReportMarker() {
         this.tags = new ArrayList<>();
-        this.time_created = new Date();
         this.comments = new ArrayList<>();
-
     }
 
     public long getId() {

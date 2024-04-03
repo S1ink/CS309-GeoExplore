@@ -20,7 +20,6 @@ public class Observation implements FeedItem{
     private List<Comment> comments;
 
     public Observation(){
-        this.time_created = new Date();
         this.comments = new ArrayList<>();
         this.tags = new ArrayList<>();
     }
