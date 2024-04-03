@@ -1,5 +1,6 @@
 package hb403.geoexplore.comments.controller;
 
+import hb403.geoexplore.UserStorage.entity.User;
 import hb403.geoexplore.UserStorage.repository.UserRepository;
 import hb403.geoexplore.comments.CommentRepo.CommentRepository;
 import hb403.geoexplore.comments.Entity.CommentEntity;
@@ -51,6 +52,13 @@ public class CommentController {
     @PostMapping(path = "/comment/store/{postType}") //Observation, Event, or Report with capital
     public @ResponseBody CommentEntity commentStore (@RequestBody CommentEntity newComment, @PathVariable String postType){
         CommentEntity toSave = new CommentEntity(newComment.getUserId(),newComment.getPostId(), postType , newComment.getComment());
+        List<User> templist =  userRepository.findAll();
+        Long userId;
+        templist.forEach(user -> {
+            if (toSave.getUserId().equals(user.getEmailId())){
+                toSave.setUserTableId(user.getId());
+            }
+        });
         commentRepository.save(toSave);
 
             try {
@@ -192,22 +200,19 @@ public class CommentController {
     @GetMapping(path = "/observation/comments/{postId}")
     @ResponseBody
     public List<CommentEntity> getCommentsForObs(@PathVariable Long postId){
-        List<CommentEntity> getAllComments = commentRepository.findAll();
-        ArrayList<CommentEntity> commentEntitiesOnPost = new ArrayList<CommentEntity>();
-        for (int i = 0; i < getAllComments().size();i++) {
-             if (getAllComments.get(i).getPostType().equals("Observation")){
-                if(getAllComments.get(i).getPostId().equals(postId)) {
-                    commentEntitiesOnPost.add(getAllComments.get(i));
-                }
-            }
+        try{
+            List<CommentEntity> CommentsOnObs = observationRepository.getById(postId).getComments();
+            return CommentsOnObs;
+        }catch(Exception e){
+            System.out.println(e);
         }
-        return commentEntitiesOnPost;
+        return null;
     }
     @Operation(summary = "Gets a list of all comments for a specific event")
     @GetMapping(path = "/event/comments/{postId}")
     @ResponseBody
     public List<CommentEntity> getCommentsForEvents(@PathVariable Long postId){
-        List<CommentEntity> getAllComments = commentRepository.findAll();
+        /*List<CommentEntity> getAllComments = commentRepository.findAll();
         ArrayList<CommentEntity> commentEntitiesOnPost = new ArrayList<CommentEntity>();
         for (int i = 0; i < getAllComments().size();i++) {
              if (getAllComments.get(i).getPostType().equals("Event")){
@@ -216,8 +221,14 @@ public class CommentController {
                 }
             }
 
+        }*/
+        try{
+            List<CommentEntity> CommentsOnEvent = eventRepository.getById(postId).getComments();
+            return CommentsOnEvent;
+        }catch(Exception e){
+            System.out.println(e);
         }
-        return commentEntitiesOnPost;
+        return null;
     }
 
     @Operation(summary = "Gets a list of all comments for a specific user using their id in the table (LONG)")
@@ -232,15 +243,20 @@ public class CommentController {
     @ResponseBody
     public List<CommentEntity> getCommentsForReports(@PathVariable Long postId){
         List<CommentEntity> getAllComments = commentRepository.findAll();
-        ArrayList<CommentEntity> commentEntitiesOnPost = new ArrayList<CommentEntity>();
-        for (int i = 0; i < getAllComments().size();i++) {
+        //List<CommentEntity> =
+        /*for (int i = 0; i < getAllComments().size();i++) {
              if (getAllComments.get(i).getPostType().equals("Report")){
                 if(getAllComments.get(i).getPostId().equals(postId)) {
                     commentEntitiesOnPost.add(getAllComments.get(i));
                 }
             }
+        }*/
+        try{
+            List<CommentEntity> CommentsOnReport = reportRepository.getById(postId).getComments();
+        }catch(Exception e){
+
         }
-        return commentEntitiesOnPost;
+        return reportRepository.getById(postId).getComments();
     }
 
 }
