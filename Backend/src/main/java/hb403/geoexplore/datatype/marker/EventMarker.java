@@ -21,7 +21,7 @@ public class EventMarker extends MarkerBase {
 
 	@ManyToMany(
 		fetch = FetchType.EAGER,
-		cascade = { CascadeType.PERSIST, CascadeType.MERGE }
+		cascade = { CascadeType.PERSIST, CascadeType.MERGE}
 	)
 	@JoinTable(
 		name = "event_attendees",		// the name of the intermediate table that links this entity and the target entity (NEW)
@@ -39,7 +39,7 @@ public class EventMarker extends MarkerBase {
 		}
 	)
 	private Set<User> attendees = new HashSet<>();
-	@OneToMany(mappedBy = "pertainsEventMarker", fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "pertainsEventMarker", fetch = FetchType.EAGER , cascade = CascadeType.REMOVE)
 	private List<CommentEntity> Comments;
 
 }
