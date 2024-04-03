@@ -17,7 +17,6 @@ public class AlertMarker {
     private List<MarkerTag> tags;
 
     public AlertMarker() {
-        this.time_created = new Date();
         this.tags = new ArrayList<>();
     }
 

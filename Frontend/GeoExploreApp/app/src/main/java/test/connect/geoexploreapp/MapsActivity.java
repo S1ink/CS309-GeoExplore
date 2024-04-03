@@ -146,14 +146,15 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
     @Override
     public void onWebSocketMessage(String message){
         Log.d("WebSocket", "Received message: " + message);
+        if(message.contains("latitude")){
+            try {
+                AlertMarker alertMarker = new Gson().fromJson(message, AlertMarker.class);
 
-        try {
-            AlertMarker alertMarker = new Gson().fromJson(message, AlertMarker.class);
-
-            showEmergencyNotification(alertMarker.getTitle(), alertMarker.getDescription(),
-                    alertMarker.getIo_latitude(), alertMarker.getIo_longitude());
-        } catch (JsonSyntaxException e) {
-            e.printStackTrace();
+                showEmergencyNotification(alertMarker.getTitle(), alertMarker.getDescription(),
+                        alertMarker.getIo_latitude(), alertMarker.getIo_longitude());
+            } catch (JsonSyntaxException e) {
+                e.printStackTrace();
+            }
         }
     }
 
