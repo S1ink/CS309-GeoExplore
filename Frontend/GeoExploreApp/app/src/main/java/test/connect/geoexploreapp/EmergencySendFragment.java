@@ -143,6 +143,7 @@ public class EmergencySendFragment extends Fragment {
             alertMarker.setDescription(message);
             alertMarker.setIo_latitude(Double.parseDouble(latitude));
             alertMarker.setIo_longitude(Double.parseDouble(longitude));
+            alertMarker.setCreator(loggedInUser);
             //alertMarker.setCreator(loggedInUser);
             //alertMarker.setTime_created(new Date());
 
