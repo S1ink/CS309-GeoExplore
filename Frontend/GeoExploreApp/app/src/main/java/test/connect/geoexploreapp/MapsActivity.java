@@ -74,6 +74,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
     private boolean isUpdateEventMode = false;
     private boolean isUpdateObservationMode = false;
     private boolean isCreateEmergencyNotification = false;
+    private boolean isUserSet = false;
     private int reportIdStatus = 0; // For promptForReportID method. 1 to Read, 2 to Delete, 3 to Update
     private int eventIdStatus = 0; // For promptForEventID method. 1 to Read, 2 to Delete, 3 to Update
     private int observationIdStatus = 0; // For promptForReportID method. 1 to Read, 2 to Delete, 3 to Update
@@ -95,8 +96,8 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
 
         View view = inflater.inflate(R.layout.activity_maps, container, false);
 
-        WebSocketManager.getInstance().connectWebSocket("wss://socketsbay.com/wss/v2/1/demo/"); // CHANGE URL FOR WEBSOCKET
-        WebSocketManager.getInstance().setWebSocketListener(this);
+//        WebSocketManager.getInstance().connectWebSocket("wss://socketsbay.com/wss/v2/1/demo/"); // CHANGE URL FOR WEBSOCKET
+//        WebSocketManager.getInstance().setWebSocketListener(this);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map);
@@ -113,10 +114,11 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
 
         viewModel.getLoggedInUser().observe(getViewLifecycleOwner(), loggedInUser -> {
             this.loggedInUser = loggedInUser;
-            if (loggedInUser != null){
+            if (loggedInUser != null && !isUserSet){
                 String userID = String.valueOf(loggedInUser.getId());
                 WebSocketManager.getInstance().connectWebSocket("wss://socketsbay.com/wss/v2/1/demo/"); // CHANGE URL FOR WEBSOCKET "ws://coms-309-005.class.las.iastate.edu:8080/live/alerts/" + userID
                 WebSocketManager.getInstance().setWebSocketListener(this);
+                isUserSet = true;
             }else {
                 Log.e("WebSocket", "Logged in user is null. Cannot establish WebSocket connection.");
             }
