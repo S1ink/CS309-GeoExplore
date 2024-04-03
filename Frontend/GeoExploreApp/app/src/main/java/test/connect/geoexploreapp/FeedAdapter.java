@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 
 import org.java_websocket.handshake.ServerHandshake;
 
@@ -244,17 +245,21 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
 
     }
 
-    @Override
     public void onWebSocketMessage(String message) {
         Log.d("WebSocket", "Received message: " + message);
-
         Activity activity = (Activity) context;
-        if(message.length()>0 && message!=null&&message.contains("postid")&&message.contains("userEmailid")&&message.contains("comment")) {
-            Comment receivedComment = new Gson().fromJson(message, Comment.class);
 
-            activity.runOnUiThread(() -> {
-                setCommment(receivedComment);
-            });
+        if (message != null && !message.isEmpty()) {
+            try {
+                Comment receivedComment = new Gson().fromJson(message, Comment.class);
+
+                activity.runOnUiThread(() -> {
+                    setCommment(receivedComment);
+                });
+            } catch (JsonSyntaxException e) {
+                Log.e("WebSocket", "Error parsing message to Comment object", e);
+                // Optionally, you can handle the exception further, e.g., show an error message
+            }
         }
     }
 
@@ -269,9 +274,10 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         }
     }
 
+
     @Override
     public void onWebSocketClose(int code, String reason, boolean remote) {
-
+        Log.d("WebSocket Close", "Code: " + code + ", reason: " + reason);
     }
 
     @Override
