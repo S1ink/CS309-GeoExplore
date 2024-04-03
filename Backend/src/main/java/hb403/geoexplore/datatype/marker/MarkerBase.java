@@ -98,6 +98,14 @@ public abstract class MarkerBase {
 		}
 	}
 
+	public void applyNewTimestamp() {
+		this.time_created = new Date();
+		this.applyUpdatedTimestamp();
+	}
+	public void applyUpdatedTimestamp() {
+		this.time_updated = new Date();
+	}
+
 
 
 }
