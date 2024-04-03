@@ -88,29 +88,32 @@ public class CommentEntity {
         private String postType;
 
 
-        public CommentEntity(Long Commentid,Long PostID,  Long userId,String type, String comment) {
+    public CommentEntity(Long Commentid,Long PostID,  Long userId,String type, String comment) {
         this.id = Commentid;
         this.postId = PostID;
         this.postType = type;
         this.userId = userId;
-        this.comment= comment;
-        
-        }
-        public CommentEntity(  Long userId,Long PostID,String type, String comment) {
-        
-            this.postId = PostID;
-            this.postType = type;
-            this.userId = userId;
-            this.comment= comment;
-            
-            }
+        this.comment= comment;    
+    }
+    public CommentEntity(  Long userId,Long PostID,String type, String comment) {
+    
+        this.postId = PostID;
+        this.postType = type;
+        this.comment = Addcomment;
+        this.userTableId = userTableId;
+    }
+    public CommentEntity(String adduserId, Long addpostid, String type, String Addcomment) {
+//        this.id = id;
+        this.userId = adduserId;
+        this.postId = addpostid;
+        this.postType = type;
+        this.comment = Addcomment;
+    }
 
-        
 
+    public CommentEntity() {
 
-        public CommentEntity() {
-
-        }
+    }
 
     public String getPostType() {
         if (postType == null){
@@ -122,13 +125,15 @@ public class CommentEntity {
     }
 
     @Override
-        public String toString(){
-            return "CommentId: " + this.id +
-                    "\nUserId " + this.userId +
-                    "\nPostId: " + this.postId +
-                    "\nComment: " + this.comment;
-                    
-        }
+    public String toString(){
+        return "CommentId: " + this.id +
+                "\nUserId " + this.userId +
+                "\nPostId: " + this.postId +
+                "\nComment: " + this.comment;
+                
     }
+
+
+}
 
 
