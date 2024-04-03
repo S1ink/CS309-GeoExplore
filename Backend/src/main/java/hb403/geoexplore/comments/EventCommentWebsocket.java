@@ -207,7 +207,7 @@ public class EventCommentWebsocket {//This is both the comment controller and ch
                         session.getBasicRemote().sendText(message);
                         if (sender.getPostId().equals(user.getPostId())) {
                             //usernameSessionMap.get(user.getUserId()).getBasicRemote().sendText(message);
-                            final EventMarker tempEvent = this.eventRepository.findById(toSave.getId()).get();
+                            final EventMarker tempEvent = this.eventRepository.findById(toSave.getPostId()).get();
                             //final CommentEntity u = this.commentRepository.findById(currCommentor.getPostId()).get();
                             final User tempUser = userRepository.findById((toSave.getUserTableId())).get();
                             tempUser.getComments().add(toSave);

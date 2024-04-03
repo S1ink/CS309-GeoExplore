@@ -89,6 +89,7 @@ public class CommentEntity {
 
         @Setter
         @Column
+        @JsonIgnore
         private String postType;
         public CommentEntity(Long Commentid,Long PostID,  String userId,String type, String comment, Long userTableId) {
         this.id = Commentid;

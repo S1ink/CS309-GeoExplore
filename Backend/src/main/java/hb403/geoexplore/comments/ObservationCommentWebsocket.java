@@ -209,7 +209,6 @@ public class ObservationCommentWebsocket {//This is both the comment controller 
                         if (sender.getPostId().equals(user.getPostId())) {
                             //usernameSessionMap.get(user.getUserId()).getBasicRemote().sendText(message);
                             final ObservationMarker tempObservation = this.observationRepository.findById(currCommentor.getPostId()).get();
-
                             logger.info("Made it into adding to observation repository");
                             //final CommentEntity u = this.commentRepository.findById(toSave.getId()).get();
                             tempObservation.getComments().add(toSave); 	// if successful add

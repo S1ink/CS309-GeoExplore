@@ -202,9 +202,7 @@ public class ReportCommentWebsocket {//This is both the comment controller and c
                     try {
                         session.getBasicRemote().sendText(message);
                         if (sender.getPostId().equals(user.getPostId())) {
-                            //usernameSessionMap.get(user.getUserId()).getBasicRemote().sendText(message);
-                            final ReportMarker tempReport = this.reportRepository.findById(toSave.getId()).get();
-
+                            final ReportMarker tempReport = reportRepository.findById(currCommentor.getPostId()).get(); //this is the problem
                            // final CommentEntity u = this.commentRepository.findById(currCommentor.getPostId()).get();
                             tempReport.getComments().add(toSave); 	// if successful add
                             final User tempUser = userRepository.findById((toSave.getUserTableId())).get();
