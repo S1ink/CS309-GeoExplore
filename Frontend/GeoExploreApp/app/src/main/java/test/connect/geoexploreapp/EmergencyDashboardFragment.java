@@ -146,8 +146,7 @@ public class EmergencyDashboardFragment extends Fragment {
         alertMarkerApi.GetAllAlertMarker().enqueue(new SlimCallback<>(alertMarkers -> {
             StringBuilder alertInfo = new StringBuilder();
             for (AlertMarker alertMarker : alertMarkers) {
-                alertInfo.append("ID: ").append(alertMarker.getId()).append(", Title: ").append(alertMarker.getTitle()).append(", Time: ")
-                        .append(alertMarker.getTime_created()).append("\n");
+                alertInfo.append("ID: ").append(alertMarker.getId()).append(", Title: ").append(alertMarker.getTitle()).append("\n");
             }
             if (getActivity() != null) {
                 getActivity().runOnUiThread(() -> alertInfoTextView.setText(alertInfo.toString()));
@@ -161,8 +160,7 @@ public class EmergencyDashboardFragment extends Fragment {
         alertMarkerApi.getAlertById(id).enqueue(new SlimCallback<>(alertMarker -> {
             if (alertMarker != null) {
                 StringBuilder alertInfo = new StringBuilder();
-                alertInfo = alertInfo.append("ID: ").append(alertMarker.getId()).append(", Title: ").append(alertMarker.getTitle()).append(", Time: ")
-                        .append(alertMarker.getTime_created()).append("\n");
+                alertInfo = alertInfo.append("ID: ").append(alertMarker.getId()).append(", Title: ").append(alertMarker.getTitle()).append("\n");
                 if (getActivity() != null) {
                     StringBuilder finalAlertInfo = alertInfo;
                     getActivity().runOnUiThread(() -> alertInfoTextView.setText(finalAlertInfo));
