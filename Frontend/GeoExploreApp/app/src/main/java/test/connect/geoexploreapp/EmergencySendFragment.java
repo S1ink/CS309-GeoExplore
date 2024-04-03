@@ -38,7 +38,7 @@ public class EmergencySendFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    private EditText titleText, messageText, latitudeText, longitudeText, tagsText;
+    private EditText titleText, messageText, latitudeText, longitudeText;
     private User loggedInUser;
 
     // TODO: Rename and change types of parameters
@@ -81,13 +81,12 @@ public class EmergencySendFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_emergency_send, container, false);
-        WebSocketManager.getInstance().connectWebSocket("wss://socketsbay.com/wss/v2/1/demo/"); // CHANGE URL FOR WEBSOCKET
+
 
         latitudeText = view.findViewById(R.id.latitudeText);
         longitudeText = view.findViewById(R.id.longitudeText);
         titleText = view.findViewById(R.id.titleText);
         messageText = view.findViewById(R.id.messageText);
-        tagsText = view.findViewById(R.id.markerTagsText);
 
 
         SharedViewModel viewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
@@ -105,13 +104,18 @@ public class EmergencySendFragment extends Fragment {
 
         viewModel.getLoggedInUser().observe(getViewLifecycleOwner(), loggedUser -> {
             loggedInUser = loggedUser;
+
         });
 
-
+        if(loggedInUser != null){
+            String userID = String.valueOf(loggedInUser.getId());
+            WebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/live/alerts/" + userID); // CHANGE URL FOR WEBSOCKET wss://socketsbay.com/wss/v2/1/demo/
+        }
 
         Button backButton = view.findViewById(R.id.backButton);
         Button setLocationButton = view.findViewById(R.id.setLocationButton);
         Button sendEmergencyButton = view.findViewById(R.id.sendEmergencyButton);
+
         backButton.setOnClickListener(v -> getParentFragmentManager().popBackStack());
 
         setLocationButton.setOnClickListener(v -> {
@@ -144,19 +148,9 @@ public class EmergencySendFragment extends Fragment {
             alertMarker.setDescription(message);
             alertMarker.setLatitude(Double.parseDouble(latitude));
             alertMarker.setLongitude(Double.parseDouble(longitude));
-            alertMarker.setCreator(loggedInUser);
-            alertMarker.setTime_created(new Date());
+            //alertMarker.setCreator(loggedInUser);
+            //alertMarker.setTime_created(new Date());
 
-            if (!tagsText.getText().toString().trim().isEmpty()) {
-                String[] tagArray = tagsText.getText().toString().trim().split(",");
-                List<MarkerTag> markerTags = new ArrayList<>();
-                for (String tag : tagArray) {
-                    MarkerTag markerTag = new MarkerTag();
-                    markerTag.setName(tag.trim());
-                    markerTags.add(markerTag);
-                }
-                alertMarker.setTags(markerTags);
-            }
 
 
             Gson gson = new Gson();

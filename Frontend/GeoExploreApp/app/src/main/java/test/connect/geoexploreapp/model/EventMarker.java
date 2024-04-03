@@ -15,13 +15,13 @@ public class EventMarker implements FeedItem{
     private Date time_updated;
     private String meta;
     private List<MarkerTag> tags;
-    private String address;
+    //    private String address;
     private List<Comment> comments;
 
     public EventMarker() {
-        this.time_created = new Date();
         this.comments = new ArrayList<>();
         this.tags = new ArrayList<>();
+        this.time_created = new Date();
     }
 
     public long getId() {
@@ -32,7 +32,7 @@ public class EventMarker implements FeedItem{
         this.id = id;
     }
 
-    public double getLatitude() {
+    public double getIo_latitude() {
         return latitude;
     }
 
@@ -40,7 +40,7 @@ public class EventMarker implements FeedItem{
         this.latitude = latitude;
     }
 
-    public double getLongitude() {
+    public double getIo_longitude() {
         return longitude;
     }
 
@@ -73,14 +73,14 @@ public class EventMarker implements FeedItem{
     }
 
     @Override
-    public String getLocation()  {
-
-        return address;
+    public Long getPostID() {
+        return id;
     }
 
-    public void setLocation(String address)  {
-        this.address = address;
-    }
+
+//    public void setLocation(String address)  {
+//        this.address = address;
+//    }
 
     @Override
     public List<Comment> getComments() {
