@@ -102,10 +102,6 @@ public class EmergencySendFragment extends Fragment {
 
         });
 
-        if(loggedInUser != null){
-            String userID = String.valueOf(loggedInUser.getId());
-            //WebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/live/alerts/" + userID); // CHANGE URL FOR WEBSOCKET wss://socketsbay.com/wss/v2/1/demo/
-        }
 
         Button backButton = view.findViewById(R.id.backButton);
         Button setLocationButton = view.findViewById(R.id.setLocationButton);
@@ -144,9 +140,6 @@ public class EmergencySendFragment extends Fragment {
             alertMarker.setIo_latitude(Double.parseDouble(latitude));
             alertMarker.setIo_longitude(Double.parseDouble(longitude));
             alertMarker.setCreator(loggedInUser);
-            //alertMarker.setCreator(loggedInUser);
-            //alertMarker.setTime_created(new Date());
-
 
 
             Gson gson = new Gson();

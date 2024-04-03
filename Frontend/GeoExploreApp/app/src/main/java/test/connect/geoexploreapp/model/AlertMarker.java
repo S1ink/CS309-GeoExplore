@@ -11,8 +11,8 @@ public class AlertMarker {
     private double io_latitude;
     private double io_longitude;
     private User creator;
-    private Date time_created;
-    private Date time_updated;
+    private Long time_created;
+    private Long time_updated;
     private String meta;
     private List<MarkerTag> tags;
 
@@ -68,19 +68,19 @@ public class AlertMarker {
         this.creator = creator;
     }
 
-    public Date getTime_created() {
+    public Long getTime_created() {
         return time_created;
     }
 
-    public void setTime_created(Date time_created) {
+    public void setTime_created(Long time_created) {
         this.time_created = time_created;
     }
 
-    public Date getTime_updated() {
+    public Long getTime_updated() {
         return time_updated;
     }
 
-    public void setTime_updated(Date time_updated) {
+    public void setTime_updated(Long time_updated) {
         this.time_updated = time_updated;
     }
 

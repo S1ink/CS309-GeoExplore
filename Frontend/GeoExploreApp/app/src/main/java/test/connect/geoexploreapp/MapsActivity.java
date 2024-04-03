@@ -45,6 +45,7 @@ import com.google.gson.JsonSyntaxException;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -96,7 +97,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
 
         View view = inflater.inflate(R.layout.activity_maps, container, false);
 
-//        WebSocketManager.getInstance().connectWebSocket("wss://socketsbay.com/wss/v2/1/demo/"); // CHANGE URL FOR WEBSOCKET
+//        WebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/live/alerts/9"); // CHANGE URL FOR WEBSOCKET
 //        WebSocketManager.getInstance().setWebSocketListener(this);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
@@ -116,7 +117,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
             this.loggedInUser = loggedInUser;
             if (loggedInUser != null && !isUserSet){
                 String userID = String.valueOf(loggedInUser.getId());
-                WebSocketManager.getInstance().connectWebSocket("wss://socketsbay.com/wss/v2/1/demo/"); // CHANGE URL FOR WEBSOCKET "ws://coms-309-005.class.las.iastate.edu:8080/live/alerts/" + userID
+                WebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/live/alerts/" + userID); // CHANGE URL FOR WEBSOCKET "wss://socketsbay.com/wss/v2/1/demo/"
                 WebSocketManager.getInstance().setWebSocketListener(this);
                 isUserSet = true;
             }else {
@@ -148,7 +149,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
     @Override
     public void onWebSocketMessage(String message){
         Log.d("WebSocket", "Received message: " + message);
-        if(message.contains("latitude")){
+        if(message.contains("io_latitude")){
             try {
                 AlertMarker alertMarker = new Gson().fromJson(message, AlertMarker.class);
 
@@ -1009,6 +1010,17 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         Canvas canvas = new Canvas(bitmap);
         vectorDrawable.draw(canvas);
         return BitmapDescriptorFactory.fromBitmap(bitmap);
+    }
+
+    public String getFormattedTime(long timestamp){
+        Date date = new Date(timestamp);
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+
+        String formattedDate = dateFormat.format(date);
+
+
+        return formattedDate;
     }
 
 
