@@ -98,7 +98,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         View view = inflater.inflate(R.layout.activity_maps, container, false);
 
 //        WebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/live/alerts/9"); // CHANGE URL FOR WEBSOCKET
-//        WebSocketManager.getInstance().setWebSocketListener(this);
+        WebSocketManager.getInstance().setWebSocketListener(this);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map);
@@ -116,9 +116,10 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         viewModel.getLoggedInUser().observe(getViewLifecycleOwner(), loggedInUser -> {
             this.loggedInUser = loggedInUser;
             if (loggedInUser != null && !isUserSet){
-                String userID = String.valueOf(loggedInUser.getId());
-                WebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/live/alerts/" + userID); // CHANGE URL FOR WEBSOCKET "wss://socketsbay.com/wss/v2/1/demo/"
-                WebSocketManager.getInstance().setWebSocketListener(this);
+                Log.d("TEST", "Web socket connection");
+//                String userID = String.valueOf(loggedInUser.getId());
+//                WebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/live/alerts/" + userID); // CHANGE URL FOR WEBSOCKET "wss://socketsbay.com/wss/v2/1/demo/"
+//                WebSocketManager.getInstance().setWebSocketListener(this);
                 isUserSet = true;
             }else {
                 Log.e("WebSocket", "Logged in user is null. Cannot establish WebSocket connection.");
