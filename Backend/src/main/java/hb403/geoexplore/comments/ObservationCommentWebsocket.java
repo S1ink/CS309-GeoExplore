@@ -1,9 +1,11 @@
 package hb403.geoexplore.comments;
 import java.io.IOException;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 
 
+import hb403.geoexplore.UserStorage.entity.User;
 import hb403.geoexplore.UserStorage.repository.UserRepository;
 import hb403.geoexplore.comments.CommentRepo.CommentRepository;
 import hb403.geoexplore.comments.Entity.CommentEntity;
@@ -33,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class ObservationCommentWebsocket {//This is both the comment controller and chat websocket
     private CommentEntity currCommentor;
+    private Long tableId;
     private static CommentRepository commentRepository;
 
     public static ObservationRepository observationRepository;
@@ -78,8 +81,14 @@ public class ObservationCommentWebsocket {//This is both the comment controller 
         // server side log
         logger.info("[onOpen] User " + userid + " joined session on post " + postid);
 
-        this.currCommentor = new CommentEntity(userid, postid);
 
+        List<User> templist =  userRepository.findAll();
+        templist.forEach(user -> {
+            if (userid.equals(user.getEmailId())){
+                this.tableId = user.getId();
+            }
+        });
+        this.currCommentor = new CommentEntity(userid, postid, tableId);
         // map current session with username
         sessionUsernameMap.put(session, userid);
         //sessionObservationMap.put (session,postid);
@@ -192,11 +201,10 @@ public class ObservationCommentWebsocket {//This is both the comment controller 
          * @param sender the data going into a message to make it simpler
          */
         private void broadcast (String message, CommentEntity sender){
-            CommentEntity toSave = new CommentEntity(sender.getUserId(),sender.getPostId(), "Observation" ,message);
+            CommentEntity toSave = new CommentEntity(sender.getUserId(),sender.getPostId(), "Observation" ,message, sender.getUserTableId());
             commentRepository.save(toSave);
                 sessionUserMap.forEach((session, user) -> {
                     try {
-
                         session.getBasicRemote().sendText(message);
                         if (sender.getPostId().equals(user.getPostId())) {
                             //usernameSessionMap.get(user.getUserId()).getBasicRemote().sendText(message);
@@ -204,6 +212,10 @@ public class ObservationCommentWebsocket {//This is both the comment controller 
                             logger.info("Made it into adding to observation repository");
                             //final CommentEntity u = this.commentRepository.findById(toSave.getId()).get();
                             tempObservation.getComments().add(toSave); 	// if successful add
+                            final User tempUser = userRepository.findById((toSave.getUserTableId())).get();
+                            tempUser.getComments().add(toSave);
+                            toSave.setPertainsUser(tempUser);
+                            userRepository.save(tempUser);
                             toSave.setPertainsObservationMarker(tempObservation);
                             observationRepository.save(tempObservation);
                             commentRepository.save(toSave);
@@ -215,6 +227,5 @@ public class ObservationCommentWebsocket {//This is both the comment controller 
                 });
             //});
         }
-
     }
 

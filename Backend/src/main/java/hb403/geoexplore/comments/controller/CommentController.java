@@ -4,6 +4,7 @@ import hb403.geoexplore.UserStorage.repository.UserRepository;
 import hb403.geoexplore.comments.CommentRepo.CommentRepository;
 import hb403.geoexplore.comments.Entity.CommentEntity;
 
+import hb403.geoexplore.comments.ObservationCommentWebsocket;
 import hb403.geoexplore.datatype.marker.EventMarker;
 import hb403.geoexplore.datatype.marker.ObservationMarker;
 import hb403.geoexplore.datatype.marker.ReportMarker;
@@ -25,6 +26,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class CommentController {
     @Autowired
     CommentRepository commentRepository;
+
+    @Autowired
+    UserRepository userRepository;
     public static ObservationRepository observationRepository;
     public static ReportRepository reportRepository;
     public static EventRepository eventRepository;
@@ -40,7 +44,8 @@ public class CommentController {
     public void autoEventRepository(EventRepository repo) {
         CommentController.eventRepository = repo;
     }
-    
+
+
     //C of Crudl
     @Operation(summary = "Add a new comment to the database")
     @PostMapping(path = "/comment/store/{postType}") //Observation, Event, or Report with capital
@@ -88,19 +93,23 @@ public class CommentController {
     @PutMapping(path = "/comment/{id}/update")
     public @ResponseBody CommentEntity updateComment(@PathVariable Long id, @RequestBody CommentEntity updated){
         try {CommentEntity updater = commentRepository.getById(id); //making sure the comment exists in the repository
-        CommentEntity update = new CommentEntity(id, updated.getPostId(), updated.getUserId(), updated.getPostType(), updated.getComment() + " \n(comment edited)");
-        deleteComment(id);
-        commentRepository.save(update);
+            CommentEntity update = new CommentEntity(id, updated.getPostId(), updater.getUserId(), updater.getPostType(), updated.getComment() + " \n(comment edited)", updater.getUserTableId());
+            commentRepository.save(update);
             if (update.getPostType().equals("Observation")) {
                 final ObservationMarker tempObservation = observationRepository.findById(update.getPostId()).get();
-                tempObservation.getComments().add(update);
+                /*List<CommentEntity> commentEntityList = tempObservation.getComments();
+                commentEntityList.forEach(commentEntity -> {
+                    if (updater.equals()){
+                        commentEntityList.remove(commentEntity);
+                    }
+                });*/
                 update.setPertainsObservationMarker(tempObservation);
                 observationRepository.save(tempObservation);
             }
             else if (update.getPostType().equals("Report")){
                 final ReportMarker tempReport = reportRepository.findById(update.getPostId()).get();
                 tempReport.getComments().add(update);
-                update.setPertainsReportMarker(tempReport);
+
                 reportRepository.save(tempReport);
             }
             else if(update.getPostType().equals("Event")){
@@ -109,12 +118,14 @@ public class CommentController {
                 update.setPertainsEventMarker(tempEvent);
                 eventRepository.save(tempEvent);
             }
-        return updated;}
+            }
         catch (Exception e){
             System.out.println(e);
             return null;
         }
+        return updated;
     }
+
 
 
     @Operation(summary = "Delete a comment from the database by its id")
@@ -168,6 +179,7 @@ public class CommentController {
 
 
 
+
     //L of Crudl (won't be used probably)
     @Operation(summary = "Get a list of all the comments in the database")
     @GetMapping(path = "/comment/list")
@@ -184,8 +196,9 @@ public class CommentController {
         ArrayList<CommentEntity> commentEntitiesOnPost = new ArrayList<CommentEntity>();
         for (int i = 0; i < getAllComments().size();i++) {
              if (getAllComments.get(i).getPostType().equals("Observation")){
-                if(getAllComments.get(i).getPostId().equals(postId));
-                commentEntitiesOnPost.add(getAllComments.get(i));
+                if(getAllComments.get(i).getPostId().equals(postId)) {
+                    commentEntitiesOnPost.add(getAllComments.get(i));
+                }
             }
         }
         return commentEntitiesOnPost;
@@ -198,14 +211,21 @@ public class CommentController {
         ArrayList<CommentEntity> commentEntitiesOnPost = new ArrayList<CommentEntity>();
         for (int i = 0; i < getAllComments().size();i++) {
              if (getAllComments.get(i).getPostType().equals("Event")){
-                if(getAllComments.get(i).getPostId().equals(postId));
-                commentEntitiesOnPost.add(getAllComments.get(i));
+                if(getAllComments.get(i).getPostId().equals(postId)) {
+                    commentEntitiesOnPost.add(getAllComments.get(i));
+                }
             }
 
         }
         return commentEntitiesOnPost;
     }
 
+    @Operation(summary = "Gets a list of all comments for a specific user using their id in the table (LONG)")
+    @GetMapping(path = "/user/comments/{user_table_Id}")
+    @ResponseBody
+    public List<CommentEntity> getCommentsForUser(@PathVariable Long user_table_Id){
+        return userRepository.getById(user_table_Id).getComments();
+    }
 
     @Operation(summary = "Gets a list of all comments for a specific event")
     @GetMapping(path = "/report/comments/{postId}")
@@ -215,8 +235,9 @@ public class CommentController {
         ArrayList<CommentEntity> commentEntitiesOnPost = new ArrayList<CommentEntity>();
         for (int i = 0; i < getAllComments().size();i++) {
              if (getAllComments.get(i).getPostType().equals("Report")){
-                if(getAllComments.get(i).getPostId().equals(postId));
-                commentEntitiesOnPost.add(getAllComments.get(i));
+                if(getAllComments.get(i).getPostId().equals(postId)) {
+                    commentEntitiesOnPost.add(getAllComments.get(i));
+                }
             }
         }
         return commentEntitiesOnPost;
