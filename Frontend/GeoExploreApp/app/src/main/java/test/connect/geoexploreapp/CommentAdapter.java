@@ -110,10 +110,8 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
     private void deleteCommentPrompt(Context context, int position) {
         Comment commentDel = comments.get(position);
         Log.d("delete", commentDel.toString());
-
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Are you sure you want to delete this comment?")
-
                 .setPositiveButton("Delete", (dialog, which) -> {
                     listener.onDeleteComment(commentDel.getId(), position);
                 })

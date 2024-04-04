@@ -49,9 +49,6 @@ public class SignupTabFragment extends Fragment {
         ConfirmPassword=view.findViewById(R.id.signup_confirm);
         signinSubmit = view.findViewById(R.id.signup_button);
         IsAdmin = (CheckBox) view.findViewById(R.id.is_admin);
-
-
-        // Set the click listener for the button
         signinSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -82,11 +79,10 @@ public class SignupTabFragment extends Fragment {
         });
     }
     private void showAlert(String message) {
-        // Context should be getActivity() since you're in a fragment
         new AlertDialog.Builder(getActivity())
                 .setMessage(message)
                 .setTitle("Alert")
-                .setPositiveButton("OK", null) // Optionally, add an OnClickListener
+                .setPositiveButton("OK", null)
                 .create()
                 .show();
     }
@@ -108,13 +104,13 @@ public class SignupTabFragment extends Fragment {
                         showAlert("Email already exists!");
                     }
                 } else {
-                    Log.e("API_FAILURE", "Failed to retrieve users: " + response.code() + " " + response.message());
+                    Log.e("api fail", "Failed to retrieve users: " + response.code() + " " + response.message());
                 }
             }
 
             @Override
             public void onFailure(Call<List<User>> call, Throwable t) {
-                Log.e("API_FAILURE", "Call failed: " + t.getMessage(), t);
+                Log.e("api fail", "Call failed: " + t.getMessage(), t);
             }
         });
     }
@@ -128,13 +124,13 @@ public class SignupTabFragment extends Fragment {
                     Log.d("API_SUCCESS", "User created: " + createdUser.toString());
                     startMainActivity(createdUser);
                 } else {
-                    Log.e("API_FAILURE", "Response not successful: " + response.code() + " " + response.message());
+                    Log.e("api fail", "Response not successful: " + response.code() + " " + response.message());
                 }
             }
 
             @Override
             public void onFailure(Call<User> call, Throwable t) {
-                Log.e("API_FAILURE", "Call failed: " + t.getMessage(), t);
+                Log.e("api fail", "Call failed: " + t.getMessage(), t);
             }
         });
     }

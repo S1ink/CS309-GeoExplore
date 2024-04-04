@@ -304,7 +304,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
                 Log.d("DeleteComment",  response.body().toString());
 
                 if (response.isSuccessful()) {
-                    ResponseBody responseMessage = response.body(); // Now directly a String
+                    ResponseBody responseMessage = response.body(); 
 
                     Log.d("DeleteComment", "Successfully deleted comment: " + response.body());
                     for (FeedItem item : items) {

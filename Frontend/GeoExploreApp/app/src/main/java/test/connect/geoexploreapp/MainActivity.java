@@ -33,7 +33,6 @@ public class MainActivity extends AppCompatActivity {
         String userID = String.valueOf(user.getId());
         WebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/live/alerts/" + userID);
 
-
         String userName = getIntent().getStringExtra("UserName");
         Long userId = getIntent().getLongExtra("UserID",-1);
         String userEmail = getIntent().getStringExtra("UserEmail");
@@ -64,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
                 replaceFragment(new MapsActivity());
             } else if(itemId == R.id.show_feed){
                 WebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/comments/"+user.getId()); //URL ADD LATER
+
                 FeedActivity feedActivity = FeedActivity.newInstance(user);
                 replaceFragment(feedActivity);
             } else if (itemId == R.id.settings) {

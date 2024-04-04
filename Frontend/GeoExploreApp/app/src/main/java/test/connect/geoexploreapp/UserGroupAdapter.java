@@ -34,13 +34,11 @@ public class UserGroupAdapter extends RecyclerView.Adapter<UserGroupAdapter.User
     private View.OnClickListener onJoinClickListener;
     private User user;
 
-    public UserGroupAdapter(Context context, List<UserGroup> userGroups, User user, View.OnClickListener onJoinClickListener) {
+    public UserGroupAdapter(Context context, List<UserGroup> userGroups, User user) {
 
         this.inflater = LayoutInflater.from(context);
         this.userGroups = userGroups;
-        this.onJoinClickListener = onJoinClickListener;
         this.user = user;
-        this.onDeleteClickListener = onDeleteClickListener;
     }
 
     @NonNull

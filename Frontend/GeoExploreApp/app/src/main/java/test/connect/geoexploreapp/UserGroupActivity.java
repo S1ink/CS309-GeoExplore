@@ -45,7 +45,7 @@ public class UserGroupActivity extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_user_groups, container, false);
         recyclerView = view.findViewById(R.id.userGroupsRecyclerView);
-        noUserGroupsText = view.findViewById(R.id.noUserGroupsText); // Find the TextView
+        noUserGroupsText = view.findViewById(R.id.noUserGroupsText);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         if (getArguments() != null) {
             user = (User) getArguments().getSerializable("UserObject");
@@ -54,11 +54,8 @@ public class UserGroupActivity extends Fragment {
         return view;
     }
 
-    // Assuming you have a method to fetch user groups from your backend
     private void fetchUserGroups() {
-            UserGroupApi userGroupApi = ApiClientFactory.GetUserGroupApi(); // Make sure ApiClientFactory provides a proper implementation to get UserGroupApi instance
-
-            // API call to fetch all user groups
+            UserGroupApi userGroupApi = ApiClientFactory.GetUserGroupApi();
             userGroupApi.getAllGroups().enqueue(new Callback<List<UserGroup>>() {
                 @Override
                 public void onResponse(Call<List<UserGroup>> call, Response<List<UserGroup>> response) {
@@ -66,14 +63,12 @@ public class UserGroupActivity extends Fragment {
                         userGroups.clear();
                         userGroups.addAll(response.body());
                         adapter.notifyDataSetChanged();
-
                         noUserGroupsText.setVisibility(userGroups.isEmpty() ? View.VISIBLE : View.GONE);
                     } else {
                         Log.e("UserGroupActivity", "Failed to fetch user groups: " + response.message());
-                        noUserGroupsText.setVisibility(View.VISIBLE); // Show the message if the request failed
+                        noUserGroupsText.setVisibility(View.VISIBLE);
                     }
                 }
-
 
                 @Override
                 public void onFailure(Call<List<UserGroup>> call, Throwable t) {
@@ -81,14 +76,8 @@ public class UserGroupActivity extends Fragment {
                 }
             });
             Log.d("user indo", user.getEmailId());
-        adapter = new UserGroupAdapter(getContext(), userGroups, user, this::onJoinGroupClicked);
+        adapter = new UserGroupAdapter(getContext(), userGroups, user);
         recyclerView.setAdapter(adapter);
-    }
-
-    private void onJoinGroupClicked(View view) {
-        UserGroup userGroup = (UserGroup) view.getTag();
-        // Implement the join group logic here, e.g., API call to join the group
-        // Update userGroup.setMember(true) on success and notify the adapter
     }
 
 }

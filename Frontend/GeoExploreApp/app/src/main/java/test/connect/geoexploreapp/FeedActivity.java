@@ -45,7 +45,6 @@ public class FeedActivity extends Fragment {
     private static User user;
     private static Bundle args;
     public FeedActivity() {
-        // Required empty public constructor
     }
 
 
@@ -87,7 +86,6 @@ public class FeedActivity extends Fragment {
          getFeedItems();
     }
 
-    // Implement getFeedItems() to retrieve your data
     private void getFeedItems() {
         allItems.clear();
         fetchReports();
