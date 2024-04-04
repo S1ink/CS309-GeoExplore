@@ -104,6 +104,14 @@ public class CommentEntity {
     }
     public CommentEntity(String adduserId, Long addpostid, String type, String Addcomment) {
 //        this.id = id;
+            this.userId = adduserId;
+            this.postId = addpostid;
+            this.postType = type;
+            this.comment = Addcomment;
+            this.userTableId = userTableId;
+        }
+    public CommentEntity(String adduserId, Long addpostid, String type, String Addcomment) {
+//        this.id = id;
         this.userId = adduserId;
         this.postId = addpostid;
         this.postType = type;
