@@ -52,13 +52,13 @@ public class CommentController {
     @PostMapping(path = "/comment/store/{postType}") //Observation, Event, or Report with capital
     public @ResponseBody CommentEntity commentStore (@RequestBody CommentEntity newComment, @PathVariable String postType){
         CommentEntity toSave = new CommentEntity(newComment.getUserId(),newComment.getPostId(), postType , newComment.getComment());
-        List<User> templist =  userRepository.findAll();
-        Long userId;
-        templist.forEach(user -> {
-            if (toSave.getUserId().equals(user.getEmailId())){
-                toSave.setUserTableId(user.getId());
-            }
-        });
+        // List<User> templist =  userRepository.findAll();
+        // Long userId;
+        // templist.forEach(user -> {
+        //     if (toSave.getUserId().equals(user.getEmailId())) {
+        //         toSave.setUserTableId(user.getId());
+        //     }
+        // });
         commentRepository.save(toSave);
 
             try {

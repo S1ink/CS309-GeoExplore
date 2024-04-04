@@ -40,15 +40,19 @@ public class AlertWebSocket {
 
 	@OnOpen
 	public void onOpen(Session session, @PathParam("user_id") Long id) throws IOException {
-		// add the user and session to a set of sessions
-		if(session == null) return;
-		if(id == null || user_ids.contains(id) || users_repo.findById(id).isEmpty()) {
-			session.close();
-			System.out.println("[Alerts WS]: Session rejected due to invalid or repeated user id: " + id);
-		} else {
+		if(session == null || id == null) {
+			System.out.println("[Alert WS]: Failed to start session - one or more params were null.");
+			return;
+		}
+		boolean
+			already_present = user_ids.contains(id),
+			valid_user = users_repo.findById(id).isPresent();
+		if (!already_present && valid_user) {
 			user_ids.add(id);
 			session_user_ids.put(session, id);
-			System.out.println("[Alerts WS]: Successfully added session for user id: " + id);
+			System.out.println("[Alert WS]: Successfully added session for user id " + id);
+		} else {
+			System.out.println("[Alert WS]: Failed to add session for user id " + id + " -- already present: " + already_present + ", valid: " + valid_user);
 		}
 	}
 	@OnMessage
@@ -101,7 +105,7 @@ public class AlertWebSocket {
 		try {
 			final Long id = session_user_ids.remove(session);
 			user_ids.remove(id);
-			System.out.println("[Alerts WS]: Successfully closed session for user id: " + id);
+			System.out.println("[Alerts WS]: Successfully closed session for user id " + id);
 		} catch(Exception e) {
 			System.out.println("[Alerts WS]: Internal error! Failed to close user session.");
 		}
