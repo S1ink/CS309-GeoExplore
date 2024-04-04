@@ -142,54 +142,59 @@ public class CommentController {
         if (id == null || commentRepository.findById(id).isEmpty()){
             return null;
         }
-        CommentEntity deleted = commentRepository.findById(id).get();
-        User tempUser = userRepository.findById(deleted.getUserId()).get();
-        //gets correct comment
-        if (deleted.getPostType().equals("Observation")) {
-            ObservationMarker deleteFromList = observationRepository.findById(deleted.getPostId()).get();
+        try {
+            CommentEntity deleted = commentRepository.findById(id).get();
+            User tempUser = userRepository.findById(deleted.getUserId()).get();
+            //gets correct comment
+            if (deleted.getPostType().equals("Observation")) {
+                ObservationMarker deleteFromList = observationRepository.findById(deleted.getPostId()).get();
 
-            try{
-                deleteFromList.getComments().remove(deleted);
-                tempUser.getComments().remove(deleted);
-                observationRepository.save(deleteFromList);
-                userRepository.save(tempUser);
-                System.out.println(deleted);
-            }catch (Exception e) {
-                System.out.println(e);
-                System.out.println("Error when deleting");
+                try{
+                    deleteFromList.getComments().remove(deleted);
+                    tempUser.getComments().remove(deleted);
+                    observationRepository.save(deleteFromList);
+                    userRepository.save(tempUser);
+                    System.out.println(deleted);
+                }catch (Exception e) {
+                    System.out.println(e);
+                    System.out.println("Error when deleting");
+                }
             }
-        }
-        else if (deleted.getPostType().equals("Event")) {
-            EventMarker deleteFromList = eventRepository.findById(deleted.getPostId()).get();
-            try{
-                deleteFromList.getComments().remove(deleted);
-                tempUser.getComments().remove(deleted);
-                eventRepository.save(deleteFromList);
-                userRepository.save(tempUser);
-                System.out.println(deleted);
-            }catch (Exception e) {
-                System.out.println(e);
-                System.out.println("Error when deleting");
+            else if (deleted.getPostType().equals("Event")) {
+                EventMarker deleteFromList = eventRepository.findById(deleted.getPostId()).get();
+                try{
+                    deleteFromList.getComments().remove(deleted);
+                    tempUser.getComments().remove(deleted);
+                    eventRepository.save(deleteFromList);
+                    userRepository.save(tempUser);
+                    System.out.println(deleted);
+                }catch (Exception e) {
+                    System.out.println(e);
+                    System.out.println("Error when deleting");
+                }
             }
-        }
-        else if (deleted.getPostType().equals("Report")){
-            ReportMarker deleteFromList = reportRepository.findById(deleted.getPostId()).get();
-            try{
-                deleteFromList.getComments().remove(deleted);
-                tempUser.getComments().remove(deleted);
-                reportRepository.save(deleteFromList);
-                userRepository.save(tempUser);
-                System.out.println(deleted);
-            }catch (Exception e) {
-                System.out.println(e);
-                System.out.println("Error when deleting");
+            else if (deleted.getPostType().equals("Report")){
+                ReportMarker deleteFromList = reportRepository.findById(deleted.getPostId()).get();
+                try{
+                    deleteFromList.getComments().remove(deleted);
+                    tempUser.getComments().remove(deleted);
+                    reportRepository.save(deleteFromList);
+                    userRepository.save(tempUser);
+                    System.out.println(deleted);
+                }catch (Exception e) {
+                    System.out.println(e);
+                    System.out.println("Error when deleting");
+                }
             }
+            else {
+                return "deleted from comment repo but not post";
+            }
+            commentRepository.deleteById(id);
+            return "Successfully deleted: \n" + deleted.toString();
+        } catch(Exception e) {
+            
         }
-        else {
-            return "deleted from comment repo but not post";
-        }
-        commentRepository.deleteById(id);
-        return "Successfully deleted: \n" + deleted.toString();
+        return null;
     }
 
 

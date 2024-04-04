@@ -172,7 +172,7 @@ public class CommentWebsocket {
 
 
     private void printStatus() {
-		String fmt = "[Alert WS - STATUS]: Users: " + user_ids.size() + ", Sessions: " + session_user_ids.size() + ", IDS: { ";
+		String fmt = "[Comment WS - STATUS]: Users: " + user_ids.size() + ", Sessions: " + session_user_ids.size() + ", IDS: { ";
 		for(Long id : user_ids) {
 			fmt += (id + ", ");
 		}
