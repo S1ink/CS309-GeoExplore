@@ -45,7 +45,7 @@ public class AlertController {
 	@Operation(summary = "Update an alert already in the database by its id")
 	@PutMapping(path = "geomap/alerts/{id}")
 	public @ResponseBody AlertMarker updateAlertById(@PathVariable Long id, @RequestBody AlertMarker alert) {
-		if(id != null) {
+		if(id != null && alert != null) {
 			alert.setId(id);
 			alert.applyUpdatedTimestamp();
 			final AlertMarker a = this.alert_repo.save(alert);
