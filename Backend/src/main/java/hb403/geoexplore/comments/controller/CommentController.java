@@ -102,36 +102,39 @@ public class CommentController {
     public @ResponseBody CommentEntity updateComment(@PathVariable Long id, @RequestBody CommentEntity updated){
         try {CommentEntity updater = commentRepository.getById(id); //making sure the comment exists in the repository
             CommentEntity update = new CommentEntity(id, updated.getPostId(), updater.getUserId(), updater.getPostType(), updated.getComment() + " \n(comment edited)");
-            commentRepository.save(update);
             if (update.getPostType().equals("Observation")) {
                 final ObservationMarker tempObservation = observationRepository.findById(update.getPostId()).get();
-                /*List<CommentEntity> commentEntityList = tempObservation.getComments();
-                commentEntityList.forEach(commentEntity -> {
-                    if (updater.equals()){
-                        commentEntityList.remove(commentEntity);
-                    }
-                });*/
+                tempObservation.getComments().remove(updater);
                 update.setPertainsObservationMarker(tempObservation);
                 observationRepository.save(tempObservation);
             }
             else if (update.getPostType().equals("Report")){
                 final ReportMarker tempReport = reportRepository.findById(update.getPostId()).get();
+                tempReport.getComments().remove(updater);
                 tempReport.getComments().add(update);
-
                 reportRepository.save(tempReport);
             }
             else if(update.getPostType().equals("Event")){
                 final EventMarker tempEvent = eventRepository.findById(update.getPostId()).get();
+                tempEvent.getComments().remove(updater);
                 tempEvent.getComments().add(update);
                 update.setPertainsEventMarker(tempEvent);
                 eventRepository.save(tempEvent);
             }
+            User tempUser = userRepository.findById(updated.getUserId()).get();
+            update.setPertainsUser(tempUser);
+            tempUser.getComments().remove(updater);
+            tempUser.getComments().add(update);
+            userRepository.save(tempUser);
+            commentRepository.save(update);
+            return update;
             }
         catch (Exception e){
             System.out.println(e);
             return null;
         }
-        return updated;
+
+        
     }
 
 
@@ -144,16 +147,18 @@ public class CommentController {
         }
         try {
             CommentEntity deleted = commentRepository.findById(id).get();
-            User tempUser = userRepository.findById(deleted.getUserId()).get();
+            if (deleted.getUserId()!= 0) {
+                User tempUser = userRepository.findById(deleted.getUserId()).get();
+                tempUser.getComments().remove(deleted);
+                userRepository.save(tempUser);
+            }
             //gets correct comment
             if (deleted.getPostType().equals("Observation")) {
                 ObservationMarker deleteFromList = observationRepository.findById(deleted.getPostId()).get();
 
                 try{
                     deleteFromList.getComments().remove(deleted);
-                    tempUser.getComments().remove(deleted);
                     observationRepository.save(deleteFromList);
-                    userRepository.save(tempUser);
                     System.out.println(deleted);
                 }catch (Exception e) {
                     System.out.println(e);
@@ -164,9 +169,7 @@ public class CommentController {
                 EventMarker deleteFromList = eventRepository.findById(deleted.getPostId()).get();
                 try{
                     deleteFromList.getComments().remove(deleted);
-                    tempUser.getComments().remove(deleted);
                     eventRepository.save(deleteFromList);
-                    userRepository.save(tempUser);
                     System.out.println(deleted);
                 }catch (Exception e) {
                     System.out.println(e);
@@ -177,16 +180,13 @@ public class CommentController {
                 ReportMarker deleteFromList = reportRepository.findById(deleted.getPostId()).get();
                 try{
                     deleteFromList.getComments().remove(deleted);
-                    tempUser.getComments().remove(deleted);
                     reportRepository.save(deleteFromList);
-                    userRepository.save(tempUser);
                     System.out.println(deleted);
                 }catch (Exception e) {
                     System.out.println(e);
                     System.out.println("Error when deleting");
                 }
-            }
-            else {
+            } else {
                 return "deleted from comment repo but not post";
             }
             commentRepository.deleteById(id);
