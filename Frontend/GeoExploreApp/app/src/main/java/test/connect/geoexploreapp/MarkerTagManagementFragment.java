@@ -4,6 +4,7 @@ import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
+import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -84,6 +85,8 @@ public class MarkerTagManagementFragment extends Fragment {
         tagIdEditText = view.findViewById(R.id.tagIdEditText);
         tagInfoTextView = view.findViewById(R.id.tagInfoTextView);
         tagNameEditText = view.findViewById(R.id.tagNameEditText);
+
+        tagInfoTextView.setMovementMethod(new ScrollingMovementMethod());
 
 
         backButton.setOnClickListener(v -> getParentFragmentManager().popBackStack());

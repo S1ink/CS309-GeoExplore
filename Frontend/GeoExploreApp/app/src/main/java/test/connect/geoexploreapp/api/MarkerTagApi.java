@@ -29,6 +29,9 @@ public interface MarkerTagApi {
     @POST("marker_tags/create")
     Call<MarkerTag> createTagWithName(@Body String tagName);
 
+    @POST("/marker_tags/create")
+    Call<MarkerTag> createTag(@Body MarkerTag tag);
+
     @PUT("marker_tags/{id}")
     Call<MarkerTag> updateMarkerTag(@Path("id") Long id, @Body MarkerTag updated);
 
