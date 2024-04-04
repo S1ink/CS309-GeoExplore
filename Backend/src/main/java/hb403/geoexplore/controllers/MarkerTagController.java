@@ -62,6 +62,18 @@ public class MarkerTagController {
 		}
 		return null;
 	}
+	@Operation(summary = "Search for a tag in the database by its name")
+	@GetMapping(path = "marker_tags/search/{name}")
+	public @ResponseBody MarkerTag searchTagByName(@PathVariable String name) {
+		if(name != null) {
+			try {
+				return this.tag_repo.findByName(name).get();
+			} catch(Exception e) {
+
+			}
+		}
+		return null;
+	}
 
 	@Operation(summary = "Update a tag in the database by its id")
 	@PutMapping(path = "marker_tags/{id}")

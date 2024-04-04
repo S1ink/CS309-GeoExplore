@@ -15,34 +15,30 @@ import test.connect.geoexploreapp.model.Comment;
 public interface CommentApi {
 
     //create
-    @POST("comment/store")
-    Call<Comment> commentStore (@Body Comment newComment);
+    @POST("comment/store/{postType}")
+    Call<Comment> commentStore(@Body Comment newComment, @Path("postType") String postType);
 
-    //read
     @GET("comment/{id}")
-    Call<Comment> getComment (@Path("id") Long id);
+    Call<Comment> getComment(@Path("id") Long id);
 
-    //update
     @PUT("comment/{id}/update")
-    Call<Comment> updateComment(@Path("id") Long id, @Body Comment updated);
+    Call<Comment> updateComment(@Path("id") Long id, @Body Comment updatedComment);
 
-    //delete
     @DELETE("comment/{id}/delete")
-    Call<ResponseBody> deleteComment (@Path("id") Long id);
+    Call<ResponseBody> deleteComment(@Path("id") Long id);
 
-    //L
     @GET("comment/list")
     Call<List<Comment>> getAllComments();
 
-    //List of all comments under a specific Observation
     @GET("observation/comments/{postId}")
     Call<List<Comment>> getCommentsForObs(@Path("postId") Long postId);
 
-    //List of all comments under a specific Event
     @GET("event/comments/{postId}")
     Call<List<Comment>> getCommentsForEvents(@Path("postId") Long postId);
 
-    //List of all comments under a specific Reports
+    @GET("user/comments/{user_table_Id}")
+    Call<List<Comment>> getCommentsForUser(@Path("user_table_Id") Long user_table_Id);
+
     @GET("report/comments/{postId}")
     Call<List<Comment>> getCommentsForReports(@Path("postId") Long postId);
 

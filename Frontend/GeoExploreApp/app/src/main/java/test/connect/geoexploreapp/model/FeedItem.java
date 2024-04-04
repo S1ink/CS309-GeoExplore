@@ -7,7 +7,6 @@ import java.util.List;
 public interface FeedItem {
     double getIo_latitude();
     double getIo_longitude();
-
     String getTitle();
     String getDescription();
     String getType();

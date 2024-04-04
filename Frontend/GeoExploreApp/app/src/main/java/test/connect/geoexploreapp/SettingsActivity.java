@@ -1,16 +1,27 @@
 package test.connect.geoexploreapp;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import test.connect.geoexploreapp.api.ApiClientFactory;
+import test.connect.geoexploreapp.api.UserGroupApi;
+import test.connect.geoexploreapp.model.UserGroup;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -75,12 +86,13 @@ public class SettingsActivity extends Fragment {
             Button btnSendEmergency = view.findViewById(R.id.sendEmergencyButton);
             Button btnEmergencyDashboard = view.findViewById(R.id.emergencyDashButton);
             Button btnMarkerTagManagement = view.findViewById(R.id.markerTagMngmtBtn);
-
+            Button btnCreateUserGroup = view.findViewById(R.id.createUserGroupButton);
 
             if (isAdmin) {
                 btnSendEmergency.setVisibility(View.VISIBLE);
                 btnEmergencyDashboard.setVisibility(View.VISIBLE);
                 btnMarkerTagManagement.setVisibility(View.VISIBLE);
+                btnCreateUserGroup.setVisibility(View.VISIBLE);
                 btnSendEmergency.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -120,10 +132,73 @@ public class SettingsActivity extends Fragment {
                 btnSendEmergency.setVisibility(View.GONE);
                 btnEmergencyDashboard.setVisibility(View.GONE);
             }
+
+            btnCreateUserGroup.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    addUserGroupPrompt();
+                }
+            });
+
+            
         }
 
 
 
         return view;
+    }
+
+    private void addUserGroupPrompt() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Create User Group");
+
+        // Set up the input
+        final EditText input = new EditText(getContext());
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        input.setHint("Add the title of the user group");
+
+        builder.setView(input);
+
+        builder.setPositiveButton("Submit", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String groupName = input.getText().toString();
+                // Call your method to handle the creation of the group with the entered name
+                UserGroup userGrouptoAdd = new UserGroup();
+                userGrouptoAdd.setTitle(groupName);
+                addUserGroup(userGrouptoAdd);
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
+    private void addUserGroup(UserGroup group) {
+        UserGroupApi userGroupApi = ApiClientFactory.GetUserGroupApi();
+
+        userGroupApi.addGroup(group).enqueue(new Callback<UserGroup>() {
+            @Override
+            public void onResponse(Call<UserGroup> call, Response<UserGroup> response) {
+                if(response.isSuccessful()) {
+                    UserGroup createdGroup = response.body(); // The created group object, if the API returns it
+                    Log.d("addUserGroup", "Group created successfully: " + createdGroup.getTitle());
+                } else {
+                    // The request failed, handle errors
+                    Log.e("addUserGroup", "Failed to create group. Response Code: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserGroup> call, Throwable t) {
+                // An error occurred during the network request
+                Log.e("addUserGroup", "Error creating group", t);
+            }
+        });
     }
 }

@@ -31,6 +31,7 @@ public class ApiClientFactory {
     public static MarkerTagApi getMarkerTagApi(){ return GetApiClientSeed().create(MarkerTagApi.class);}
 
     public static UserApi GetUserApi(){return GetApiClientSeed().create(UserApi.class);}
+    public static UserGroupApi GetUserGroupApi(){return GetApiClientSeed().create(UserGroupApi.class);}
 
 
 

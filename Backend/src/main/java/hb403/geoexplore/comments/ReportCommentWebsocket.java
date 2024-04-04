@@ -1,5 +1,6 @@
 package hb403.geoexplore.comments;
 
+import hb403.geoexplore.UserStorage.entity.User;
 import hb403.geoexplore.UserStorage.repository.UserRepository;
 import hb403.geoexplore.comments.CommentRepo.CommentRepository;
 import hb403.geoexplore.comments.Entity.CommentEntity;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 
 
@@ -27,7 +29,7 @@ import java.util.Map;
 @RestController
 public class ReportCommentWebsocket {//This is both the comment controller and chat websocket
     private CommentEntity currCommentor;
-
+    private Long tableId;
     private String Type;
     private static CommentRepository commentRepository;
 
@@ -72,13 +74,17 @@ public class ReportCommentWebsocket {//This is both the comment controller and c
      * @param postid  id of post for storing
      */
     @OnOpen
-    public void onOpen(Session session, @PathParam("userid") String userid, @PathParam("postid") long postid, @PathParam("postType") String postType) throws IOException {
+    public void onOpen(Session session, @PathParam("userid") String userid, @PathParam("postid") long postid) throws IOException {
 
         // server side log
         logger.info("[onOpen] User " + userid + " joined session on post " + postid);
-
-        this.currCommentor = new CommentEntity(userid, postid);
-        this.Type = postType;
+        List<User> templist =  userRepository.findAll();
+        templist.forEach(user -> {
+            if (userid.equals(user.getEmailId())){
+                this.tableId = user.getId();
+            }
+        });
+        this.currCommentor = new CommentEntity(userid, postid, tableId);
         // map current session with username
         sessionUsernameMap.put(session, userid);
         //sessionObservationMap.put (session,postid);
@@ -190,16 +196,19 @@ public class ReportCommentWebsocket {//This is both the comment controller and c
          * @param message The message to be broadcasted to all users.
          */
         private void broadcast (String message, CommentEntity sender){
-            CommentEntity toSave = new CommentEntity(sender.getUserId(),sender.getPostId(), "Report" ,message);
+            CommentEntity toSave = new CommentEntity(sender.getUserId(),sender.getPostId(), "Report" ,message, sender.getUserTableId());
             commentRepository.save(toSave);
                 sessionUserMap.forEach((session, user) -> {
                     try {
                         session.getBasicRemote().sendText(message);
                         if (sender.getPostId().equals(user.getPostId())) {
-                            //usernameSessionMap.get(user.getUserId()).getBasicRemote().sendText(message);
-                            final ReportMarker tempReport = this.reportRepository.findById(toSave.getId()).get();
+                            final ReportMarker tempReport = reportRepository.findById(currCommentor.getPostId()).get(); //this is the problem
                            // final CommentEntity u = this.commentRepository.findById(currCommentor.getPostId()).get();
                             tempReport.getComments().add(toSave); 	// if successful add
+                            final User tempUser = userRepository.findById((toSave.getUserTableId())).get();
+                            tempUser.getComments().add(toSave);
+                            toSave.setPertainsUser(tempUser);
+                            userRepository.save(tempUser);
                             toSave.setPertainsReportMarker(tempReport);
                             reportRepository.save(tempReport);
                             commentRepository.save(toSave);
