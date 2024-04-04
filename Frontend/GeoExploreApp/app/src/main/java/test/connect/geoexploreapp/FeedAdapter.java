@@ -334,16 +334,11 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     public void onEditComment(Comment updatedComment, String newCommentText, int position) {
         Log.d("checking if edit works",updatedComment.toString() );
         updatedComment.setComment(newCommentText);
-//        Comment newComment = new Comment();
-//        newComment.setId(updatedComment.getId()); // Set the ID of the comment to update
-//        newComment.setComment(newCommentText);
-//        newComment.setPostid(updatedComment.getPostid());
-//        newComment.setUserId(updatedComment.getUserId());
-//        newComment.setPostType(updatedComment.getPostType());
+//
         Gson gson = new Gson();
         String updatedCommentJson = gson.toJson(updatedComment);
         Log.d("UpdateComment", "Updated comment JSON: " + updatedCommentJson);
-        updateCommentInBackend(updatedComment, position);
+        updateCommentInBackend( updatedComment, position);
 
     }
 
@@ -355,19 +350,21 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
                 if (response.isSuccessful() && response.body() != null) {
                     Comment updatedComment = response.body();
                     Log.d("UpdateComment", "Comment updated successfully: " + updatedComment.getComment());
+
                     for (FeedItem item : items) {
                         if (item.getPostID().equals(updatedComment.getPostid()) && item.getType().equals(updatedComment.getPostType())) {
                            List<Comment> comm= item.getComments();
+                           Log.d("ddddd", "got comments");
                             for (Comment comment : comm) {
                                 if (comment.getId().equals(updatedComment.getId())) {
                                     comment.setComment(updatedComment.getComment());
+                                    notifyDataSetChanged();
                                     break;
                                 }
                             }
-                            break;
                         }
                     }
-                    notifyItemChanged(position);
+
                    Toast.makeText(context, "Comment updated successfully!", Toast.LENGTH_SHORT).show();
                 } else {
                     Log.e("UpdateComment", "Failed to update comment. Response Code: " + response.code() + ", Message: " + response.message());

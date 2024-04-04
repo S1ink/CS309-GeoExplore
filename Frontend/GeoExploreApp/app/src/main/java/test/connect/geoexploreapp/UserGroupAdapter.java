@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -23,7 +24,6 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import test.connect.geoexploreapp.api.ApiClientFactory;
 import test.connect.geoexploreapp.api.UserGroupApi;
-import test.connect.geoexploreapp.model.Comment;
 import test.connect.geoexploreapp.model.User;
 import test.connect.geoexploreapp.model.UserGroup;
 
@@ -56,8 +56,9 @@ public class UserGroupAdapter extends RecyclerView.Adapter<UserGroupAdapter.User
         holder.groupName.setText(userGroup.getTitle());
         holder.joinButton.setOnClickListener(v -> {
             v.setTag(userGroup);
-            joinGroup(userGroup, position);
+            joinGroup(holder, v.getContext(), userGroup, position);
         });
+
         boolean isMember = false;
         for (User member : userGroup.getMembers()) {
             if (member.getId()==(user.getId())) {
@@ -83,6 +84,29 @@ public class UserGroupAdapter extends RecyclerView.Adapter<UserGroupAdapter.User
 
         holder.joinButton.setText(isMember ? "Joined" : "Join");
         holder.joinButton.setEnabled(!isMember);
+
+        getMemberCountofGroup(holder, userGroup);
+        holder.memberViewCount.setText("9");
+    }
+
+    private void getMemberCountofGroup(@NonNull UserGroupViewHolder holder, UserGroup userGroup) {
+        UserGroupApi userGroupApi = ApiClientFactory.GetUserGroupApi();
+        userGroupApi.getMemberCount(userGroup.getId()).enqueue(new Callback<Integer>() {
+            @Override
+            public void onResponse(Call<Integer> call, Response<Integer> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Integer memberCount = response.body();
+                    holder.memberViewCount.setText("Members: " + memberCount);
+                } else {
+                    Log.e("UserGroupAdapter", "Failed to get member count");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Integer> call, Throwable t) {
+                Log.e("UserGroupAdapter", "Error getting member count", t);
+            }
+        });
     }
 
     private void showUpdatePrompt(Context context, UserGroup userGroup,  int position) {
@@ -95,18 +119,15 @@ public class UserGroupAdapter extends RecyclerView.Adapter<UserGroupAdapter.User
                 .setPositiveButton("Update", (dialog, which) -> {
                     String editedCommentText = input.getText().toString();
                     if(editedCommentText.length()!=0) {
-                        updateGroup(userGroup, editedCommentText, position);
+                        updateGroup(context, userGroup, editedCommentText, position);
                     }
                 })
                 .setNegativeButton("Cancel", (dialog, which) -> dialog.cancel())
                 .show();
 
-
-
-
     }
 
-    private void updateGroup(UserGroup userGroup, String editedCommentText, int position) {
+    private void updateGroup(Context context, UserGroup userGroup, String editedCommentText, int position) {
         userGroup.setTitle(editedCommentText);
         UserGroupApi userGroupApi = ApiClientFactory.GetUserGroupApi(); userGroupApi.updateGroupById(userGroup.getId(), userGroup).enqueue(new Callback<UserGroup>() {
             @Override
@@ -115,6 +136,7 @@ public class UserGroupAdapter extends RecyclerView.Adapter<UserGroupAdapter.User
                     userGroups.set(position, response.body());
                     notifyItemChanged(position);
                     Log.d("UserGroupAdapter", "Group updated successfully");
+                    Toast.makeText(context, "Updated Correctly", Toast.LENGTH_SHORT).show();
                 } else {
                     Log.e("UserGroupAdapter", "Failed to update group");
                 }
@@ -123,14 +145,14 @@ public class UserGroupAdapter extends RecyclerView.Adapter<UserGroupAdapter.User
             @Override
             public void onFailure(Call<UserGroup> call, Throwable t) {
                 Log.e("UserGroupAdapter", "Error updating group", t);
-                // Optionally, show a Toast message here
+                Toast.makeText(context, "Update Failed", Toast.LENGTH_SHORT).show();
+
             }
         });
     }
 
-    private void joinGroup(UserGroup addToUserGroup, int position) {
+    private void joinGroup(@NonNull UserGroupViewHolder holder, Context context, UserGroup addToUserGroup, int position) {
         UserGroupApi userGroupApi = ApiClientFactory.GetUserGroupApi();
-
         Long userId = user.getId();
 
         userGroupApi.addMemberToGroupById(addToUserGroup.getId(), userId).enqueue(new Callback<UserGroup>() {
@@ -139,21 +161,24 @@ public class UserGroupAdapter extends RecyclerView.Adapter<UserGroupAdapter.User
                 if (response.isSuccessful()) {
                     UserGroup updatedGroup = response.body();
                     updatedGroup.getMembers().add(user);
-                    // Update your local userGroups list with the updatedGroup
+                    int newMemberCount = updatedGroup.getMembers().size();
+                    holder.memberViewCount.setText("Members: " + newMemberCount); // Update the UI optimistically
+
                     userGroups.set(position, updatedGroup);
+                    Toast.makeText(context, "Updated Correctly", Toast.LENGTH_SHORT).show();
+
                     notifyItemChanged(position);
-                    Log.d("UserGroupAdapter", "Successfully joined the group");
-                    // Optionally, show a toast or update the UI
+                    Log.d("UserGroupAdapter", "Joined the group!");
                 } else {
                     Log.e("UserGroupAdapter", "Failed to join the group");
-                    // Handle the error, show a toast, etc.
+                    Toast.makeText(context, "Failed to join the group", Toast.LENGTH_SHORT).show();
+
                 }
             }
 
             @Override
             public void onFailure(Call<UserGroup> call, Throwable t) {
                 Log.e("UserGroupAdapter", "Error joining the group", t);
-                // Handle the network error, show a toast, etc.
             }
         });
     }
@@ -161,13 +186,13 @@ public class UserGroupAdapter extends RecyclerView.Adapter<UserGroupAdapter.User
         new AlertDialog.Builder(context)
                 .setTitle("Delete Group")
                 .setMessage("Are you sure you want to delete this group?")
-                .setPositiveButton(android.R.string.yes, (dialog, which) -> deleteGroup(groupId, position))
+                .setPositiveButton(android.R.string.yes, (dialog, which) -> deleteGroup(context, groupId, position))
                 .setNegativeButton(android.R.string.no, null)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .show();
     }
 
-    private void deleteGroup(Long id, int position) {
+    private void deleteGroup(Context context, Long id, int position) {
         UserGroupApi userGroupApi = ApiClientFactory.GetUserGroupApi();
         userGroupApi.deleteGroupById(id).enqueue(new Callback<Void>() {
             @Override
@@ -175,18 +200,19 @@ public class UserGroupAdapter extends RecyclerView.Adapter<UserGroupAdapter.User
                 if (response.isSuccessful()) {
                     Log.d("UserGroupAdapter", "Group deleted successfully");
                     userGroups.remove(position);
+                    Toast.makeText(context, "Deleted Successfully ", Toast.LENGTH_SHORT).show();
 
                     notifyDataSetChanged();
                 } else {
                     Log.e("UserGroupAdapter", "Failed to delete group");
-                   // Toast.makeText(context, "Failed to delete group", Toast.LENGTH_SHORT).show();
+                   Toast.makeText(context, "Failed to delete group", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
                 Log.e("UserGroupAdapter", "Error deleting group", t);
-               // Toast.makeText(context, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+               Toast.makeText(context, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -199,7 +225,7 @@ public class UserGroupAdapter extends RecyclerView.Adapter<UserGroupAdapter.User
 
     static class UserGroupViewHolder extends RecyclerView.ViewHolder {
          Button deleteButton;
-        TextView groupName;
+        TextView groupName, memberViewCount;
         Button joinButton;
         Button updateButton;
         public UserGroupViewHolder(@NonNull View itemView) {
@@ -208,6 +234,7 @@ public class UserGroupAdapter extends RecyclerView.Adapter<UserGroupAdapter.User
             joinButton = itemView.findViewById(R.id.joinButton);
             deleteButton = itemView.findViewById(R.id.deleteButton);
             updateButton = itemView.findViewById(R.id.updateButton);
+            memberViewCount = itemView.findViewById(R.id.memberViewCount);
 
         }
     }
