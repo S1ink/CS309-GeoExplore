@@ -69,7 +69,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     @Override
     public FeedViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.feed_item, parent, false);
-        WebSocketManager.getInstance().setWebSocketListener(FeedAdapter.this);
 
         return new FeedViewHolder(view);
     }

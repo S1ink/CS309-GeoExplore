@@ -1,6 +1,6 @@
 package test.connect.geoexploreapp.model;
 
-public class Comment {
+public class  Comment {
     private Long id;
     private Long userId;
     private String comment;
