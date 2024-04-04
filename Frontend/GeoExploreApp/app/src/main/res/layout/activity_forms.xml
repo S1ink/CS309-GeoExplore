@@ -30,16 +30,6 @@
         android:background="@drawable/edittext_bkg"/>
 
     <EditText
-        android:id="@+id/editTextCityDepartment"
-        android:layout_width="310dp"
-        android:layout_height="60dp"
-        android:layout_gravity="center"
-        android:layout_marginTop="20dp"
-        android:padding="8dp"
-        android:hint="City/Department"
-        android:inputType="textMultiLine"
-        android:background="@drawable/edittext_bkg"/>
-    <EditText
         android:id="@+id/editTextMarkerTag"
         android:layout_width="310dp"
         android:layout_height="60dp"

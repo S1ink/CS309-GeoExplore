@@ -91,8 +91,7 @@ public class WebSocketManager {
             if (webSocketListener != null) {
                 webSocketListener.onWebSocketMessage(message);
             }
-        }   // Message will come in as a json object so we can take data
-            // needed to make notification and point a point on the map
+        }
 
         /**
          * Called when the WebSocket connection is closed, either due to a client request

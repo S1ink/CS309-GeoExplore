@@ -3,7 +3,6 @@ package test.connect.geoexploreapp;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
@@ -44,11 +43,9 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
 import org.java_websocket.handshake.ServerHandshake;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -59,6 +56,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import test.connect.geoexploreapp.api.ApiClientFactory;
 import test.connect.geoexploreapp.api.EventMarkerApi;
+import test.connect.geoexploreapp.api.MarkerTagApi;
 import test.connect.geoexploreapp.api.ObservationApi;
 import test.connect.geoexploreapp.api.ReportMarkerApi;
 import test.connect.geoexploreapp.api.SlimCallback;
@@ -78,14 +76,12 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
     private boolean isUpdateEventMode = false;
     private boolean isUpdateObservationMode = false;
     private boolean isCreateEmergencyNotification = false;
+    private boolean isUserSet = false;
     private int reportIdStatus = 0; // For promptForReportID method. 1 to Read, 2 to Delete, 3 to Update
     private int eventIdStatus = 0; // For promptForEventID method. 1 to Read, 2 to Delete, 3 to Update
     private int observationIdStatus = 0; // For promptForReportID method. 1 to Read, 2 to Delete, 3 to Update
-    private TextView reportCreateTextView;
-    private TextView eventCreateTextView;
     private TextView reportUpdateTextView;
     private TextView eventUpdateTextView;
-    private TextView observationCreateTextView;
     private TextView observationUpdateTextView;
     private User loggedInUser;
 
@@ -99,7 +95,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
 
         View view = inflater.inflate(R.layout.activity_maps, container, false);
 
-     //   WebSocketManager.getInstance().connectWebSocket("wss://socketsbay.com/wss/v2/1/demo/"); // CHANGE URL FOR WEBSOCKET
+//        WebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/live/alerts/9"); // CHANGE URL FOR WEBSOCKET
         WebSocketManager.getInstance().setWebSocketListener(this);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
@@ -113,27 +109,21 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
 
         viewModel.getCreateEmergencyNotification().observe(getViewLifecycleOwner(), isCreateEmergency -> {
             isCreateEmergencyNotification = isCreateEmergency;
-//            if (isCreateEmergency) {
-//                Log.d("Maps","Emergency notfication supposedly good");
-//            }
         });
 
         viewModel.getLoggedInUser().observe(getViewLifecycleOwner(), loggedInUser -> {
             this.loggedInUser = loggedInUser;
-            if (loggedInUser != null){
-                String userID = String.valueOf(loggedInUser.getId());
-                WebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/live/alerts/" + userID); // CHANGE URL FOR WEBSOCKET wss://socketsbay.com/wss/v2/1/demo/
-                WebSocketManager.getInstance().setWebSocketListener(this);
+            if (loggedInUser != null && !isUserSet){
+                Log.d("TEST", "Web socket connection");
+//                String userID = String.valueOf(loggedInUser.getId());
+//                WebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/live/alerts/" + userID); // CHANGE URL FOR WEBSOCKET "wss://socketsbay.com/wss/v2/1/demo/"
+//                WebSocketManager.getInstance().setWebSocketListener(this);
+                isUserSet = true;
             }else {
                 Log.e("WebSocket", "Logged in user is null. Cannot establish WebSocket connection.");
             }
         });
 
-
-
-        reportCreateTextView = view.findViewById(R.id.activity_maps_report_create_text_view);
-        eventCreateTextView = view.findViewById(R.id.activity_maps_event_create_text_view);
-        observationCreateTextView = view.findViewById(R.id.activity_maps_observation_create_text_view);
         reportUpdateTextView = view.findViewById(R.id.activity_maps_report_update_text_view);
         eventUpdateTextView = view.findViewById(R.id.activity_maps_event_update_text_view);
         observationUpdateTextView = view.findViewById(R.id.activity_maps_observation_update_text_view);
@@ -153,14 +143,15 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
     @Override
     public void onWebSocketMessage(String message){
         Log.d("WebSocket", "Received message: " + message);
+        if(message.contains("io_latitude")){
+            try {
+                AlertMarker alertMarker = new Gson().fromJson(message, AlertMarker.class);
 
-        try {
-            AlertMarker alertMarker = new Gson().fromJson(message, AlertMarker.class);
-
-            showEmergencyNotification(alertMarker.getTitle(), alertMarker.getDescription(),
-                    alertMarker.getLatitude(), alertMarker.getLongitude());
-        } catch (JsonSyntaxException e) {
-            e.printStackTrace();
+                showEmergencyNotification(alertMarker.getTitle(), alertMarker.getDescription(),
+                        alertMarker.getIo_latitude(), alertMarker.getIo_longitude());
+            } catch (JsonSyntaxException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -293,18 +284,18 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
 
         EditText editTextTitle = view.findViewById(R.id.editTextTitle);
         EditText editTextDescription = view.findViewById(R.id.editTextDescription);
-        EditText editTextCityDepartment = view.findViewById(R.id.editTextCityDepartment);
+//        EditText editTextCityDepartment = view.findViewById(R.id.editTextCityDepartment);
         EditText editTextMarkerTag = view.findViewById(R.id.editTextMarkerTag);
 
         if ("Report".equals(type)) {
             editTextDescription.setVisibility(View.GONE); // Hide description for Report
-            editTextCityDepartment.setVisibility(View.GONE);
+//            editTextCityDepartment.setVisibility(View.GONE);
         } else if ("Event".equals(type)) {
             editTextDescription.setVisibility(View.GONE);
-            editTextCityDepartment.setVisibility(View.VISIBLE); // Show city/department for Event
+            //editTextCityDepartment.setVisibility(View.VISIBLE); // Show city/department for Event
         } else {
             editTextDescription.setVisibility(View.VISIBLE);
-            editTextCityDepartment.setVisibility(View.GONE); // Hide city/department for Observation
+//            editTextCityDepartment.setVisibility(View.GONE); // Hide city/department for Observation
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -316,16 +307,16 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
                         // Here, you can access editTextTitle and editTextDescription for their values
                         String title = editTextTitle.getText().toString().trim();
                         String description = editTextDescription.getText().toString().trim();
-                        String cityDepartment = editTextCityDepartment.getText().toString().trim();
+//                        String cityDepartment = editTextCityDepartment.getText().toString().trim();
                         String markerTagsInput = editTextMarkerTag.getText().toString().trim();
 
-                        List<MarkerTag> markerTags = parseMarkerTags(markerTagsInput);
+                        List<String> markerTags = parseMarkerTags(markerTagsInput);
 
                         if("Report".equals(type)){
                             createNewReport(latLng, title, markerTags);
 
                         }else if("Event".equals(type)){
-                            createNewEvent(latLng, title, cityDepartment, markerTags);
+                            createNewEvent(latLng, title, markerTags);
 
                         }else{
                             createNewObservation(latLng, title,description, markerTags);
@@ -339,16 +330,14 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         dialog.show();
     }
 
-    private List<MarkerTag> parseMarkerTags(String input) {
-        List<MarkerTag> markerTags = new ArrayList<>();
+    private List<String> parseMarkerTags(String input) {
+        List<String> markerTags = new ArrayList<>();
         if (input != null && !input.isEmpty()) {
             String[] tags = input.split(",");
             for (String tag : tags) {
                 String trimmedTag = tag.trim();
                 if (!trimmedTag.isEmpty()) {
-                    MarkerTag newTag = new MarkerTag();
-                    newTag.setName(trimmedTag);
-                    markerTags.add(newTag);
+                    markerTags.add(trimmedTag);
                 }
             }
         }
@@ -447,9 +436,181 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         }
         return "No address found!";
     }
-    
+
+    private void addTagsToReport(Long reportId, List<String> tagNames) {
+        MarkerTagApi markerTagApi = ApiClientFactory.getMarkerTagApi();
+        ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
+
+        for (String tagName : tagNames) {
+            markerTagApi.searchTagByName(tagName).enqueue(new Callback<MarkerTag>() {
+                @Override
+                public void onResponse(Call<MarkerTag> call, Response<MarkerTag> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        Long tagId = response.body().getId();
+                        reportMarkerApi.addExistingTagToReport(reportId, tagId).enqueue(new Callback<Void>() {
+                            @Override
+                            public void onResponse(Call<Void> call, Response<Void> response) {
+                                Log.d("TEST","tagAddedToReport");
+                            }
+
+                            @Override
+                            public void onFailure(Call<Void> call, Throwable t) {
+                                Log.d("addTagsToReport", "Failed");
+                            }
+                        });
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<MarkerTag> call, Throwable t) {
+                    markerTagApi.createTagWithName(tagName).enqueue(new Callback<MarkerTag>() {
+                        @Override
+                        public void onResponse(Call<MarkerTag> call, Response<MarkerTag> response) {
+                            if (response.isSuccessful() && response.body() != null) {
+                                Long newTagId = response.body().getId();
+                                Log.d("TEST","New tag");
+                                reportMarkerApi.addExistingTagToReport(reportId, newTagId).enqueue(new Callback<Void>() {
+                                    @Override
+                                    public void onResponse(Call<Void> call, Response<Void> response) {
+                                        Log.d("TEST","tagAddedToReport");
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<Void> call, Throwable t) {
+                                        Log.d("addTagsToReport", "Failed", t);
+                                    }
+
+                                });
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<MarkerTag> call, Throwable t) {
+                            Log.d("createNewTag", "Failed", t);
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+    private void addTagsToEvent(Long eventId, List<String> tagNames) {
+        MarkerTagApi markerTagApi = ApiClientFactory.getMarkerTagApi();
+        EventMarkerApi eventMarkerApi = ApiClientFactory.getEventMarkerApi();
+
+        for (String tagName : tagNames) {
+            markerTagApi.searchTagByName(tagName).enqueue(new Callback<MarkerTag>() {
+                @Override
+                public void onResponse(Call<MarkerTag> call, Response<MarkerTag> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        Long tagId = response.body().getId();
+                        eventMarkerApi.addExistingTagToEvent(eventId, tagId).enqueue(new Callback<Void>() {
+                            @Override
+                            public void onResponse(Call<Void> call, Response<Void> response) {
+                                Log.d("TEST","tagAddedToEvent");
+                            }
+
+                            @Override
+                            public void onFailure(Call<Void> call, Throwable t) {
+                                Log.d("addTagsToEvent", "Failed");
+                            }
+                        });
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<MarkerTag> call, Throwable t) {
+                    markerTagApi.createTagWithName(tagName).enqueue(new Callback<MarkerTag>() {
+                        @Override
+                        public void onResponse(Call<MarkerTag> call, Response<MarkerTag> response) {
+                            if (response.isSuccessful() && response.body() != null) {
+                                Long newTagId = response.body().getId();
+                                Log.d("TEST","New tag");
+                                eventMarkerApi.addExistingTagToEvent(eventId, newTagId).enqueue(new Callback<Void>() {
+                                    @Override
+                                    public void onResponse(Call<Void> call, Response<Void> response) {
+                                        Log.d("TEST","tagAddedToEvent");
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<Void> call, Throwable t) {
+                                        Log.d("addTagsToEvent", "Failed", t);
+                                    }
+
+                                });
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<MarkerTag> call, Throwable t) {
+                            Log.d("createNewTag", "Failed", t);
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+    private void addTagsToObservation(Long observationId, List<String> tagNames) {
+        MarkerTagApi markerTagApi = ApiClientFactory.getMarkerTagApi();
+        ObservationApi observationMarkerApi = ApiClientFactory.GetObservationApi();
+
+        for (String tagName : tagNames) {
+            markerTagApi.searchTagByName(tagName).enqueue(new Callback<MarkerTag>() {
+                @Override
+                public void onResponse(Call<MarkerTag> call, Response<MarkerTag> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        Long tagId = response.body().getId();
+                        observationMarkerApi.addExistingTagToObservation(observationId, tagId).enqueue(new Callback<Void>() {
+                            @Override
+                            public void onResponse(Call<Void> call, Response<Void> response) {
+                                Log.d("TEST","tagAddedToObservation");
+                            }
+
+                            @Override
+                            public void onFailure(Call<Void> call, Throwable t) {
+                                Log.d("addTagsToObservation", "Failed");
+                            }
+                        });
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<MarkerTag> call, Throwable t) {
+                    markerTagApi.createTagWithName(tagName).enqueue(new Callback<MarkerTag>() {
+                        @Override
+                        public void onResponse(Call<MarkerTag> call, Response<MarkerTag> response) {
+                            if (response.isSuccessful() && response.body() != null) {
+                                Long newTagId = response.body().getId();
+                                Log.d("TEST","New tag");
+                                observationMarkerApi.addExistingTagToObservation(observationId, newTagId).enqueue(new Callback<Void>() {
+                                    @Override
+                                    public void onResponse(Call<Void> call, Response<Void> response) {
+                                        Log.d("TEST","tagAddedToObservation");
+                                    }
+
+                                    @Override
+                                    public void onFailure(Call<Void> call, Throwable t) {
+                                        Log.d("addTagsToObservation", "Failed", t);
+                                    }
+
+                                });
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<MarkerTag> call, Throwable t) {
+                            Log.d("createNewTag", "Failed", t);
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+
     // Report CRUDL
-    private void createNewReport(final LatLng latLng, String reportTitle, List<MarkerTag> markerTags) {
+    private void createNewReport(final LatLng latLng, String reportTitle, List<String> markerTags) {
         ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
 
         ReportMarker newReportMarker = new ReportMarker();
@@ -459,9 +620,10 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         newReportMarker.setCreator(loggedInUser);
 //        newReportMarker.setTime_created(new Date());
 //        newReportMarker.setTime_updated(new Date());
-        newReportMarker.setTags(markerTags);
+//        newReportMarker.setTags(markerTags);
 
         reportMarkerApi.addReport(newReportMarker).enqueue(new SlimCallback<>(createdReportMarker -> {
+            addTagsToReport(createdReportMarker.getId(), markerTags);
             LatLng position = new LatLng(createdReportMarker.getIo_latitude(), createdReportMarker.getIo_longitude());
             mMap.addMarker(new MarkerOptions()
                     .position(position)
@@ -543,20 +705,21 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
     }
 
     // Observation CRUDL
-    private void createNewObservation(final LatLng latLng, String observationTitle, String observationDescription, List<MarkerTag> markerTags) {
+    private void createNewObservation(final LatLng latLng, String observationTitle, String observationDescription, List<String> markerTags) {
         ObservationApi observationApi = ApiClientFactory.GetObservationApi();
 
         Observation observation = new Observation();
-        observation.setLatitude(latLng.latitude);
-        observation.setLongitude(latLng.longitude);
+        observation.setIo_latitude(latLng.latitude);
+        observation.setIo_longitude(latLng.longitude);
         observation.setCreator(loggedInUser);
         observation.setTitle(observationTitle);
 //        observation.setTime_created(new Date());
 //        observation.setTime_updated(new Date());
         observation.setDescription(observationDescription);
-        observation.setTags(markerTags);
+//        observation.setTags(markerTags);
 
         observationApi.saveObs(observation).enqueue(new SlimCallback<>(obs -> {
+            addTagsToObservation(obs.getId(), markerTags);
             LatLng position = new LatLng(obs.getIo_latitude(), obs.getIo_longitude());
             mMap.addMarker(new MarkerOptions()
                     .position(position)
@@ -587,10 +750,10 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         Observation updatedObservation = new Observation();
         updatedObservation.setId(id);
         updatedObservation.setTitle(newTitle);
-        updatedObservation.setLatitude(latLng.latitude);
-        updatedObservation.setLongitude(latLng.longitude);
+        updatedObservation.setIo_latitude(latLng.latitude);
+        updatedObservation.setIo_longitude(latLng.longitude);
         //updatedObservation.setTime_updated(new Date());
-        updatedObservation.setDescription(newDescription);
+        //updatedObservation.setDescription(newDescription);
         Log.d("Updating...", updatedObservation.getTitle() + " "+ updatedObservation.getId()+" " +updatedObservation.getDescription());
         observationApi.updateObs(id, updatedObservation).enqueue(new SlimCallback<>(obs -> {
             Log.d("Update 1", "Update check");
@@ -642,24 +805,25 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
     }
 
     // Event CRUDL
-    private void createNewEvent(final LatLng latLng, String eventTitle, String cityDepartment, List<MarkerTag> markerTags) {
+    private void createNewEvent(final LatLng latLng, String eventTitle, List<String> markerTags) {
         EventMarkerApi reportMarkerApi = ApiClientFactory.getEventMarkerApi();
 
         EventMarker newEventMarker = new EventMarker();
-        newEventMarker.setLatitude(latLng.latitude);
-        newEventMarker.setLongitude(latLng.longitude);
+        newEventMarker.setIo_latitude(latLng.latitude);
+        newEventMarker.setIo_longitude(latLng.longitude);
         newEventMarker.setCreator(loggedInUser);
         newEventMarker.setTitle(eventTitle);
 //        newEventMarker.setTime_created(new Date());
 //        newEventMarker.setTime_updated(new Date());
-        newEventMarker.setCity_department(cityDepartment);
-        newEventMarker.setTags(markerTags);
+//        newEventMarker.setCity_department(cityDepartment);
+//        newEventMarker.setTags(markerTags);
 
         reportMarkerApi.addEvent(newEventMarker).enqueue(new SlimCallback<>(createdEventMarker -> {
+            addTagsToEvent(createdEventMarker.getId(), markerTags);
             LatLng position = new LatLng(createdEventMarker.getIo_latitude(), createdEventMarker.getIo_longitude());
             mMap.addMarker(new MarkerOptions()
                     .position(position)
-                    .title(createdEventMarker.getId() + " " + createdEventMarker.getTitle() + " Department: " + createdEventMarker.getCity_department())
+                    .title(createdEventMarker.getId() + " " + createdEventMarker.getTitle())
                     .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_celebration_24)));
         }, "CreateNewEvent"));
 
@@ -678,21 +842,21 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
                 mMap.clear();
                 mMap.addMarker(new MarkerOptions()
                         .position(position)
-                        .title(eventMarker.getId() + " " + eventMarker.getTitle() + " Department: " + eventMarker.getCity_department())
+                        .title(eventMarker.getId() + " " + eventMarker.getTitle())
                         .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_celebration_24)));
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 10));
             }
         }, "getEventByID"));
     }
-    private void updateExistingEventByID(Long id, String newTitle, String newCityDepartment, LatLng latLng) {
+    private void updateExistingEventByID(Long id, String newTitle, LatLng latLng) {
         EventMarkerApi eventMarkerApi = ApiClientFactory.getEventMarkerApi();
 
         EventMarker updatedEventMarker = new EventMarker();
         updatedEventMarker.setTitle(newTitle);
-        updatedEventMarker.setCity_department(newCityDepartment);
-        updatedEventMarker.setTime_updated(new Date());
-        updatedEventMarker.setLatitude(latLng.latitude);
-        updatedEventMarker.setLongitude(latLng.longitude);
+//        updatedEventMarker.setCity_department(newCityDepartment);
+//        updatedEventMarker.setTime_updated(new Date());
+        updatedEventMarker.setIo_latitude(latLng.latitude);
+        updatedEventMarker.setIo_longitude(latLng.longitude);
 
 
         eventMarkerApi.updateEventById(id, updatedEventMarker).enqueue(new SlimCallback<>(updatedEvent -> {
@@ -737,7 +901,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
                 LatLng position = new LatLng(eventMarker.getIo_latitude(), eventMarker.getIo_longitude());
                 mMap.addMarker(new MarkerOptions()
                         .position(position)
-                        .title(eventMarker.getId() + " " + eventMarker.getTitle() + " Department: " + eventMarker.getCity_department())
+                        .title(eventMarker.getId() + " " + eventMarker.getTitle())
                         .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_celebration_24)));
             }
         }, "GetAllEvents"));
@@ -930,9 +1094,9 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         titleInput.setHint("New Title");
         layout.addView(titleInput);
 
-        final EditText cityDepartmentInput = new EditText(getActivity());
-        cityDepartmentInput.setHint("New City Department");
-        layout.addView(cityDepartmentInput);
+//        final EditText cityDepartmentInput = new EditText(getActivity());
+//        cityDepartmentInput.setHint("New City Department");
+//        layout.addView(cityDepartmentInput);
 
         builder.setView(layout);
 
@@ -941,8 +1105,8 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String newTitle = titleInput.getText().toString();
-                String newCityDepartment = cityDepartmentInput.getText().toString();
-                updateExistingEventByID(Id, newTitle, newCityDepartment, latLng);
+//                String newCityDepartment = cityDepartmentInput.getText().toString();
+                updateExistingEventByID(Id, newTitle, latLng);
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -1013,6 +1177,17 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         Canvas canvas = new Canvas(bitmap);
         vectorDrawable.draw(canvas);
         return BitmapDescriptorFactory.fromBitmap(bitmap);
+    }
+
+    public String getFormattedTime(long timestamp){
+        Date date = new Date(timestamp);
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+
+        String formattedDate = dateFormat.format(date);
+
+
+        return formattedDate;
     }
 
 

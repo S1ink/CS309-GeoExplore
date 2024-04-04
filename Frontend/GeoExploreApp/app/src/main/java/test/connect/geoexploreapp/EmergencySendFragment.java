@@ -17,12 +17,7 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import test.connect.geoexploreapp.model.AlertMarker;
-import test.connect.geoexploreapp.model.MarkerTag;
 import test.connect.geoexploreapp.model.User;
 import test.connect.geoexploreapp.websocket.WebSocketManager;
 
@@ -107,10 +102,6 @@ public class EmergencySendFragment extends Fragment {
 
         });
 
-        if(loggedInUser != null){
-            String userID = String.valueOf(loggedInUser.getId());
-            WebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/live/alerts/" + userID); // CHANGE URL FOR WEBSOCKET wss://socketsbay.com/wss/v2/1/demo/
-        }
 
         Button backButton = view.findViewById(R.id.backButton);
         Button setLocationButton = view.findViewById(R.id.setLocationButton);
@@ -146,11 +137,9 @@ public class EmergencySendFragment extends Fragment {
             AlertMarker alertMarker = new AlertMarker();
             alertMarker.setTitle(title);
             alertMarker.setDescription(message);
-            alertMarker.setLatitude(Double.parseDouble(latitude));
-            alertMarker.setLongitude(Double.parseDouble(longitude));
-            //alertMarker.setCreator(loggedInUser);
-            //alertMarker.setTime_created(new Date());
-
+            alertMarker.setIo_latitude(Double.parseDouble(latitude));
+            alertMarker.setIo_longitude(Double.parseDouble(longitude));
+            alertMarker.setCreator(loggedInUser);
 
 
             Gson gson = new Gson();

@@ -1,5 +1,7 @@
 package test.connect.geoexploreapp.api;
 
+import org.slf4j.Marker;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -27,6 +29,9 @@ public interface MarkerTagApi {
     @POST("marker_tags/create")
     Call<MarkerTag> createTagWithName(@Body String tagName);
 
+    @POST("/marker_tags/create")
+    Call<MarkerTag> createTag(@Body MarkerTag tag);
+
     @PUT("marker_tags/{id}")
     Call<MarkerTag> updateMarkerTag(@Path("id") Long id, @Body MarkerTag updated);
 
@@ -50,6 +55,9 @@ public interface MarkerTagApi {
 
     @GET("marker_tags/{id}/alerts")
     Call<List<AlertMarker>> getAlertsForTag(@Path("id") Long tagId);
+
+    @GET("marker_tags/search/{name}")
+    Call<MarkerTag> searchTagByName(@Path("name") String tagName);
 
 
 }

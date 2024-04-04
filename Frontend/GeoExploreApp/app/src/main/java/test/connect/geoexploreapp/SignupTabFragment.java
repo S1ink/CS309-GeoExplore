@@ -60,6 +60,7 @@ public class SignupTabFragment extends Fragment {
                 String password = UserPassword.getText().toString().trim();
                 String confirmPassword = ConfirmPassword.getText().toString().trim();
                 boolean isAdmin = IsAdmin.isChecked();
+                Log.d("Admin: ", "" + isAdmin);
 
                 if (fullName.isEmpty() ||  email.isEmpty() ||  password.isEmpty() ||  confirmPassword.isEmpty()){
                     showAlert("Please fill out all information!");

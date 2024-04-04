@@ -26,7 +26,12 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+
+
         user = (User) getIntent().getSerializableExtra("UserObject");
+
+        String userID = String.valueOf(user.getId());
+        WebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/live/alerts/" + userID);
 
 
         String userName = getIntent().getStringExtra("UserName");
