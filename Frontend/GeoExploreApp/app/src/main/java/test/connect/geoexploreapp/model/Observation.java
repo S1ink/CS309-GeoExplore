@@ -15,8 +15,7 @@ public class Observation implements FeedItem{
     private Date time_updated;
     private String meta;
     private List<MarkerTag> tags;
-    private User confirmed_by;
-    //    private String address;
+    private List<User> confirmed_by;    //    private String address;
     private List<Comment> comments;
 
     public Observation(){
@@ -66,10 +65,6 @@ public class Observation implements FeedItem{
         return "Observation";
     }
 
-    @Override
-    public String getDepartment() {
-        return null;
-    }
     @Override
     public Date getTime_created() {
         return time_created;
@@ -132,11 +127,11 @@ public class Observation implements FeedItem{
         this.tags = tags;
     }
 
-    public User getConfirmed_by() {
+    public List<User> getConfirmed_by() {
         return confirmed_by;
     }
 
-    public void setConfirmed_by(User confirmed_by) {
+    public void setConfirmed_by(List<User> confirmed_by) {
         this.confirmed_by = confirmed_by;
     }
 }

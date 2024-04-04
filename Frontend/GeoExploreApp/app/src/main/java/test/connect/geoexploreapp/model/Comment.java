@@ -2,26 +2,31 @@ package test.connect.geoexploreapp.model;
 
 public class Comment {
     private Long id;
-    private String userId;
+    private Long userId;
     private String comment;
+
     private Long postId;
     private String postType;
-
-    public Comment(String adduserId, Long addpostid, String type, String Addcomment) {
-        this.userId = adduserId;
-        this.postId = addpostid;
+    public Comment(Long Commentid,Long PostID,  Long userId,String type, String comment) {
+        this.id = Commentid;
+        this.postId = PostID;
         this.postType = type;
-        this.comment = Addcomment;
-
-    }
-
-    public Comment( String Userid,Long postId) {
-        this.userId = Userid;
-        this.postId = postId;
+        this.userId = userId;
+        this.comment= comment;
     }
 
     public Comment() {
 
+    }
+
+
+
+    public Long getPostId() {
+        return postId;
+    }
+
+    public void setPostId(Long postId) {
+        this.postId = postId;
     }
 
     public Long getId() {
@@ -33,11 +38,11 @@ public class Comment {
     }
 
 
-    public String getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
-    public void setUserId(String userId) {
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
 

@@ -1,5 +1,7 @@
 package test.connect.geoexploreapp;
 
+import static com.google.android.material.internal.ContextUtils.getActivity;
+
 import android.app.AlertDialog;
 import android.content.Context;
 import android.text.InputType;
@@ -28,6 +30,7 @@ import test.connect.geoexploreapp.api.CommentApi;
 import test.connect.geoexploreapp.api.SlimCallback;
 import test.connect.geoexploreapp.api.UserApi;
 import test.connect.geoexploreapp.model.Comment;
+import test.connect.geoexploreapp.model.Observation;
 import test.connect.geoexploreapp.model.User;
 
 public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentViewHolder> {
@@ -52,18 +55,12 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
     @Override
     public void onBindViewHolder(@NonNull CommentViewHolder holder, int position) {
         Comment item = comments.get(position);
-        Log.d("username", item.getUserId());
-        int atIndex = item.getUserId().indexOf("@");
-        String userName;
-        if (atIndex != -1) {
-            userName = item.getUserId().substring(0, atIndex);
-        } else {
-            userName = item.getUserId();
-        }
-        holder.commentUser.setText(userName);
+        Log.d("getting user", "getting user for" + item.getUserId());
+         getUserById(holder, item.getUserId());;
+
         holder.comment.setText(item.getComment());
 
-        boolean isUserCommenter = item.getUserId().equals(user.getEmailId());
+        boolean isUserCommenter = item.getUserId().equals(user.getId());
         boolean isAdmin =  user.getIsAdmin();
 
         holder.editButton.setVisibility(isUserCommenter ? View.VISIBLE : View.GONE);
@@ -73,7 +70,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
             if (listener != null) {
                 int pos = holder.getAdapterPosition();
                 if(pos != RecyclerView.NO_POSITION) {
-                    editCommentPrompt(v.getContext(), comments.get(pos));
+                    editCommentPrompt(v.getContext(), comments.get(pos), position);
                 }
             }
         });
@@ -90,16 +87,35 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
 
     }
 
+    private void getUserById(@NonNull CommentViewHolder holder, Long userId) {
+        UserApi userApi = ApiClientFactory.GetUserApi();
+        userApi.getUser(userId).enqueue(new Callback<User>(){
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                if(response.isSuccessful()){
+                    User user = response.body();
+                    holder.commentUser.setText(user.getName());
+
+                    Log.d("getting a user",  "got  user");
+                } else{
+                    Log.d("getting a user",  "Failed to get user");
+                }
+            }
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                Log.d("getting a user",  "Failed");
+            }
+        });}
 
     private void deleteCommentPrompt(Context context, int position) {
-        Comment comment = comments.get(position);
-        Log.d("delete", String.valueOf(comment.getId()) + comment.getUserId() + comment.getComment() + comment.getPostid()+comment.getPostType());
+        Comment commentDel = comments.get(position);
+        Log.d("delete", commentDel.toString());
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Are you sure you want to delete this comment?")
 
                 .setPositiveButton("Delete", (dialog, which) -> {
-                    listener.onDeleteComment(comment.getId(), position);
+                    listener.onDeleteComment(commentDel.getId(), position);
                 })
                 .setNegativeButton("Cancel", (dialog, which) -> dialog.cancel())
                 .show();
@@ -108,7 +124,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
     }
 
 
-    private void editCommentPrompt(Context context,  Comment comment) {
+    private void editCommentPrompt(Context context,  Comment comment, int position) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         final EditText input = new EditText(context);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
@@ -119,7 +135,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
                     String editedCommentText = input.getText().toString();
                     if(editedCommentText.length()!=0) {
                       //  edit();
-                        listener.onEditComment(comment, editedCommentText);
+                        listener.onEditComment(comment, editedCommentText, position);
                     }
                 })
                 .setNegativeButton("Cancel", (dialog, which) -> dialog.cancel())

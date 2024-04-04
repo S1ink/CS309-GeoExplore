@@ -14,12 +14,9 @@ import test.connect.geoexploreapp.model.UserGroup;
 
 public interface UserGroupApi {
 
-    //add a new usergroup to the db
     @POST("user/groups")
     Call<UserGroup> addGroup(@Body UserGroup group);
 
-
-    //add a new usergroup by including a name
     @POST("user/groups/create")
     Call<UserGroup> createGroup(@Body String name);
 
@@ -30,13 +27,26 @@ public interface UserGroupApi {
     Call<UserGroup> updateGroupById(@Path("id") Long id, @Body UserGroup group);
 
     @DELETE("user/groups/{id}")
-    Call<UserGroup> deleteGroupById(@Path("id") Long id);
+    Call<Void> deleteGroupById(@Path("id") Long id);
 
     @GET("user/groups")
     Call<List<UserGroup>> getAllGroups();
 
     @POST("user/groups/{group_id}/members")
-    Call<UserGroup> addMemberToGroupById(@Path("id") Long id, @Body UserGroup group);
+    Call<UserGroup> addMemberToGroupById(@Path("group_id") Long group_id, @Body Long user_id);
+
+    @DELETE("user/usergroups/{group_id}/{user_id}/")
+    Call<String> deleteUserFromGroup(@Path("group_id") Long group_id, @Path("user_id") Long user_id);
+
+    @GET("user/usergroups/{group_id}/memberlist")
+    Call<List<String>> listGroupMembersById(@Path("group_id") Long group_id);
+
+    @PUT("user/userGroups/{group_id}/{observation_id}")
+    Call<String> addObservationToGroupFilter(@Path("group_id") Long group_id, @Path("observation_id") Long observation_id);
+
+    @GET("user/usergroup/{group_id}/num")
+    Call<Integer> getMemberCount(@Path("group_id") Long group_id);
+
 
 
 }

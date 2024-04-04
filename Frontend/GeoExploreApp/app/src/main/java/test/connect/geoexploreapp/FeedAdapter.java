@@ -78,12 +78,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     public void onBindViewHolder(@NonNull FeedViewHolder holder, @SuppressLint("RecyclerView") int position) {
        item= items.get(position);
 
-        if (item.getDepartment() == null || item.getDepartment().isEmpty()) {
-            holder.department.setVisibility(View.GONE);
-        } else {
-            holder.department.setVisibility(View.VISIBLE);
-            holder.department.setText(item.getDepartment());
-        }
 
         if (item.getDescription() == null || item.getDescription().isEmpty()) {
             holder.description.setVisibility(View.GONE);
@@ -131,12 +125,12 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     private void showComments(Context context, int itemIndex) {
         Gson gson = new Gson();
         FeedItem item = items.get(itemIndex);
-        String itemType = item.getType().toLowerCase() + "s";
-        String wsUrl = "ws://coms-309-005.class.las.iastate.edu:8080/" + itemType + "/comments/" + user.getEmailId() + "/" + item.getPostID();
-        Log.d("URL", wsUrl);
-        WebSocketManager.getInstance().connectWebSocket(wsUrl);
-
-        Log.d("Websocket Connection ","connected");
+//        String itemType = item.getType().toLowerCase() + "s";
+//        String wsUrl = "ws://coms-309-005.class.las.iastate.edu:8080/" + itemType + "/comments/" + user.getEmailId() + "/" + item.getPostID();
+//        Log.d("URL", wsUrl);
+//        WebSocketManager.getInstance().connectWebSocket(wsUrl);
+//
+//        Log.d("Websocket Connection ","connected");
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -155,13 +149,19 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
                 String commentText = commentEditText.getText().toString().trim();
                 if(!commentText.isEmpty()) {
                     try {
-//                       Comment sendComment = new Comment(user.getEmailId(), item.getPostID(), item.getType(), commentText);
-//                        String sendCommentJson = gson.toJson(sendComment);
-                        WebSocketManager.getInstance().sendMessage(commentText);
-                        Log.d("WebSocket", "Message sent: " + commentText);
+                       Comment sendComment = new Comment();
+                        sendComment.setComment(commentText);
+                        sendComment.setPostId(item.getPostID());
+                        sendComment.setUserId(user.getId());
+                        sendComment.setPostType(item.getType());
+                        String sendCommentJson = gson.toJson(sendComment);
+                        Log.d("WebSocket", "Message sent testing: " + sendCommentJson);
+
+                        WebSocketManager.getInstance().sendMessage(sendCommentJson);
+                        Log.d("WebSocket", "Message sent: " + sendCommentJson);
                         fetchComments(itemIndex, item, item.getType());
 //                      item.getComments().add(sendComment);
-//                        notifyItemChanged(itemIndex);
+                        notifyItemChanged(itemIndex);
                     } catch (Exception e) {
                         Log.e("WebSocket", "Error sending message: " + e.getMessage());
                     }
@@ -252,13 +252,14 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         if (message != null && !message.isEmpty()) {
             try {
                 Comment receivedComment = new Gson().fromJson(message, Comment.class);
+//                String actualCommentText = receivedComment.getComment();
+//                 Comment receivedComment1 = new Gson().fromJson(actualCommentText, Comment.class);
 
                 activity.runOnUiThread(() -> {
                     setCommment(receivedComment);
                 });
             } catch (JsonSyntaxException e) {
                 Log.e("WebSocket", "Error parsing message to Comment object", e);
-                // Optionally, you can handle the exception further, e.g., show an error message
             }
         }
     }
@@ -288,11 +289,19 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     @Override
     public void onDeleteComment(Long commentId, int position) {
         CommentApi commentApi = ApiClientFactory.GetCommentApi();
+        Log.d("checkkk",commentId.toString());
+       // Toast.makeText(context, "Fai delete comment", Toast.LENGTH_SHORT).show();
+
         commentApi.deleteComment(commentId).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+              //  JsonReader.setLenient(true);
+                Log.d("DeleteComment",  response.body().toString());
+
                 if (response.isSuccessful()) {
-                    Log.d("delete", "delete successful");
+                    ResponseBody responseMessage = response.body(); // Now directly a String
+
+                    Log.d("DeleteComment", "Successfully deleted comment: " + response.body());
                     for (FeedItem item : items) {
                         List<Comment> comments = item.getComments();
                         if (comments.removeIf(comment -> comment.getId().equals(commentId))) {
@@ -303,32 +312,37 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
                     }
                 } else {
                     Toast.makeText(context, "Failed to delete comment", Toast.LENGTH_SHORT).show();
+
                 }
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 Toast.makeText(context, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.d("DeleteComment", "failedt: " + t.getMessage());
+
             }
         });
     }
 
     @Override
-    public void onEditComment(Comment updatedComment, String newCommentText) {
-        Comment newComment = new Comment();
-        newComment.setId(updatedComment.getId()); // Set the ID of the comment to update
-        newComment.setComment(newCommentText);
-        newComment.setPostid(updatedComment.getPostid());
-        newComment.setUserId(updatedComment.getUserId());
-        newComment.setPostType(updatedComment.getPostType());
+    public void onEditComment(Comment updatedComment, String newCommentText, int position) {
+        Log.d("checking if edit works",updatedComment.toString() );
+        updatedComment.setComment(newCommentText);
+//        Comment newComment = new Comment();
+//        newComment.setId(updatedComment.getId()); // Set the ID of the comment to update
+//        newComment.setComment(newCommentText);
+//        newComment.setPostid(updatedComment.getPostid());
+//        newComment.setUserId(updatedComment.getUserId());
+//        newComment.setPostType(updatedComment.getPostType());
         Gson gson = new Gson();
         String updatedCommentJson = gson.toJson(updatedComment);
         Log.d("UpdateComment", "Updated comment JSON: " + updatedCommentJson);
-        updateCommentInBackend(newComment);
+        updateCommentInBackend(updatedComment, position);
 
     }
 
-    private void updateCommentInBackend(Comment updatedComment) {
+    private void updateCommentInBackend(Comment updatedComment, int position) {
         CommentApi commentApi = ApiClientFactory.GetCommentApi();
         commentApi.updateComment(updatedComment.getId(), updatedComment).enqueue(new Callback<Comment>() {
             @Override
@@ -336,7 +350,19 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
                 if (response.isSuccessful() && response.body() != null) {
                     Comment updatedComment = response.body();
                     Log.d("UpdateComment", "Comment updated successfully: " + updatedComment.getComment());
-                    notifyDataSetChanged();
+                    for (FeedItem item : items) {
+                        if (item.getPostID().equals(updatedComment.getPostid()) && item.getType().equals(updatedComment.getPostType())) {
+                           List<Comment> comm= item.getComments();
+                            for (Comment comment : comm) {
+                                if (comment.getId().equals(updatedComment.getId())) {
+                                    comment.setComment(updatedComment.getComment());
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    notifyItemChanged(position);
                    Toast.makeText(context, "Comment updated successfully!", Toast.LENGTH_SHORT).show();
                 } else {
                     Log.e("UpdateComment", "Failed to update comment. Response Code: " + response.code() + ", Message: " + response.message());
@@ -359,14 +385,13 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
 
     static class FeedViewHolder extends RecyclerView.ViewHolder {
         public RecyclerView commentsRecyclerView;
-        TextView title, description, department, type, date, location;
+        TextView title, description, type, date, location;
         ImageButton commentButton;
 
         FeedViewHolder(View itemView) {
             super(itemView);
             title = itemView.findViewById(R.id.itemTitle);
             description = itemView.findViewById(R.id.itemDescription);
-            department = itemView.findViewById(R.id.itemDepartment);
             type = itemView.findViewById(R.id.itemType);
             date = itemView.findViewById(R.id.itemDate);
             location = itemView.findViewById(R.id.itemLocation);
