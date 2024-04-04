@@ -143,16 +143,18 @@ public class CommentController {
             return null;
         }
         CommentEntity deleted = commentRepository.findById(id).get();
-        User tempUser = userRepository.findById(deleted.getUserId()).get();
+        if (deleted.getUserId()!= 0) {
+            User tempUser = userRepository.findById(deleted.getUserId()).get();
+            tempUser.getComments().remove(deleted);
+            userRepository.save(tempUser);
+        }
         //gets correct comment
         if (deleted.getPostType().equals("Observation")) {
             ObservationMarker deleteFromList = observationRepository.findById(deleted.getPostId()).get();
 
             try{
                 deleteFromList.getComments().remove(deleted);
-                tempUser.getComments().remove(deleted);
                 observationRepository.save(deleteFromList);
-                userRepository.save(tempUser);
                 System.out.println(deleted);
             }catch (Exception e) {
                 System.out.println(e);
@@ -163,9 +165,7 @@ public class CommentController {
             EventMarker deleteFromList = eventRepository.findById(deleted.getPostId()).get();
             try{
                 deleteFromList.getComments().remove(deleted);
-                tempUser.getComments().remove(deleted);
                 eventRepository.save(deleteFromList);
-                userRepository.save(tempUser);
                 System.out.println(deleted);
             }catch (Exception e) {
                 System.out.println(e);
@@ -176,9 +176,7 @@ public class CommentController {
             ReportMarker deleteFromList = reportRepository.findById(deleted.getPostId()).get();
             try{
                 deleteFromList.getComments().remove(deleted);
-                tempUser.getComments().remove(deleted);
                 reportRepository.save(deleteFromList);
-                userRepository.save(tempUser);
                 System.out.println(deleted);
             }catch (Exception e) {
                 System.out.println(e);
