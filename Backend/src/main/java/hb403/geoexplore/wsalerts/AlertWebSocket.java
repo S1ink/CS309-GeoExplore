@@ -54,6 +54,7 @@ public class AlertWebSocket {
 		} else {
 			System.out.println("[Alert WS]: Failed to add session for user id " + id + " -- already present: " + already_present + ", valid: " + valid_user);
 		}
+		this.printStatus();
 	}
 	@OnMessage
 	public void onMessage(Session session, String message) throws IOException {
@@ -109,11 +110,24 @@ public class AlertWebSocket {
 		} catch(Exception e) {
 			System.out.println("[Alerts WS]: Internal error! Failed to close user session.");
 		}
+		this.printStatus();
 	}
 	@OnError
 	public void onError(Session session, Throwable throwable) {
 		// ha error funny
 		System.out.println("[Alerts WS - ERROR]: " + throwable.getMessage());
+		this.printStatus();
+	}
+
+
+
+	private void printStatus() {
+		String fmt = "[Alert WS - STATUS]: Users: " + user_ids.size() + ", Sessions: " + session_user_ids.size() + ", IDS: { ";
+		for(Long id : user_ids) {
+			fmt += (id + ", ");
+		}
+		fmt += " }";
+		System.out.println(fmt);
 	}
 
 

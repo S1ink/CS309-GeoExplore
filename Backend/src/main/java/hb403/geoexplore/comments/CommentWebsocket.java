@@ -85,6 +85,7 @@ public class CommentWebsocket {
         } else {
             System.out.println("[Comment WS]: Failed to add session for user id " + userId + " -- already present: " + already_present + ", valid: " + valid_user);
         }
+        this.printStatus();
     }
     @OnClose
     public void OnClose(Session session) throws IOException{
@@ -96,6 +97,7 @@ public class CommentWebsocket {
             System.out.println(e);
             System.out.println("[Comment WS]: Failed on close user session!?");
         }
+        this.printStatus();
     }
     @OnMessage
     public void OnMessage(Session session, String message){
@@ -164,6 +166,19 @@ public class CommentWebsocket {
     @OnError
     public void OnError(Session session, Throwable throwable){
         System.out.println("[Comment WS - ERROR]: " + throwable.getMessage());
+        this.printStatus();
     }
+
+
+
+    private void printStatus() {
+		String fmt = "[Alert WS - STATUS]: Users: " + user_ids.size() + ", Sessions: " + session_user_ids.size() + ", IDS: { ";
+		for(Long id : user_ids) {
+			fmt += (id + ", ");
+		}
+		fmt += " }";
+		System.out.println(fmt);
+	}
+
 
 }
