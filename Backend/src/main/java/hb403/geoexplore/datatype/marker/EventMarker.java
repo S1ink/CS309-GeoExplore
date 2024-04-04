@@ -39,7 +39,7 @@ public class EventMarker extends MarkerBase {
 		}
 	)
 	private Set<User> attendees = new HashSet<>();
-	@OneToMany(mappedBy = "pertainsEventMarker", fetch = FetchType.EAGER , cascade = CascadeType.REMOVE)
+	@OneToMany(mappedBy = "pertainsEventMarker", fetch = FetchType.EAGER , cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE })
 	private List<CommentEntity> Comments;
 
 }

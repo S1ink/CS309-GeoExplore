@@ -1,10 +1,11 @@
 package hb403.geoexplore.comments.controller;
 
+import hb403.geoexplore.UserStorage.entity.User;
 import hb403.geoexplore.UserStorage.repository.UserRepository;
 import hb403.geoexplore.comments.CommentRepo.CommentRepository;
 import hb403.geoexplore.comments.Entity.CommentEntity;
 
-import hb403.geoexplore.comments.ObservationCommentWebsocket;
+
 import hb403.geoexplore.datatype.marker.EventMarker;
 import hb403.geoexplore.datatype.marker.ObservationMarker;
 import hb403.geoexplore.datatype.marker.ReportMarker;
@@ -51,6 +52,13 @@ public class CommentController {
     @PostMapping(path = "/comment/store/{postType}") //Observation, Event, or Report with capital
     public @ResponseBody CommentEntity commentStore (@RequestBody CommentEntity newComment, @PathVariable String postType){
         CommentEntity toSave = new CommentEntity(newComment.getUserId(),newComment.getPostId(), postType , newComment.getComment());
+        // List<User> templist =  userRepository.findAll();
+        // Long userId;
+        // templist.forEach(user -> {
+        //     if (toSave.getUserId().equals(user.getEmailId())) {
+        //         toSave.setUserTableId(user.getId());
+        //     }
+        // });
         commentRepository.save(toSave);
 
             try {
@@ -93,7 +101,7 @@ public class CommentController {
     @PutMapping(path = "/comment/{id}/update")
     public @ResponseBody CommentEntity updateComment(@PathVariable Long id, @RequestBody CommentEntity updated){
         try {CommentEntity updater = commentRepository.getById(id); //making sure the comment exists in the repository
-            CommentEntity update = new CommentEntity(id, updated.getPostId(), updater.getUserId(), updater.getPostType(), updated.getComment() + " \n(comment edited)", updater.getUserTableId());
+            CommentEntity update = new CommentEntity(id, updated.getPostId(), updater.getUserId(), updater.getPostType(), updated.getComment() + " \n(comment edited)");
             commentRepository.save(update);
             if (update.getPostType().equals("Observation")) {
                 final ObservationMarker tempObservation = observationRepository.findById(update.getPostId()).get();
@@ -131,50 +139,62 @@ public class CommentController {
     @Operation(summary = "Delete a comment from the database by its id")
     @DeleteMapping(path = "/comment/{id}/delete")
     public @ResponseBody String deleteComment(@PathVariable Long id){
-        CommentEntity deleted = commentRepository.findById(id).get();
-        commentRepository.deleteById(id);
+        if (id == null || commentRepository.findById(id).isEmpty()){
+            return null;
+        }
+        try {
+            CommentEntity deleted = commentRepository.findById(id).get();
+            User tempUser = userRepository.findById(deleted.getUserId()).get();
+            //gets correct comment
+            if (deleted.getPostType().equals("Observation")) {
+                ObservationMarker deleteFromList = observationRepository.findById(deleted.getPostId()).get();
 
-        if (deleted.getPostType().equals("Observation")) {
-            ObservationMarker deleteFromList = observationRepository.findById(deleted.getPostId()).get();
-            List<CommentEntity> listToDelete = deleteFromList.getComments();
-            AtomicInteger i = new AtomicInteger();
-            listToDelete.forEach(comment -> {
-                if (comment.equals(deleted)){
-                    i.getAndIncrement();
-                    listToDelete.remove(i.get());
+                try{
+                    deleteFromList.getComments().remove(deleted);
+                    tempUser.getComments().remove(deleted);
+                    observationRepository.save(deleteFromList);
+                    userRepository.save(tempUser);
+                    System.out.println(deleted);
+                }catch (Exception e) {
+                    System.out.println(e);
+                    System.out.println("Error when deleting");
                 }
-
-            });
-        }
-        else if (deleted.getPostType().equals("Event")) {
-            EventMarker deleteFromList = eventRepository.findById(deleted.getPostId()).get();
-            List<CommentEntity> listToDelete = deleteFromList.getComments();
-            AtomicInteger i = new AtomicInteger();
-            listToDelete.forEach(comment -> {
-                if (comment.equals(deleted)){
-                    i.getAndIncrement();
-                    listToDelete.remove(i.get());
+            }
+            else if (deleted.getPostType().equals("Event")) {
+                EventMarker deleteFromList = eventRepository.findById(deleted.getPostId()).get();
+                try{
+                    deleteFromList.getComments().remove(deleted);
+                    tempUser.getComments().remove(deleted);
+                    eventRepository.save(deleteFromList);
+                    userRepository.save(tempUser);
+                    System.out.println(deleted);
+                }catch (Exception e) {
+                    System.out.println(e);
+                    System.out.println("Error when deleting");
                 }
-
-            });
-        }
-        else if (deleted.getPostType().equals("Report")){
-            ReportMarker deleteFromList = reportRepository.findById(deleted.getPostId()).get();
-            List<CommentEntity> listToDelete = deleteFromList.getComments();
-            AtomicInteger i = new AtomicInteger();
-            listToDelete.forEach(comment -> {
-                if (comment.equals(deleted)){
-                    i.getAndIncrement();
-                    listToDelete.remove(i.get());
+            }
+            else if (deleted.getPostType().equals("Report")){
+                ReportMarker deleteFromList = reportRepository.findById(deleted.getPostId()).get();
+                try{
+                    deleteFromList.getComments().remove(deleted);
+                    tempUser.getComments().remove(deleted);
+                    reportRepository.save(deleteFromList);
+                    userRepository.save(tempUser);
+                    System.out.println(deleted);
+                }catch (Exception e) {
+                    System.out.println(e);
+                    System.out.println("Error when deleting");
                 }
-
-            });
+            }
+            else {
+                return "deleted from comment repo but not post";
+            }
+            commentRepository.deleteById(id);
+            return "Successfully deleted: \n" + deleted.toString();
+        } catch(Exception e) {
+            
         }
-        else {
-            return "deleted from comment repo but not post";
-        }
-
-        return "Successfully deleted: \n" + deleted.toString();
+        return null;
     }
 
 
@@ -192,22 +212,19 @@ public class CommentController {
     @GetMapping(path = "/observation/comments/{postId}")
     @ResponseBody
     public List<CommentEntity> getCommentsForObs(@PathVariable Long postId){
-        List<CommentEntity> getAllComments = commentRepository.findAll();
-        ArrayList<CommentEntity> commentEntitiesOnPost = new ArrayList<CommentEntity>();
-        for (int i = 0; i < getAllComments().size();i++) {
-             if (getAllComments.get(i).getPostType().equals("Observation")){
-                if(getAllComments.get(i).getPostId().equals(postId)) {
-                    commentEntitiesOnPost.add(getAllComments.get(i));
-                }
-            }
+        try{
+            List<CommentEntity> CommentsOnObs = observationRepository.getById(postId).getComments();
+            return CommentsOnObs;
+        }catch(Exception e){
+            System.out.println(e);
         }
-        return commentEntitiesOnPost;
+        return null;
     }
     @Operation(summary = "Gets a list of all comments for a specific event")
     @GetMapping(path = "/event/comments/{postId}")
     @ResponseBody
     public List<CommentEntity> getCommentsForEvents(@PathVariable Long postId){
-        List<CommentEntity> getAllComments = commentRepository.findAll();
+        /*List<CommentEntity> getAllComments = commentRepository.findAll();
         ArrayList<CommentEntity> commentEntitiesOnPost = new ArrayList<CommentEntity>();
         for (int i = 0; i < getAllComments().size();i++) {
              if (getAllComments.get(i).getPostType().equals("Event")){
@@ -216,8 +233,14 @@ public class CommentController {
                 }
             }
 
+        }*/
+        try{
+            List<CommentEntity> CommentsOnEvent = eventRepository.getById(postId).getComments();
+            return CommentsOnEvent;
+        }catch(Exception e){
+            System.out.println(e);
         }
-        return commentEntitiesOnPost;
+        return null;
     }
 
     @Operation(summary = "Gets a list of all comments for a specific user using their id in the table (LONG)")
@@ -232,15 +255,20 @@ public class CommentController {
     @ResponseBody
     public List<CommentEntity> getCommentsForReports(@PathVariable Long postId){
         List<CommentEntity> getAllComments = commentRepository.findAll();
-        ArrayList<CommentEntity> commentEntitiesOnPost = new ArrayList<CommentEntity>();
-        for (int i = 0; i < getAllComments().size();i++) {
+        //List<CommentEntity> =
+        /*for (int i = 0; i < getAllComments().size();i++) {
              if (getAllComments.get(i).getPostType().equals("Report")){
                 if(getAllComments.get(i).getPostId().equals(postId)) {
                     commentEntitiesOnPost.add(getAllComments.get(i));
                 }
             }
+        }*/
+        try{
+            List<CommentEntity> CommentsOnReport = reportRepository.getById(postId).getComments();
+        }catch(Exception e){
+
         }
-        return commentEntitiesOnPost;
+        return reportRepository.getById(postId).getComments();
     }
 
 }
