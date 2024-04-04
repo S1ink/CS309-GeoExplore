@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -108,9 +109,13 @@ public class FeedActivity extends Fragment {
     }
 
     private void fetchCommentsForReport(ReportMarker reportMarker) {
+        Log.d("comment fetching", " fetching for " + reportMarker.getId());
         CommentApi commentApi = ApiClientFactory.GetCommentApi();
         commentApi.getCommentsForReports(reportMarker.getId()).enqueue(new SlimCallback<>(comments -> {
             reportMarker.setComments(comments);
+            Log.d("FeedActivity", "Fetched Comments for Report " + reportMarker.getId() + ": " + comments);
+
+
             updateUI(adapter, allItems);
 
         }, "GetCommentsForReport"));

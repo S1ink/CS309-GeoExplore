@@ -18,6 +18,9 @@ public interface EventMarkerApi {
     @POST("geomap/events")
     Call<EventMarker> addEvent(@Body EventMarker reportMarker);
 
+    @POST("geomap/events/{id}/tags")
+    Call<Void> addExistingTagToEvent(@Path("id") Long reportId, @Body Long tagId);
+
     // c[R]udl - Get an event from the database by its id
     @GET("geomap/events/{id}")
     Call<EventMarker> getEventById(@Path("id") Long id);

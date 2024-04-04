@@ -63,12 +63,15 @@ public class MainActivity extends AppCompatActivity {
             } else if (itemId == R.id.maps) {
                 replaceFragment(new MapsActivity());
             } else if(itemId == R.id.show_feed){
-                WebSocketManager.getInstance().connectWebSocket("wss://socketsbay.com/wss/v2/1/demo/"); //URL ADD LATER
+                WebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/comments/"+user.getId()); //URL ADD LATER
                 FeedActivity feedActivity = FeedActivity.newInstance(user);
                 replaceFragment(feedActivity);
             } else if (itemId == R.id.settings) {
                 SettingsActivity settingsFragment = SettingsActivity.newInstance(user.getIsAdmin());
                 replaceFragment(settingsFragment);
+            }else if(itemId == R.id.usergroups){
+                UserGroupActivity userGroupsFragment = UserGroupActivity.newInstance(user);
+                replaceFragment(userGroupsFragment);
             }
 
             return true;

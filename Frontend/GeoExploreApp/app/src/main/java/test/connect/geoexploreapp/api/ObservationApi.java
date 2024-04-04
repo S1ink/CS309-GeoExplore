@@ -16,6 +16,9 @@ public interface ObservationApi {
     @POST("geomap/observations")
     Call<Observation> saveObs(@Body Observation observation);
 
+    @POST("geomap/observations/{id}/tags")
+    Call<Void> addExistingTagToObservation(@Path("id") Long reportId, @Body Long tagId);
+
     @GET("geomap/observations/{id}")
     Call<Observation> getObs(@Path("id") Long id);
 

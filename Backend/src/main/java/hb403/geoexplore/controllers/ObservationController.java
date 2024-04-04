@@ -2,6 +2,8 @@ package hb403.geoexplore.controllers;
 
 import hb403.geoexplore.UserStorage.entity.User;
 import hb403.geoexplore.UserStorage.repository.UserRepository;
+import hb403.geoexplore.comments.CommentRepo.CommentRepository;
+import hb403.geoexplore.comments.Entity.CommentEntity;
 import hb403.geoexplore.datatype.MarkerTag;
 import hb403.geoexplore.datatype.marker.AlertMarker;
 import hb403.geoexplore.datatype.marker.ObservationMarker;
@@ -27,6 +29,8 @@ public class ObservationController {
     protected MarkerTagRepository tags_repo;
     @Autowired
     protected UserRepository users_repo;
+    @Autowired
+    protected CommentRepository commentRepository;
 
 
     // C of Crudl, adds observation to repo
@@ -36,6 +40,7 @@ public class ObservationController {
         if (observation != null) {
             observation.nullifyId();
             observation.enforceLocationIO();
+            observation.applyNewTimestamp();
             final ObservationMarker obs = this.obs_repo.save(observation);
             obs.enforceLocationTable();
             return obs;
@@ -66,6 +71,7 @@ public class ObservationController {
         if (id != null && observation != null){
             observation.setId(id);
             observation.enforceLocationIO();
+            observation.applyUpdatedTimestamp();
             final ObservationMarker obs = this.obs_repo.save(observation);
             obs.enforceLocationTable();
             return obs;
@@ -130,6 +136,7 @@ public class ObservationController {
 				final MarkerTag t = this.tags_repo.findById(tag_id).get();
 				final ObservationMarker m = this.obs_repo.findById(id).get();
 				if(m.getTags().add(t)) {
+                    m.applyUpdatedTimestamp();
 					this.obs_repo.save(m);
 					return m;
 				}
@@ -148,6 +155,7 @@ public class ObservationController {
 				final ObservationMarker m = this.obs_repo.findById(id).get();
 				final User u = this.users_repo.findById(user_id).get();
 				if(m.getConfirmed_by().add(u)) {
+                    m.applyUpdatedTimestamp();
 					this.obs_repo.save(m);
 					return m;
 				}

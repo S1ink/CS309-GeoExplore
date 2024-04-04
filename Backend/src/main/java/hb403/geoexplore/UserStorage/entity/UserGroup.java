@@ -1,8 +1,14 @@
 package hb403.geoexplore.UserStorage.entity;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import hb403.geoexplore.comments.Entity.CommentEntity;
+import hb403.geoexplore.datatype.marker.ObservationMarker;
+import hb403.geoexplore.datatype.marker.ReportMarker;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -49,6 +55,13 @@ public class UserGroup {
     @JsonIgnore
     private Set<UserGroup> groups = new HashSet<>();
 	 */
+	@Getter
+	@Setter
+	@ManyToMany(mappedBy = "pertainsGroup", fetch = FetchType.EAGER)
+	private Set<ObservationMarker> observations = new HashSet<>();
+	public void addToObservations(ObservationMarker observation_to_add){
+		observations.add(observation_to_add);
+	}
 
 	public UserGroup() {}
 
