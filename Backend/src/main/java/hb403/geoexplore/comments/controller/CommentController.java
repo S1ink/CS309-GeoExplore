@@ -102,35 +102,37 @@ public class CommentController {
     public @ResponseBody CommentEntity updateComment(@PathVariable Long id, @RequestBody CommentEntity updated){
         try {CommentEntity updater = commentRepository.getById(id); //making sure the comment exists in the repository
             CommentEntity update = new CommentEntity(id, updated.getPostId(), updater.getUserId(), updater.getPostType(), updated.getComment() + " \n(comment edited)");
-            commentRepository.save(update);
             if (update.getPostType().equals("Observation")) {
                 final ObservationMarker tempObservation = observationRepository.findById(update.getPostId()).get();
-                /*List<CommentEntity> commentEntityList = tempObservation.getComments();
-                commentEntityList.forEach(commentEntity -> {
-                    if (updater.equals()){
-                        commentEntityList.remove(commentEntity);
-                    }
-                });*/
+                tempObservation.getComments().remove(updater);
                 update.setPertainsObservationMarker(tempObservation);
                 observationRepository.save(tempObservation);
             }
             else if (update.getPostType().equals("Report")){
                 final ReportMarker tempReport = reportRepository.findById(update.getPostId()).get();
+                tempReport.getComments().remove(updater);
                 tempReport.getComments().add(update);
-
                 reportRepository.save(tempReport);
             }
             else if(update.getPostType().equals("Event")){
                 final EventMarker tempEvent = eventRepository.findById(update.getPostId()).get();
+                tempEvent.getComments().remove(updater);
                 tempEvent.getComments().add(update);
                 update.setPertainsEventMarker(tempEvent);
                 eventRepository.save(tempEvent);
             }
+            User tempUser = userRepository.findById(updated.getUserId()).get();
+            update.setPertainsUser(tempUser);
+            tempUser.getComments().remove(updater);
+            tempUser.getComments().add(update);
+            userRepository.save(tempUser);
+            commentRepository.save(update);
             }
         catch (Exception e){
             System.out.println(e);
             return null;
         }
+
         return updated;
     }
 
