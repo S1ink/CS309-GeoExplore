@@ -127,13 +127,14 @@ public class CommentController {
             tempUser.getComments().add(update);
             userRepository.save(tempUser);
             commentRepository.save(update);
+            return update;
             }
         catch (Exception e){
             System.out.println(e);
             return null;
         }
 
-        return updated;
+        
     }
 
 
