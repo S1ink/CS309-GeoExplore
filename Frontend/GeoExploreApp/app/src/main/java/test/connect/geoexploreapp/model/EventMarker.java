@@ -62,10 +62,6 @@ public class EventMarker implements FeedItem{
         return "Event";
     }
 
-    @Override
-    public String getDepartment() {
-        return city_department;
-    }
 
     @Override
     public Date getTime_created() {
