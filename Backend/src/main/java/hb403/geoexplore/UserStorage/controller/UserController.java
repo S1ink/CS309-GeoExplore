@@ -23,9 +23,12 @@ public class UserController {
     @Operation(summary = "Add a new user to the database")
     @PostMapping(path = "/user/create")
     public @ResponseBody User UserCreate(@RequestBody User newUser){
-        User newestUser = new User(newUser.getName(), newUser.getEmailId(), newUser.getPassword());
-        userRepository.save(newestUser);
-        return newestUser;
+        if(newUser != null) {
+            User newestUser = new User(newUser.getName(), newUser.getEmailId(), newUser.getPassword());
+            userRepository.save(newestUser);
+            return newestUser;
+        }
+        return null;
     }
 
 
@@ -33,27 +36,43 @@ public class UserController {
     @Operation(summary = "Get a user from the database from its id")
     @GetMapping(path = "/user/{id}")
     public @ResponseBody User getUser(@PathVariable Long id){
+        if(id != null) {
+            try {
+                return userRepository.findById(id).get();
+            } catch(Exception e) {
 
-        return userRepository.findById(id).get();
+            }
+        }
+        return null;
     }
 
     //U of Crudl
     @Operation(summary = "Update a user already in the database by its id")
     @PutMapping(path = "/user/{id}/update")
     public @ResponseBody User updateUser(@PathVariable Long id, @RequestBody User updated){
-        userRepository.deleteById(id);
-        User updater = new User(id, updated.getName(), updated.getEmailId(), updated.getPassword());
-        userRepository.save(updater);
-        return updater;
+        if(id != null && updated != null) {
+            userRepository.deleteById(id);
+            User updater = new User(id, updated.getName(), updated.getEmailId(), updated.getPassword());
+            userRepository.save(updater);
+            return updater;
+        }
+        return null;
     }
 
     // D of Crudl
     @Operation(summary = "Delete a user from the database by its id")
     @DeleteMapping(path = "/user/{id}/delete")
     public @ResponseBody String deleteUser(@PathVariable Long id){
-        User deleted = userRepository.findById(id).get();
-        userRepository.deleteById(id);
-        return "Successfully deleted: \n" + deleted.toString();
+        if(id != null) {
+            try {
+                User deleted = userRepository.findById(id).get();
+                userRepository.deleteById(id);
+                return "Successfully deleted: \n" + deleted.toString();
+            } catch(Exception e) {
+
+            }
+        }
+        return null;
     }
 
     // Delete all
