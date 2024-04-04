@@ -5,7 +5,7 @@ import hb403.geoexplore.UserStorage.repository.UserRepository;
 import hb403.geoexplore.comments.CommentRepo.CommentRepository;
 import hb403.geoexplore.comments.Entity.CommentEntity;
 
-import hb403.geoexplore.comments.ObservationCommentWebsocket;
+
 import hb403.geoexplore.datatype.marker.EventMarker;
 import hb403.geoexplore.datatype.marker.ObservationMarker;
 import hb403.geoexplore.datatype.marker.ReportMarker;
@@ -101,7 +101,7 @@ public class CommentController {
     @PutMapping(path = "/comment/{id}/update")
     public @ResponseBody CommentEntity updateComment(@PathVariable Long id, @RequestBody CommentEntity updated){
         try {CommentEntity updater = commentRepository.getById(id); //making sure the comment exists in the repository
-            CommentEntity update = new CommentEntity(id, updated.getPostId(), updater.getUserId(), updater.getPostType(), updated.getComment() + " \n(comment edited)", updater.getUserTableId());
+            CommentEntity update = new CommentEntity(id, updated.getPostId(), updater.getUserId(), updater.getPostType(), updated.getComment() + " \n(comment edited)");
             commentRepository.save(update);
             if (update.getPostType().equals("Observation")) {
                 final ObservationMarker tempObservation = observationRepository.findById(update.getPostId()).get();

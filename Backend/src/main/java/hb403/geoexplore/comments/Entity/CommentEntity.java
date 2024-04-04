@@ -72,16 +72,11 @@ public class CommentEntity {
         @Setter
         //@Column(name = "post_id_linked")
         private Long postId;
-
         @Setter
         @Getter
         @Column
-        private String userId;
-        @Setter
-        @Getter
-        @JsonIgnore
-        @Column
-        private Long userTableId;
+        private Long userId;
+        
         @Getter
         @Setter
         @Column
@@ -89,18 +84,25 @@ public class CommentEntity {
 
         @Setter
         @Column
-        @JsonIgnore
+        
         private String postType;
-        public CommentEntity(Long Commentid,Long PostID,  String userId,String type, String comment, Long userTableId) {
+
+
+    public CommentEntity(Long Commentid,Long PostID,  Long userId,String type, String comment) {
         this.id = Commentid;
         this.postId = PostID;
         this.postType = type;
         this.userId = userId;
-        this.comment= comment;
+        this.comment= comment;    
+    }
+    public CommentEntity(  Long userId,Long PostID,String type, String comment) {
+    
+        this.postId = PostID;
+        this.postType = type;
+        this.comment = Addcomment;
         this.userTableId = userTableId;
-        }
-
-        public CommentEntity(String adduserId, Long addpostid, String type, String Addcomment, Long userTableId) {
+    }
+    public CommentEntity(String adduserId, Long addpostid, String type, String Addcomment) {
 //        this.id = id;
             this.userId = adduserId;
             this.postId = addpostid;
@@ -116,15 +118,10 @@ public class CommentEntity {
         this.comment = Addcomment;
     }
 
-        public CommentEntity( String Userid,Long postId, Long userTableId) {
-        this.userId = Userid;
-        this.postId = postId;
-        this.userTableId = userTableId;
-        }
 
-        public CommentEntity() {
+    public CommentEntity() {
 
-        }
+    }
 
     public String getPostType() {
         if (postType == null){
@@ -136,13 +133,15 @@ public class CommentEntity {
     }
 
     @Override
-        public String toString(){
-            return "CommentId: " + this.id +
-                    "\nUserId " + this.userId +
-                    "\nPostId: " + this.postId +
-                    "\nComment" + this.comment +
-                    "\nSuccessfully created";
-        }
+    public String toString(){
+        return "CommentId: " + this.id +
+                "\nUserId " + this.userId +
+                "\nPostId: " + this.postId +
+                "\nComment: " + this.comment;
+                
     }
+
+
+}
 
 
