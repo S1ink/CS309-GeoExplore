@@ -66,36 +66,49 @@ public class CommentWebsocket {
     }
 
     private static Map<Session, Long> session_user_ids = new HashMap<>();
+    private static Map<Long, Long> user_id_duplicates = new HashMap<>();
 	private static Set<Long> user_ids = new HashSet<>();
 
 
     @OnOpen
-    public void onOpenSession (Session session, @PathParam("user_id") Long userId) throws IOException {
-        if(session == null || userId == null) {
+    public void onOpenSession (Session session, @PathParam("user_id") Long id) throws IOException {
+        if(session == null || id == null) {
 			System.out.println("[Comment WS]: Failed to start session - one or more params were null.");
 			return;
 		}
         boolean
-            already_present = user_ids.contains(userId),
-            valid_user = userRepository.findById(userId).isPresent();
-        if (!already_present && valid_user) {
-            user_ids.add(userId);
-            session_user_ids.put(session, userId);
-            System.out.println("[Comment WS]: Successfully added session for user id " + userId);
+			already_present = user_ids.contains(id),
+			valid_user = userRepository.findById(id).isPresent();
+		if (/*!already_present &&*/ valid_user) {
+			if(user_ids.add(id)) {
+				user_id_duplicates.put(id, 1L);
+			} else {
+				user_id_duplicates.put(id, user_id_duplicates.get(id) + 1L);	// increment
+			}
+            session_user_ids.put(session, id);
+            System.out.println("[Comment WS]: Successfully added session for user id " + id);
         } else {
-            System.out.println("[Comment WS]: Failed to add session for user id " + userId + " -- already present: " + already_present + ", valid: " + valid_user);
+            System.out.println("[Comment WS]: Failed to add session for user id " + id + " -- already present: " + already_present + ", valid: " + valid_user);
         }
+        this.printStatus();
     }
     @OnClose
     public void OnClose(Session session) throws IOException{
         try {
             final Long id = session_user_ids.remove(session);
-            user_ids.remove(id);
+            final Long num = user_id_duplicates.get(id) - 1L;
+			if(num <= 0) {
+				user_id_duplicates.remove(id);
+				user_ids.remove(id);
+			} else {
+				user_id_duplicates.put(id, num);
+			}
             System.out.println("[Comment WS]: Successfully closed session for user id " + id);
         } catch (Exception e) {
             System.out.println(e);
             System.out.println("[Comment WS]: Failed on close user session!?");
         }
+        this.printStatus();
     }
     @OnMessage
     public void OnMessage(Session session, String message){
@@ -164,6 +177,19 @@ public class CommentWebsocket {
     @OnError
     public void OnError(Session session, Throwable throwable){
         System.out.println("[Comment WS - ERROR]: " + throwable.getMessage());
+        this.printStatus();
     }
+
+
+
+    private void printStatus() {
+		String fmt = "[Comment WS - STATUS]: Users: " + user_ids.size() + ", Sessions: " + session_user_ids.size() + ", IDS: { ";
+		for(Long id : user_ids) {
+			fmt += String.format("%d (%d), ", id, user_id_duplicates.get(id));
+		}
+		fmt += "}";
+		System.out.println(fmt);
+	}
+
 
 }
