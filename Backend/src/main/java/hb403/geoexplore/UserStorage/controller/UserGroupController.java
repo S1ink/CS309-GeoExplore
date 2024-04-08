@@ -112,12 +112,13 @@ public class UserGroupController {
 	public @ResponseBody String deleteUser(@PathVariable Long group_id, @PathVariable Long user_id){
 		try {
 			UserGroup tempGroup = group_repo.findById(group_id).get();
-			Set<User> tempUsers = tempGroup.getMembers();
-			tempUsers.forEach(user -> {
-				if (user.getId().equals(user_id)) {
-					tempUsers.remove(user);
+			for(User u : tempGroup.getMembers()) {
+				if (u.getId().equals(user_id)) {
+					tempGroup.getMembers().remove(u);
+					break;
 				}
-			});
+			}
+			group_repo.save(tempGroup);
 		}
 		catch (Exception e){
 			System.out.println(e);

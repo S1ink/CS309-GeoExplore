@@ -66,100 +66,130 @@ public class CommentWebsocket {
     }
 
     private static Map<Session, Long> session_user_ids = new HashMap<>();
+    private static Map<Long, Long> user_id_duplicates = new HashMap<>();
 	private static Set<Long> user_ids = new HashSet<>();
-    
+
 
     @OnOpen
-    public void onOpenSession (Session session, @PathParam("user_id") Long userId) throws IOException {
-        if (session != null && userId != null && !user_ids.contains(userId) && userRepository.findById(userId).isPresent()){
-         user_ids.add(userId);
-         session_user_ids.put(session, userId);
-         System.out.println("[Comment.WS] Completed startup");
+    public void onOpenSession (Session session, @PathParam("user_id") Long id) throws IOException {
+        if(session == null || id == null) {
+			System.out.println("[Comment WS]: Failed to start session - one or more params were null.");
+			return;
+		}
+        boolean
+			already_present = user_ids.contains(id),
+			valid_user = userRepository.findById(id).isPresent();
+		if (/*!already_present &&*/ valid_user) {
+			if(user_ids.add(id)) {
+				user_id_duplicates.put(id, 1L);
+			} else {
+				user_id_duplicates.put(id, user_id_duplicates.get(id) + 1L);	// increment
+			}
+            session_user_ids.put(session, id);
+            System.out.println("[Comment WS]: Successfully added session for user id " + id);
+        } else {
+            System.out.println("[Comment WS]: Failed to add session for user id " + id + " -- already present: " + already_present + ", valid: " + valid_user);
         }
-        else {
-        System.out.println("[Comment WS] Not valid");
-        }
+        this.printStatus();
     }
     @OnClose
     public void OnClose(Session session) throws IOException{
         try {
             final Long id = session_user_ids.remove(session);
-            System.out.println("[Comment WS] Successfully Closed");
+            final Long num = user_id_duplicates.get(id) - 1L;
+			if(num <= 0) {
+				user_id_duplicates.remove(id);
+				user_ids.remove(id);
+			} else {
+				user_id_duplicates.put(id, num);
+			}
+            System.out.println("[Comment WS]: Successfully closed session for user id " + id);
         } catch (Exception e) {
             System.out.println(e);
-            System.out.println("[Comment WS] Failed on close");
+            System.out.println("[Comment WS]: Failed on close user session!?");
         }
+        this.printStatus();
     }
     @OnMessage
     public void OnMessage(Session session, String message){
         if (session == null || message == null || userRepository.findById(session_user_ids.get(session)).isEmpty()){
+            System.out.println("[Comment WS]: Invalid message, session, or user!");
             return;
         }
-        
         final ObjectMapper mapperForComments = new ObjectMapper();
         String message_out;
         try {
             CommentEntity temp = mapperForComments.readValue(message, CommentEntity.class);
             temp.setUserId(session_user_ids.get(session));
             if(temp.getPostType().equals("Observation")){
-                System.out.println("Made it into Obs" + temp.toString());
                 temp = commentRepository.saveAndFlush(temp);
-                System.out.println("Made it past line 2");
                 ObservationMarker tempObs = observationRepository.findById(temp.getPostId()).get();
-                System.out.println("Made it past line 3" + temp.getPostId());
                 tempObs.getComments().add(temp);
-                System.out.println("Made it past line 4" + tempObs.getComments());
                 temp.setPertainsObservationMarker(tempObs);
                 observationRepository.saveAndFlush(tempObs);
-                System.out.println("Made it past line 5");
+                System.out.println("[Comment WS]: Successfully saved observation, and tags for comment message:\n" + temp.toString());
                 
             }
             else if (temp.getPostType().equals("Event")){
-                System.out.println("Made it into Event" + temp.toString());
                 temp = commentRepository.saveAndFlush(temp);
                 EventMarker tempEvent = eventRepository.findById(temp.getPostId()).get();
                 tempEvent.getComments().add(temp);
                 temp.setPertainsEventMarker(tempEvent);
                 eventRepository.saveAndFlush(tempEvent);
+                System.out.println("[Comment WS]: Successfully saved event, and tags for comment message:\n" + temp.toString());
             }
             else if (temp.getPostType().equals("Report")){
-                System.out.println("Made it into Report" + temp.toString());
                 temp = commentRepository.saveAndFlush(temp);
                 ReportMarker tempReport = reportRepository.findById(temp.getPostId()).get();
                 tempReport.getComments().add(temp);
                 temp.setPertainsReportMarker(tempReport);
                 reportRepository.saveAndFlush(tempReport);
+                System.out.println("[Comment WS]: Successfully saved report, and tags for comment message:\n" + temp.toString());
             }
             else {
-                System.out.println("Invalid Type");
+                System.out.println("[Comment WS]: Failed to parse message due to invalid post type.");
                 return;
             }
             User tempUser = userRepository.findById(temp.getUserId()).get();
-                tempUser.getComments().add(temp);
-                temp.setPertainsUser(tempUser);
-                userRepository.saveAndFlush(tempUser);
-                
+            tempUser.getComments().add(temp);
+            temp.setPertainsUser(tempUser);
+            userRepository.saveAndFlush(tempUser);
             message_out = mapperForComments.writeValueAsString(temp);
         } catch (Exception e) {
             System.out.println(e);
             return;
         }
-        System.out.println("Made it to sending phase" + message_out);
+        System.out.println("[Comment WS]: Proceeding to send message: " + message_out);
         if(message_out != null){
-            session_user_ids.forEach((Session tempSess, Long user_ids)-> {
-                if (tempSess == session) return;
-                try {
-                    tempSess.getBasicRemote().sendText(message_out);
-                    System.out.println("sent message");
-                }catch (Exception e){
-                    System.out.println(e);
+            session_user_ids.forEach(
+                (Session tempSess, Long user_id)-> {
+                    // if (tempSess == session) return;
+                    try {
+                        tempSess.getBasicRemote().sendText(message_out);
+                        System.out.println("[Comment WS]: Successfully sent message to user id " + user_id);
+                    }catch (Exception e){
+                        System.out.println(e);
+                    }
                 }
-            });
+            );
         }
     }
     @OnError
     public void OnError(Session session, Throwable throwable){
-        System.out.println("[Comment WS] Error: " + throwable.getMessage());
+        System.out.println("[Comment WS - ERROR]: " + throwable.getMessage());
+        this.printStatus();
     }
+
+
+
+    private void printStatus() {
+		String fmt = "[Comment WS - STATUS]: Users: " + user_ids.size() + ", Sessions: " + session_user_ids.size() + ", IDS: { ";
+		for(Long id : user_ids) {
+			fmt += String.format("%d (%d), ", id, user_id_duplicates.get(id));
+		}
+		fmt += "}";
+		System.out.println(fmt);
+	}
+
 
 }
