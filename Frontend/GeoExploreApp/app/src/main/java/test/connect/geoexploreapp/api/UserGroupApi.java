@@ -47,6 +47,4 @@ public interface UserGroupApi {
     @GET("user/usergroup/{group_id}/num")
     Call<Integer> getMemberCount(@Path("group_id") Long group_id);
 
-
-
 }
