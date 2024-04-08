@@ -1,3 +1,7 @@
+# workflow:
+#   rules:
+#     - if: $CI_COMMIT_BRANCH == "main" || ($CI_PIPELINE_SOURCE == 'merge_request_event' || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main" )   # only run on a direct push to main or on a merge request to main
+
 stages:             # these stages (jobs) forms the CICD pipeline
   - mavenbuild      # this is a JOB to build your Springboot application
   - maventest       # this is a JOB to run tests in your Springboot application (it's okay you don't have any test for now)
@@ -26,8 +30,10 @@ maven-test:
 
 auto-deploy:
   stage: mavendeploy    # one of the stages listed above
+  only:
+    - main
   tags:
-  - backend-cicd        # change to your runner's tag
+    - backend-cicd        # change to your runner's tag
   script:               # script to run the deployment service you created
     - cd Backend        # change 'Backend' to to where you have the pom.xml (do not add / in the beginning)
     - sudo mv target/*.jar /hb403/gitlab-cd/geoexplore-deployed.jar 
