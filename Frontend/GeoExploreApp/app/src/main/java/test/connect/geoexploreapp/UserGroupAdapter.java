@@ -29,11 +29,9 @@ import test.connect.geoexploreapp.api.UserGroupApi;
 import test.connect.geoexploreapp.model.User;
 import test.connect.geoexploreapp.model.UserGroup;
 
-public class UserGroupAdapter extends RecyclerView.Adapter<UserGroupAdapter.UserGroupViewHolder> {
-    private View.OnClickListener  onDeleteClickListener;
+public class UserGroupAdapter extends RecyclerView.Adapter<UserGroupAdapter.UserGroupViewHolder> implements MemberCallback {
     private List<UserGroup> userGroups;
     private LayoutInflater inflater;
-    private View.OnClickListener onJoinClickListener;
     private User user;
 
     public UserGroupAdapter(Context context, List<UserGroup> userGroups, User user) {
@@ -85,7 +83,6 @@ public class UserGroupAdapter extends RecyclerView.Adapter<UserGroupAdapter.User
 
         }
 
-
         holder.joinButton.setText(isMember ? "Joined" : "Join");
         holder.joinButton.setEnabled(!isMember);
 
@@ -118,7 +115,7 @@ public class UserGroupAdapter extends RecyclerView.Adapter<UserGroupAdapter.User
         View view = LayoutInflater.from(context).inflate(R.layout.members_list, null);
         RecyclerView recyclerView = view.findViewById(R.id.membersRecyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
-        MembersAdapter adapter = new MembersAdapter(userGroup, members);
+        MembersAdapter adapter = new MembersAdapter(userGroup, members,this );
         recyclerView.setAdapter(adapter);
 
         builder.setView(view);
@@ -259,6 +256,33 @@ public class UserGroupAdapter extends RecyclerView.Adapter<UserGroupAdapter.User
     @Override
     public int getItemCount() {
         return userGroups.size();
+    }
+
+
+
+    @Override
+    public void onMemberDeleted(Long groupId) {
+        UserGroupApi userGroupApi = ApiClientFactory.GetUserGroupApi();
+        userGroupApi.getGroupById(groupId).enqueue(new Callback<UserGroup>() {
+            @Override
+            public void onResponse(Call<UserGroup> call, Response<UserGroup> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    for (int i = 0; i < userGroups.size(); i++) {
+                        if (userGroups.get(i).getId().equals(groupId)) {
+                            userGroups.set(i, response.body());
+                            notifyItemChanged(i);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserGroup> call, Throwable t) {
+                // Handle failure
+            }
+        });
+
     }
 
     static class UserGroupViewHolder extends RecyclerView.ViewHolder {

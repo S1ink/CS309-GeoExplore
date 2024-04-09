@@ -41,11 +41,9 @@
             </intent-filter>
         </activity>
 
-        <!-- Define MainActivity -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
-            <!-- Intent filters for MainActivity if needed -->
         </activity>
     </application>
     <uses-permission android:name="android.permission.INTERNET" />

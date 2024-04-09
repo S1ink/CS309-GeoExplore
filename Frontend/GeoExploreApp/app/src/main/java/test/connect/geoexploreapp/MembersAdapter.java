@@ -16,6 +16,7 @@ import com.google.android.gms.common.api.Api;
 
 import java.util.List;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -28,11 +29,14 @@ import test.connect.geoexploreapp.model.UserGroup;
 public class MembersAdapter extends RecyclerView.Adapter<MembersAdapter.ViewHolder> {
     private List<String> members;
     private UserGroup userGroup;
+    private MemberCallback memberCallback;
 
 
-    public MembersAdapter(UserGroup userGroup, List<String> members) {
+    public MembersAdapter(UserGroup userGroup, List<String> members, MemberCallback memberCallback) {
         this.members = members;
         this.userGroup=userGroup;
+        this.memberCallback = memberCallback;
+
     }
 
     @NonNull
@@ -77,16 +81,19 @@ public class MembersAdapter extends RecyclerView.Adapter<MembersAdapter.ViewHold
 
     private void deleteMember(Context context, UserGroup userGroup, User user, int pos) {
         UserGroupApi userGroupApi= ApiClientFactory.GetUserGroupApi();
-        userGroupApi.deleteUserFromGroup(userGroup.getId(), user.getId()).enqueue(new Callback<String> (){
+        userGroupApi.deleteUserFromGroup(userGroup.getId(), user.getId()).enqueue(new Callback<ResponseBody> (){
 
             @Override
-            public void onResponse(Call<String> call, Response<String> response) {
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if(response!=null&&response.isSuccessful()){
                     Toast.makeText(context, "Member successfully deleted from group.", Toast.LENGTH_SHORT).show();
                     Log.d("deleteMember", "Member successfully deleted: " + response.body());
                     members.remove(pos);
                     notifyItemRemoved(pos);
                     notifyItemRangeChanged(pos, members.size());
+//                    if (memberCallback != null) {
+                        memberCallback.onMemberDeleted(userGroup.getId());
+//                    }
                 } else {
                     Toast.makeText(context, "Failed to delete member from group.", Toast.LENGTH_SHORT).show();
                     Log.e("deleteMember", "Failed to delete member: " + response.errorBody());
@@ -94,7 +101,7 @@ public class MembersAdapter extends RecyclerView.Adapter<MembersAdapter.ViewHold
             }
 
             @Override
-            public void onFailure(Call<String> call, Throwable t) {
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
                 Toast.makeText(context, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 Log.e("deleteMember", "API call failed: " + t.getMessage());
             }

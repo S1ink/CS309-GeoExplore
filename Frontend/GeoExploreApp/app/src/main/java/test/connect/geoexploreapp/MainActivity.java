@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
             int itemId = item.getItemId();
 
             if (itemId == R.id.profile) {
-                ProfileActivity profileFragment = ProfileActivity.newInstance(user.getName(), user.getEmailId(),user.getIsAdmin());
+                ProfileActivity profileFragment = ProfileActivity.newInstance(user);
                 replaceFragment(profileFragment);
             } else if (itemId == R.id.maps) {
                 replaceFragment(new MapsActivity());

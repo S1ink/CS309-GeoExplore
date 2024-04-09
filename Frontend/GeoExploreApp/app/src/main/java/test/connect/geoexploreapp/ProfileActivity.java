@@ -1,29 +1,29 @@
 package test.connect.geoexploreapp;
 
-import static android.content.Context.MODE_PRIVATE;
-
-import static test.connect.geoexploreapp.api.ApiClientFactory.GetUserApi;
-
-import android.content.DialogInterface;
-import android.content.SharedPreferences;
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.google.gson.Gson;
+import java.io.IOException;
 
-import java.util.List;
-
-import test.connect.geoexploreapp.api.SlimCallback;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import test.connect.geoexploreapp.api.ApiClientFactory;
+import test.connect.geoexploreapp.api.UserApi;
 import test.connect.geoexploreapp.model.User;
 
 /**
@@ -40,20 +40,19 @@ public class ProfileActivity extends Fragment {
 
     // TODO: Rename and change types of parameters
     private String mParam1;
+    private static Bundle args;
     private String mParam2;
+    private static User user;
+
 
     public ProfileActivity() {
         // Required empty public constructor
     }
 
-    public static ProfileActivity newInstance(String userName, String userEmail, boolean isAdmin) {
+    public static ProfileActivity newInstance(User user ) {
         ProfileActivity fragment = new ProfileActivity();
-        Bundle args = new Bundle();
-        args.putString("UserName", userName);
-        args.putString("UserEmail", userEmail);
-        args.putBoolean("IsAdmin",isAdmin);
-
-        //args.putLong("UserId", userId);
+        args = new Bundle();
+        args.putSerializable("UserObject", user);
         fragment.setArguments(args);
         return fragment;
     }
@@ -71,75 +70,96 @@ public class ProfileActivity extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
 
         View view = inflater.inflate(R.layout.activity_profile, container, false);
-        Bundle args = getArguments();
-        if (args != null) {
-            String userName = args.getString("UserName", "N/A"); // Default value as "N/A"
-            String userEmail = args.getString("UserEmail", "N/A");
-            boolean isAdmin = args.getBoolean("IsAdmin", false);
+        if (getArguments() != null) {
+            user = (User) getArguments().getSerializable("UserObject");
 
-            Log.d("ProfileActivity", "isAdmin: " + isAdmin);
+            Log.d("ProfileActivity", "isAdmin: " + user.getIsAdmin());
        //     Long userId = args.getLong("UserId", -1); // -1 as default indicating not found
 
             TextView userNameDisplay = view.findViewById(R.id.userNameDisplay);
-            TextView userEmailDisplay = view.findViewById(R.id.userEmailDisplay); // Assuming you have a TextView for email
+            TextView userEmailDisplay = view.findViewById(R.id.userEmailDisplay);
             //TextView userID = view.findViewById(R.id.userId); // A
-            userNameDisplay.setText(userName);
-            userEmailDisplay.setText(userEmail);
+            userNameDisplay.setText(user.getName());
+            userEmailDisplay.setText(user.getEmailId());
             //userID.setText(userId.toString());
         }
 
-//        Button buttonEditPassword = view.findViewById(R.id.buttonEditPassword);
-//        buttonEditPassword.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                // Inflate the custom layout for the AlertDialog
-//                LayoutInflater inflater = getActivity().getLayoutInflater();
-//                View dialogView = inflater.inflate(R.layout.change_password, null);
-//
-//                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-//                builder.setView(dialogView)
-//                        .setTitle("Change Password")
-//                        .setPositiveButton("Change", new DialogInterface.OnClickListener() {
-//                            @Override
-//                            public void onClick(DialogInterface dialog, int which) {
-//                                EditText editTextOldPassword = dialogView.findViewById(R.id.editTextOldPassword);
-//                                EditText editTextNewPassword = dialogView.findViewById(R.id.editTextNewPassword);
-//                                EditText editTextConfirmPassword = dialogView.findViewById(R.id.editTextConfirmPassword);
-//                                String userId = view.findViewById(R.id.userId).toString();
-//
-//                                String oldPassword = editTextOldPassword.getText().toString();
-//                                String newPassword = editTextNewPassword.getText().toString();
-//                                String confirmPassword = editTextConfirmPassword.getText().toString();
-//
-//                                if(confirmPassword.equals(newPassword)) {
-//                                    changePassword(oldPassword, newPassword, userId);
-//                                }else{
-//                                    showAlert("Email already exists!");
-//                                }
-//                            }
-//                        })
-//                        .setNegativeButton("Cancel", null);
-//                AlertDialog dialog = builder.create();
-//                dialog.show();
-//            }
-//        });
-
+        Button buttonChangePassword = view.findViewById(R.id.buttonChangePassword);
+        buttonChangePassword.setOnClickListener(v -> showChangePasswordDialog(v.getContext()));
         return view;
+
     }
-    private void showAlert(String message) {
-        // Context should be getActivity() since you're in a fragment
-        new AlertDialog.Builder(getActivity())
-                .setMessage(message)
-                .setTitle("Alert")
-                .setPositiveButton("OK", null) // Optionally, add an OnClickListener
-                .create()
-                .show();
+
+    private void showChangePasswordDialog(Context context) {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+        builder.setTitle("Change Password");
+        LinearLayout layout = new LinearLayout(context);
+        layout.setOrientation(LinearLayout.VERTICAL);
+
+        final EditText newPasswordInput = new EditText(context);
+        newPasswordInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        newPasswordInput.setHint("New password");
+
+        final EditText confirmPasswordInput = new EditText(context);
+        confirmPasswordInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        confirmPasswordInput.setHint("Confirm password");
+
+        layout.addView(newPasswordInput);
+        layout.addView(confirmPasswordInput);
+
+        builder.setView(layout);
+
+        builder.setPositiveButton("Change", (dialog, which) -> {
+            String newPassword = newPasswordInput.getText().toString();
+            String confirmPassword = confirmPasswordInput.getText().toString();
+
+            if (!newPassword.equals(confirmPassword)) {
+                Toast.makeText(getContext(), "Passwords do not match", Toast.LENGTH_SHORT).show();
+            }else{
+                updatePassword(newPassword);
+            }
+
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+        builder.show();
     }
-//    public void changePassword(String oldPassword, String newPassword, Long userId){
-//
-//    }
+
+    private void updatePassword(String newPassword) {
+        user.setPassword(newPassword);
+        UserApi userApi = ApiClientFactory.GetUserApi();
+
+        userApi.updateUser(user.getId(), user).enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    User userUpdates = response.body();
+                    Toast.makeText(getContext(), "Password successfully updated", Toast.LENGTH_SHORT).show();
+                } else {
+                    try {
+                        Toast.makeText(getContext(), "Password successfully updated", Toast.LENGTH_SHORT).show();
+
+                        Log.e("UpdatePassword", "Failed to update password. Response: " + response.errorBody().string());
+//                        Toast.makeText(getContext(), "Failed to update password", Toast.LENGTH_SHORT).show();
+                    } catch (IOException e) {
+                        Log.e("UpdatePassword", "Error reading error body", e);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                Log.e("UpdatePassword", "API call failed: ", t);
+                Toast.makeText(getContext(), "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+
+        });
+
+    }
+
 
 }
