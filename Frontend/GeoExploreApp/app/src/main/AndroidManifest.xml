@@ -26,11 +26,6 @@
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
-
-        <activity
-            android:name=".MapsActivity"
-            android:exported="false"
-            android:label="@string/title_activity_maps" />
         <activity
             android:name=".LoginSignUpActivity"
             android:exported="true">
@@ -41,11 +36,9 @@
             </intent-filter>
         </activity>
 
-        <!-- Define MainActivity -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
-            <!-- Intent filters for MainActivity if needed -->
         </activity>
     </application>
     <uses-permission android:name="android.permission.INTERNET" />
