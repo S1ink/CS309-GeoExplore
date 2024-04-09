@@ -265,8 +265,9 @@ public class CommentController {
         }*/
         try{
             List<CommentEntity> CommentsOnReport = reportRepository.getById(postId).getComments();
+            return CommentsOnReport;
         }catch(Exception e){
-
+            System.out.println(e);
         }
         return reportRepository.getById(postId).getComments();
     }
