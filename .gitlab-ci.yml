@@ -45,22 +45,20 @@ android-build:
   stage: androidbuild               # one of the stages listed above
   before_script:                    # enable gradlew, change 'Frontend' to where you have 'gradlew'
     - export GRADLE_USER_HOME=`pwd`/.gradle
+    - touch local.properties
     - chmod +x ./Frontend/GeoExploreApp/gradlew
   tags:
     - frontend-cicd                  # change to your runner's tag
   script:
     - cd Frontend/GeoExploreApp                 # change 'Frontend' to where you have 'gradlew' (do not add / in the beginning)
     - ./gradlew build               # gradle build
-  artifacts:
-    paths:
-    - Android_test/app/build/outputs/
-
 
 android-test:
    image: afirefly/android-ci:java17
    stage: androidtest               # one of the stages listed above
    before_script:                   # enable gradlew, change 'Frontend' to where you have 'gradlew'
      - export GRADLE_USER_HOME=`pwd`/.gradle
+     - touch local.properties
      - chmod +x ./Frontend/GeoExploreApp/gradlew
    tags:
     - frontend-cicd                 # change to your runner's tag
