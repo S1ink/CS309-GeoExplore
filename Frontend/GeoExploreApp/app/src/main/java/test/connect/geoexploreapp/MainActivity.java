@@ -27,33 +27,22 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
 
-
         user = (User) getIntent().getSerializableExtra("UserObject");
 
         String userID = String.valueOf(user.getId());
         WebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/live/alerts/" + userID);
 
-        String userName = getIntent().getStringExtra("UserName");
-        Long userId = getIntent().getLongExtra("UserID",-1);
-        String userEmail = getIntent().getStringExtra("UserEmail");
-        boolean isAdmin = getIntent().getBooleanExtra("IsAdmin",false);
-
-
         if(user!= null){
             SharedViewModel viewModel = new ViewModelProvider(this).get(SharedViewModel.class);
-
             viewModel.setLoggedInUser(user);
-
             Log.d("MainActivity", "User: " + user);
-
-
         }
 
         binding.bottomNavigationView.setSelectedItemId(R.id.maps);
         replaceFragment(new MapsActivity());
 
         binding.bottomNavigationView.setOnItemSelectedListener(item -> {
-//
+
             int itemId = item.getItemId();
 
             if (itemId == R.id.profile) {
@@ -63,7 +52,6 @@ public class MainActivity extends AppCompatActivity {
                 replaceFragment(new MapsActivity());
             } else if(itemId == R.id.show_feed){
                 WebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/comments/"+user.getId()); //URL ADD LATER
-
                 FeedActivity feedActivity = FeedActivity.newInstance(user);
                 replaceFragment(feedActivity);
             } else if (itemId == R.id.settings) {
@@ -75,8 +63,6 @@ public class MainActivity extends AppCompatActivity {
             }
 
             return true;
-
-
         });
 
     }
@@ -86,6 +72,5 @@ public class MainActivity extends AppCompatActivity {
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.frame,fragment);
         fragmentTransaction.commit();
-
     }
 }

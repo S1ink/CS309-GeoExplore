@@ -72,7 +72,6 @@ public class SettingsActivity extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.activity_settings, container, false);
 
         Bundle args = getArguments();
@@ -139,11 +138,7 @@ public class SettingsActivity extends Fragment {
                     addUserGroupPrompt();
                 }
             });
-
-            
         }
-
-
 
         return view;
     }
@@ -152,7 +147,6 @@ public class SettingsActivity extends Fragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Create User Group");
 
-        // Set up the input
         final EditText input = new EditText(getContext());
         input.setInputType(InputType.TYPE_CLASS_TEXT);
         input.setHint("Add the title of the user group");
@@ -163,7 +157,6 @@ public class SettingsActivity extends Fragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String groupName = input.getText().toString();
-                // Call your method to handle the creation of the group with the entered name
                 UserGroup userGrouptoAdd = new UserGroup();
                 userGrouptoAdd.setTitle(groupName);
                 addUserGroup(userGrouptoAdd);
@@ -186,17 +179,15 @@ public class SettingsActivity extends Fragment {
             @Override
             public void onResponse(Call<UserGroup> call, Response<UserGroup> response) {
                 if(response.isSuccessful()) {
-                    UserGroup createdGroup = response.body(); // The created group object, if the API returns it
+                    UserGroup createdGroup = response.body();
                     Log.d("addUserGroup", "Group created successfully: " + createdGroup.getTitle());
                 } else {
-                    // The request failed, handle errors
                     Log.e("addUserGroup", "Failed to create group. Response Code: " + response.code());
                 }
             }
 
             @Override
             public void onFailure(Call<UserGroup> call, Throwable t) {
-                // An error occurred during the network request
                 Log.e("addUserGroup", "Error creating group", t);
             }
         });

@@ -141,16 +141,12 @@ public class EmergencySendFragment extends Fragment {
             alertMarker.setIo_longitude(Double.parseDouble(longitude));
             alertMarker.setCreator(loggedInUser);
 
-
             Gson gson = new Gson();
             String jsonMessage = gson.toJson(alertMarker);
 
-
             WebSocketManager.getInstance().sendMessage(jsonMessage);
 
-
         });
-
         return view;
     }
 }

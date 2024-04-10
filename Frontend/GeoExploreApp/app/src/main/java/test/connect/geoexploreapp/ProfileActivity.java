@@ -76,14 +76,11 @@ public class ProfileActivity extends Fragment {
             user = (User) getArguments().getSerializable("UserObject");
 
             Log.d("ProfileActivity", "isAdmin: " + user.getIsAdmin());
-       //     Long userId = args.getLong("UserId", -1); // -1 as default indicating not found
 
             TextView userNameDisplay = view.findViewById(R.id.userNameDisplay);
             TextView userEmailDisplay = view.findViewById(R.id.userEmailDisplay);
-            //TextView userID = view.findViewById(R.id.userId); // A
             userNameDisplay.setText(user.getName());
             userEmailDisplay.setText(user.getEmailId());
-            //userID.setText(userId.toString());
         }
 
         Button buttonChangePassword = view.findViewById(R.id.buttonChangePassword);

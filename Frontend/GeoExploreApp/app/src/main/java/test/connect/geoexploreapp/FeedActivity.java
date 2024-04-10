@@ -167,8 +167,6 @@ public class FeedActivity extends Fragment {
 
             @Override
             public void onFailure(Call<Comment> call, Throwable t) {
-
-
                 Log.e("fetchCommentById", "Fetch failed", t); // Debug log for failure
 
             }
@@ -207,8 +205,6 @@ public class FeedActivity extends Fragment {
 
         AlertDialog dialog = builder.create();
         dialog.show();
-
-
 
     }
 
@@ -258,7 +254,6 @@ public class FeedActivity extends Fragment {
         fetchReports();
         fetchEvents();
         fetchObservations();
-
     }
 
     private void fetchReports() {

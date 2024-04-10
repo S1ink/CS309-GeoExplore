@@ -120,8 +120,6 @@ public class MarkerTagManagementFragment extends Fragment {
             }
         });
 
-
-
         return view;
     }
 

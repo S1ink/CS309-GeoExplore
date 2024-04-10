@@ -77,12 +77,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     public void onBindViewHolder(@NonNull FeedViewHolder holder, @SuppressLint("RecyclerView") int position) {
        item= items.get(position);
 
-//        if (item.getDepartment() == null || item.getDepartment().isEmpty()) {
-//            holder.department.setVisibility(View.GONE);
-//        } else {
-//            holder.department.setVisibility(View.VISIBLE);
-//            holder.department.setText(item.getDepartment());
-//        }
 
         if (item.getDescription() == null || item.getDescription().isEmpty()) {
             holder.description.setVisibility(View.GONE);
@@ -109,7 +103,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
             }
         });
     }
-
     private void getLocation(FeedViewHolder holder, double ioLatitude, double ioLongitude) {
         Geocoder geocoder = new Geocoder(context, Locale.getDefault());
         try {
@@ -257,8 +250,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         if (message != null && !message.isEmpty()) {
             try {
                 Comment receivedComment = new Gson().fromJson(message, Comment.class);
-//                String actualCommentText = receivedComment.getComment();
-//                 Comment receivedComment1 = new Gson().fromJson(actualCommentText, Comment.class);
 
                 activity.runOnUiThread(() -> {
                     setCommment(receivedComment);

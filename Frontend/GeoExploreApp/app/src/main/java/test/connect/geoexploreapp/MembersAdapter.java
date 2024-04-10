@@ -91,9 +91,9 @@ public class MembersAdapter extends RecyclerView.Adapter<MembersAdapter.ViewHold
                     members.remove(pos);
                     notifyItemRemoved(pos);
                     notifyItemRangeChanged(pos, members.size());
-//                    if (memberCallback != null) {
+
                         memberCallback.onMemberDeleted(userGroup.getId());
-//                    }
+
                 } else {
                     Toast.makeText(context, "Failed to delete member from group.", Toast.LENGTH_SHORT).show();
                     Log.e("deleteMember", "Failed to delete member: " + response.errorBody());

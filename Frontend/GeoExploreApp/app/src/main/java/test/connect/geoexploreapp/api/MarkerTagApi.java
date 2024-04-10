@@ -59,5 +59,4 @@ public interface MarkerTagApi {
     @GET("marker_tags/search/{name}")
     Call<MarkerTag> searchTagByName(@Path("name") String tagName);
 
-
 }

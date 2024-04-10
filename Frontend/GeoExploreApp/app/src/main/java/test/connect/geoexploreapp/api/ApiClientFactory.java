@@ -6,9 +6,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ApiClientFactory {
-
     static Retrofit apiClientSeed = null;
-
     static Retrofit GetApiClientSeed(){
         if(apiClientSeed == null){
 
@@ -20,7 +18,6 @@ public class ApiClientFactory {
         return apiClientSeed;
     }
 
-
     public static ReportMarkerApi getReportMarkerApi(){ return GetApiClientSeed().create(ReportMarkerApi.class);}
     public static EventMarkerApi getEventMarkerApi(){ return GetApiClientSeed().create(EventMarkerApi.class);}
     public static ObservationApi GetObservationApi() { return GetApiClientSeed().create(ObservationApi.class);}
@@ -29,7 +26,6 @@ public class ApiClientFactory {
     }
     public static AlertMarkerApi getAlertMarkerApi(){ return GetApiClientSeed().create(AlertMarkerApi.class);}
     public static MarkerTagApi getMarkerTagApi(){ return GetApiClientSeed().create(MarkerTagApi.class);}
-
     public static UserApi GetUserApi(){return GetApiClientSeed().create(UserApi.class);}
     public static UserGroupApi GetUserGroupApi(){return GetApiClientSeed().create(UserGroupApi.class);}
 

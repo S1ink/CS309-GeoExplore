@@ -236,7 +236,6 @@ public class UserGroupAdapter extends RecyclerView.Adapter<UserGroupAdapter.User
                     Log.d("UserGroupAdapter", "Group deleted successfully");
                     userGroups.remove(position);
                     Toast.makeText(context, "Deleted Successfully ", Toast.LENGTH_SHORT).show();
-
                     notifyDataSetChanged();
                 } else {
                     Log.e("UserGroupAdapter", "Failed to delete group");
@@ -252,13 +251,10 @@ public class UserGroupAdapter extends RecyclerView.Adapter<UserGroupAdapter.User
         });
     }
 
-
     @Override
     public int getItemCount() {
         return userGroups.size();
     }
-
-
 
     @Override
     public void onMemberDeleted(Long groupId) {
@@ -279,7 +275,6 @@ public class UserGroupAdapter extends RecyclerView.Adapter<UserGroupAdapter.User
 
             @Override
             public void onFailure(Call<UserGroup> call, Throwable t) {
-                // Handle failure
             }
         });
 

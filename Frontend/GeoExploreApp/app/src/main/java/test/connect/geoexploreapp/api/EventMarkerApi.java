@@ -36,6 +36,4 @@ public interface EventMarkerApi {
     // crud[L] - Get a list of all the events in the database
     @GET("geomap/events")
     Call<List<EventMarker>> GetAllEventMarker();
-
-
 }

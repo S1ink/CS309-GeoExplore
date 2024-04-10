@@ -71,10 +71,6 @@ public class EventMarker implements FeedItem{
     }
 
 
-//    public void setLocation(String address)  {
-//        this.address = address;
-//    }
-
     @Override
     public List<Comment> getComments() {
         return comments;

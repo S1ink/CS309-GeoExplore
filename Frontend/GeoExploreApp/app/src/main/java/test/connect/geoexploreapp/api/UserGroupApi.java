@@ -44,7 +44,6 @@ public interface UserGroupApi {
 
     @PUT("user/userGroups/{group_id}/{observation_id}")
     Call<String> addObservationToGroupFilter(@Path("group_id") Long group_id, @Path("observation_id") Long observation_id);
-
     @GET("user/usergroup/{group_id}/num")
     Call<Integer> getMemberCount(@Path("group_id") Long group_id);
 
