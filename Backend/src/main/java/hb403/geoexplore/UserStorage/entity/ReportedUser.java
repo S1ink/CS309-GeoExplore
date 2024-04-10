@@ -4,7 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "reported_users")
@@ -21,31 +22,54 @@ public class ReportedUser {
     /*
     Example Json format for post
     {
-    "reportedUserId" : 1
-    "Reason" : "{harrassment, language, etc}"
+    "user_id" : 1,
+    "Harrassment" : true,
+    "Misinformation" : false,
+    "Spamming" : false,
+    "InappropriateContent" : true
     }
      */
 
-
+    @Basic
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)     // probably use UUID after we are done testing
+    @Column(name = "mod_report_id")
+    private Long id;
+
+
     @Getter
     @Setter
     @OneToOne
     @JoinColumn(name = "user_id")
     private User reportedUser;
 
+   // private List<Stringstuff> Reasons = new ArrayList<Stringstuff>();
 
+    //hopefully temporary solution for Reasons
+    @Column
+    private Boolean Harassment;//Harassing/Bullying another user
 
-    //private Set<String> Reasons = new Set<String>() {
+    @Column
+    private Boolean Misinformation;//Provably inaccurate or false information
 
+    @Column
+    private Boolean Spamming;//Repeated Messages much more than necessary
+
+    @Column
+    private Boolean InappropriateContent;//Curse Words, Slurs, or Sexual content
 
     @Getter
     @Setter
-    private int numReports = 0;
+    private int numReports;//however many times that user has been reported
 
 
     //for post, put will just edit the original and resave it
-
+    public ReportedUser(Long userId, Boolean harass, Boolean misInfo, Boolean spam, Boolean inappropriate){
+    this.Harassment = harass;
+    this.Misinformation = misInfo;
+    this.Spamming = spam;
+    this.InappropriateContent = inappropriate;
+    }
 
     public ReportedUser(){} //no arg constructor
 
