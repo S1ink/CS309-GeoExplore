@@ -35,12 +35,11 @@ public class User {
     private String name;
     @Column(name = "email_id")
     private String emailId;
-
     //String[] adminList = {"emessmer@iastate.edu","aditin@iastate.edu" ,"samr888@iastate.edu","yharb@iastate.edu"};
-
-
     private String password;
+    @JsonIgnore
     private String encryptedPassword;
+    @JsonIgnore
     private boolean isAdmin;
 
     /*@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "posts")
@@ -54,6 +53,7 @@ public class User {
 
     @Getter
     @Setter
+    @JsonIgnore
     @OneToMany(mappedBy = "pertainsUser", fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE })
     private List<CommentEntity> Comments;
 

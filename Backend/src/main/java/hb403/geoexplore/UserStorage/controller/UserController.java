@@ -6,6 +6,7 @@ import hb403.geoexplore.UserStorage.repository.UserRepository;
 
 import java.util.*;
 
+import hb403.geoexplore.comments.Entity.CommentEntity;
 import io.swagger.v3.oas.annotations.Operation;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,8 +52,9 @@ public class UserController {
     @PutMapping(path = "/user/{id}/update")
     public @ResponseBody User updateUser(@PathVariable Long id, @RequestBody User updated){
         if(id != null && updated != null) {
-            userRepository.deleteById(id);
+            User original = userRepository.findById(id).get();
             User updater = new User(id, updated.getName(), updated.getEmailId(), updated.getPassword());
+            updater.setComments(original.getComments());
             userRepository.save(updater);
             return updater;
         }
