@@ -1,5 +1,6 @@
 package hb403.geoexplore.UserStorage.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,7 +23,7 @@ public class ReportedUser {
     /*
     Example Json format for post
     {
-    "user_id" : 1,
+    "reported_user_id" : 1,
     "Harrassment" : true,
     "Misinformation" : false,
     "Spamming" : false,
@@ -37,8 +38,12 @@ public class ReportedUser {
     private Long id;
 
 
+    @Column(name = "reported_user_id")
+    private Long reportedUserId;
+
     @Getter
     @Setter
+    @JsonIgnore
     @OneToOne
     @JoinColumn(name = "user_id")
     private User reportedUser;
@@ -65,10 +70,13 @@ public class ReportedUser {
 
     //for post, put will just edit the original and resave it
     public ReportedUser(Long userId, Boolean harass, Boolean misInfo, Boolean spam, Boolean inappropriate){
-    this.Harassment = harass;
-    this.Misinformation = misInfo;
-    this.Spamming = spam;
-    this.InappropriateContent = inappropriate;
+
+        this.reportedUserId = userId;
+        this.Harassment = harass;
+        this.Misinformation = misInfo;
+        this.Spamming = spam;
+        this.InappropriateContent = inappropriate;
+
     }
 
     public ReportedUser(){} //no arg constructor
