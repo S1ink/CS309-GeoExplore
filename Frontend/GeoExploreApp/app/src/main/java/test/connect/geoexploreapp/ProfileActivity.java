@@ -32,18 +32,8 @@ import test.connect.geoexploreapp.model.User;
  * create an instance of this fragment.
  */
 public class ProfileActivity extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
     private static Bundle args;
-    private String mParam2;
     private static User user;
-
 
     public ProfileActivity() {
         // Required empty public constructor
@@ -62,8 +52,8 @@ public class ProfileActivity extends Fragment {
         super.onCreate(savedInstanceState);
 
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+//            mParam1 = getArguments().getString(ARG_PARAM1);
+//            mParam2 = getArguments().getString(ARG_PARAM2);
         }
     }
 
