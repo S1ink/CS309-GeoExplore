@@ -15,6 +15,7 @@
         android:padding="8dp"
         android:background="?attr/colorPrimary"
         app:title="User Groups"
+        app:titleTextAppearance="@style/ToolbarTitleStyle"
         app:titleTextColor="@android:color/white"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
 
@@ -25,6 +26,7 @@
             android:layout_gravity="end"
             android:layout_marginEnd="16dp"
             android:text="Search"
+
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/baseline_search_24"
             app:tint="@android:color/white"/>
