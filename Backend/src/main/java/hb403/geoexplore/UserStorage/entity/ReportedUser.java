@@ -65,6 +65,7 @@ public class ReportedUser {
 
     @Getter
     @Setter
+    @JsonIgnore
     private int numReports;//however many times that user has been reported
 
 

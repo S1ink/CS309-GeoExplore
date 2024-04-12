@@ -1,6 +1,7 @@
 package hb403.geoexplore.UserStorage.controller;
 
 import hb403.geoexplore.UserStorage.entity.ReportedUser;
+import hb403.geoexplore.UserStorage.entity.User;
 import hb403.geoexplore.UserStorage.repository.ReportedUserRepository;
 import hb403.geoexplore.UserStorage.repository.UserRepository;
 import hb403.geoexplore.comments.Entity.CommentEntity;
@@ -19,12 +20,7 @@ public class ReportedUserController {
     @Autowired
     UserRepository userRepository;
 
-    /**Todo
-     * Make Update
-     * Make Delete
-     * Set it up so that a ban can be issued for a period of time
-     * Set date and time up for comments
-     */
+    
 
     //c of crudl
     @Operation(summary = "Add a new report of a user to the database")
@@ -44,7 +40,11 @@ public class ReportedUserController {
                     reportedUserRepository.save(report);
                 }
             });
+            newUser.setReportedUser(userRepository.findById(newUser.getReportedUserId()).get());
+            User temp = userRepository.findById(newUser.getReportedUserId()).get();
+            temp.setUser(newUser);
             reportedUserRepository.save(newUser);
+            userRepository.save(temp);
             return newUser;
         }
         return newUser;
@@ -114,9 +114,9 @@ public class ReportedUserController {
         }
         try {
             ReportedUser temp = reportedUserRepository.findById(updated.getId()).get();
-            if(updated.getReportedUserId() == null){
-
-            }
+            updated.setReportedUser(temp.getReportedUser());
+            updated.setNumReports(temp.getNumReports());
+            reportedUserRepository.save(updated);
         }
         catch (Exception e){
             throw e;
@@ -124,4 +124,40 @@ public class ReportedUserController {
         return null;
     }
 
+    @Operation(summary = "deletes report but not user uses id of report not of user, basically if a user is innocent")
+    @DeleteMapping(path = "user/report/deletereport/{id}")
+    public @ResponseBody String deleteUserReport(@PathVariable Long id){
+        try{
+            ReportedUser temp_report =  reportedUserRepository.findById(id).get();
+            User temp_user = userRepository.findById(temp_report.getReportedUserId()).get();
+            temp_user.setUser(null);
+            temp_report.setReportedUser(null);
+            System.out.println("Nullifys connection in order to not delete the user");
+            reportedUserRepository.deleteById(id);
+        }catch (Exception e){
+            throw e;
+        }
+        return "Success";
+    }
+
+    @Operation(summary = "deletes report and user uses id of report not of user, basically if a user is guilty or has been reported enough times")
+    @DeleteMapping(path = "user/report/delete/{id}")
+    public @ResponseBody String deleteUser(@PathVariable Long id){
+        try{
+            User temp = userRepository.findById(reportedUserRepository.findById(id).get().getReportedUserId()).get();
+            reportedUserRepository.deleteById(id);
+            if (userRepository.findById(temp.getId()).isPresent()){
+                userRepository.delete(temp);
+            }
+        }catch (Exception e){
+            throw e;
+        }
+        return "Success, hopefully";
+    }
+
+    @Operation(summary = "Lists all userReports")
+    @GetMapping(path = "user/report/list")
+    public @ResponseBody List<ReportedUser> ListOfReports(){
+        return reportedUserRepository.findAll();
+    }
 }
