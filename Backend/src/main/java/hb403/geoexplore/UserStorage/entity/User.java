@@ -39,7 +39,7 @@ public class User {
     private String password;
     @JsonIgnore
     private String encryptedPassword;
-    @JsonIgnore
+    
     private boolean isAdmin;
 
     /*@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "posts")
