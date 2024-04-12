@@ -29,6 +29,10 @@ public class ApiClientFactory {
     public static UserApi GetUserApi(){return GetApiClientSeed().create(UserApi.class);}
     public static UserGroupApi GetUserGroupApi(){return GetApiClientSeed().create(UserGroupApi.class);}
 
+    public static ReportedUserApi GetReportedUserApi(){
+        return GetApiClientSeed().create(ReportedUserApi.class);
+    }
+
 
 
 

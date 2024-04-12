@@ -53,6 +53,14 @@
                 android:src="@drawable/baseline_delete_24"
                 app:tint="@color/red" />
 
+            <ImageButton
+                android:id="@+id/commentReport"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:background="?android:attr/selectableItemBackground"
+                android:src="@drawable/baseline_report_24"
+                app:tint="@color/design_default_color_primary_dark" />
+
         </LinearLayout>
 
 
