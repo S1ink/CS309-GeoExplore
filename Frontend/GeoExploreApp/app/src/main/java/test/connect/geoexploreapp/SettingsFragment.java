@@ -25,21 +25,19 @@ import test.connect.geoexploreapp.model.UserGroup;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link SettingsActivity#newInstance} factory method to
+ * Use the {@link SettingsFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class SettingsActivity extends Fragment {
+public class SettingsFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
 
-    public SettingsActivity() {
+    public SettingsFragment() {
         // Required empty public constructor
     }
 
@@ -52,8 +50,8 @@ public class SettingsActivity extends Fragment {
      * @return A new instance of fragment SettingsActivity.
      */
     // TODO: Rename and change types and number of parameters
-    public static SettingsActivity newInstance(boolean isAdmin) {
-        SettingsActivity fragment = new SettingsActivity();
+    public static SettingsFragment newInstance(boolean isAdmin) {
+        SettingsFragment fragment = new SettingsFragment();
         Bundle args = new Bundle();
         args.putBoolean("IsAdmin", isAdmin); // get user admin status
         fragment.setArguments(args);
@@ -73,7 +71,7 @@ public class SettingsActivity extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.activity_settings, container, false);
+        View view = inflater.inflate(R.layout.fragment_settings, container, false);
 
         Bundle args = getArguments();
 

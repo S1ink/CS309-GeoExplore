@@ -1,11 +1,5 @@
 package test.connect.geoexploreapp;
 
-import static android.content.Context.MODE_PRIVATE;
-
-import static test.connect.geoexploreapp.api.ApiClientFactory.GetUserApi;
-
-import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AlertDialog;
@@ -15,23 +9,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
-
-import com.google.gson.Gson;
-
-import java.util.List;
-
-import test.connect.geoexploreapp.api.SlimCallback;
-import test.connect.geoexploreapp.model.User;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link ProfileActivity#newInstance} factory method to
+ * Use the {@link ProfileFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class ProfileActivity extends Fragment {
+public class ProfileFragment extends Fragment {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -42,12 +27,12 @@ public class ProfileActivity extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    public ProfileActivity() {
+    public ProfileFragment() {
         // Required empty public constructor
     }
 
-    public static ProfileActivity newInstance(String userName, String userEmail, boolean isAdmin) {
-        ProfileActivity fragment = new ProfileActivity();
+    public static ProfileFragment newInstance(String userName, String userEmail, boolean isAdmin) {
+        ProfileFragment fragment = new ProfileFragment();
         Bundle args = new Bundle();
         args.putString("UserName", userName);
         args.putString("UserEmail", userEmail);
@@ -73,7 +58,7 @@ public class ProfileActivity extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
 
-        View view = inflater.inflate(R.layout.activity_profile, container, false);
+        View view = inflater.inflate(R.layout.fragment_profile, container, false);
         Bundle args = getArguments();
         if (args != null) {
             String userName = args.getString("UserName", "N/A"); // Default value as "N/A"
