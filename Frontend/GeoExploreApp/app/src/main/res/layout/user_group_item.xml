@@ -41,6 +41,8 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="156dp"
             android:text="Join"
+            android:background="@drawable/edittext_bkg"
+
             app:layout_constraintBottom_toBottomOf="@+id/memberViewCount"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.983"

@@ -8,13 +8,15 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:ignore="MissingConstraints">
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            >
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -35,18 +37,11 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent">
 
-                        <ImageView
-                            android:id="@+id/imageView7"
-                            android:layout_width="32dp"
-                            android:layout_height="35dp"
-                            app:srcCompat="@drawable/baseline_star_24"
-                            tools:layout_editor_absoluteX="269dp"
-                            tools:layout_editor_absoluteY="173dp"
-                            tools:ignore="MissingConstraints" />
+
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
                     <ImageView
-                        android:id="@+id/imageView2"
+                        android:id="@+id/profileImage"
                         android:layout_width="196dp"
                         android:layout_height="172dp"
                         android:layout_marginTop="32dp"
@@ -54,14 +49,23 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
                         tools:srcCompat="@drawable/profile_pic_placeholder" />
-
                     <ImageView
+                        android:id="@+id/star"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/baseline_star_24"
+                        app:layout_constraintBottom_toBottomOf="@id/profileImage"
+                        app:layout_constraintEnd_toStartOf="@id/profileImage"
+                        app:layout_constraintHorizontal_bias="0.9"
+                        app:layout_constraintVertical_bias="0.0" />
+
+                     <ImageView
                         android:id="@+id/imageView3"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="683dp"
                         android:scaleType="fitStart"
-                        tools:srcCompat="@drawable/circles"
-                        tools:ignore="MissingConstraints" />
+                        tools:ignore="MissingConstraints"
+                        tools:srcCompat="@drawable/circles" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -188,7 +192,7 @@
                             <TextView
                                 android:id="@+id/password"
                                 android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
+                                android:layout_height="24dp"
                                 android:layout_weight="1"
                                 android:text="********"
                                 android:textAlignment="viewEnd"
