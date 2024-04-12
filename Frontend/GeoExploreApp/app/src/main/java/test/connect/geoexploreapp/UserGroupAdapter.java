@@ -173,7 +173,7 @@ public class UserGroupAdapter extends RecyclerView.Adapter<UserGroupAdapter.User
                     Log.d("UserGroupAdapter", "Group updated successfully");
                     Toast.makeText(context, "Updated Correctly", Toast.LENGTH_SHORT).show();
                 } else {
-                    Log.e("UserGroupAdapter", "Failed to update group");
+                    Log.e("UserGroupAdapter", "Failed to update group" + response.body());
                 }
             }
 
@@ -195,11 +195,12 @@ public class UserGroupAdapter extends RecyclerView.Adapter<UserGroupAdapter.User
             public void onResponse(Call<UserGroup> call, Response<UserGroup> response) {
                 if (response.isSuccessful()) {
                     UserGroup updatedGroup = response.body();
-                    updatedGroup.getMembers().add(user);
+                    userGroups.set(position, updatedGroup);
+                    notifyItemChanged(position);
+                    //updatedGroup.getMembers().add(user);
                     int newMemberCount = updatedGroup.getMembers().size();
                     holder.memberViewCount.setText("Members: " + newMemberCount); // Update the UI optimistically
 
-                    userGroups.set(position, updatedGroup);
                     Toast.makeText(context, "Updated Correctly", Toast.LENGTH_SHORT).show();
 
                     notifyItemChanged(position);
