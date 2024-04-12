@@ -6,15 +6,13 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:gravity="center_horizontal"
-    tools:context=".SettingsActivity">
+    android:gravity="center_horizontal">
 
     <TextView
         android:id="@+id/textViewSettingsHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Settings"
-        android:textSize="36sp"
         android:layout_marginTop="30dp"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:layout_gravity="center"/>
