@@ -88,7 +88,7 @@ public class MarkerTagManagementFragment extends Fragment {
 
         Button backButton = view.findViewById(R.id.markerTagBackButton);
         Button newTagBtn = view.findViewById(R.id.newTagBtn);
-        listView = view.findViewById(R.id.alertlistView);
+        listView = view.findViewById(R.id.tagListView);
 
         backButton.setOnClickListener(v -> getParentFragmentManager().popBackStack());
         newTagBtn.setOnClickListener(v -> showNewTagDialog());

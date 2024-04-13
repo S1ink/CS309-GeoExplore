@@ -81,27 +81,15 @@ public class SettingsFragment extends Fragment {
             isAdmin = args.getBoolean("IsAdmin",false);
             Log.d("SettingsActivity", "isAdmin: " + isAdmin);
 
-            Button btnSendEmergency = view.findViewById(R.id.sendEmergencyButton);
             Button btnEmergencyDashboard = view.findViewById(R.id.emergencyDashButton);
             Button btnMarkerTagManagement = view.findViewById(R.id.markerTagMngmtBtn);
             Button btnCreateUserGroup = view.findViewById(R.id.createUserGroupButton);
 
             if (isAdmin) {
-                btnSendEmergency.setVisibility(View.VISIBLE);
                 btnEmergencyDashboard.setVisibility(View.VISIBLE);
                 btnMarkerTagManagement.setVisibility(View.VISIBLE);
                 btnCreateUserGroup.setVisibility(View.VISIBLE);
-                btnSendEmergency.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        Fragment emergencySendFragment = new EmergencySendFragment();
-                        FragmentManager fragmentManager = getParentFragmentManager();
-                        FragmentTransaction transaction = fragmentManager.beginTransaction();
-                        transaction.replace(R.id.frame, emergencySendFragment);
-                        transaction.addToBackStack(null);
-                        transaction.commit();
-                    }
-                });
+
 
                 btnEmergencyDashboard.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -127,7 +115,6 @@ public class SettingsFragment extends Fragment {
                     }
                 });
             } else {
-                btnSendEmergency.setVisibility(View.GONE);
                 btnEmergencyDashboard.setVisibility(View.GONE);
             }
 
