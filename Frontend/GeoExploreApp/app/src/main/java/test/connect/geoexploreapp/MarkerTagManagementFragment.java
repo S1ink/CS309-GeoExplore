@@ -1,12 +1,17 @@
 package test.connect.geoexploreapp;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -82,66 +87,68 @@ public class MarkerTagManagementFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_marker_tag_management, container, false);
 
         Button backButton = view.findViewById(R.id.markerTagBackButton);
-        tagIdEditText = view.findViewById(R.id.tagIdEditText);
-        tagNameEditText = view.findViewById(R.id.tagNameEditText);
+        Button newTagBtn = view.findViewById(R.id.newTagBtn);
         listView = view.findViewById(R.id.alertlistView);
 
         backButton.setOnClickListener(v -> getParentFragmentManager().popBackStack());
+        newTagBtn.setOnClickListener(v -> showNewTagDialog());
+
+        getAllTags();
 
 
-        ArrayList<String> list = new ArrayList<>();
-
-
-
-
-
-
-        String[] operations = new String[]{"Create", "Read", "Update", "Delete", "List"};
-        Spinner tagOperationSpinner = view.findViewById(R.id.tagOperationSpinner);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, operations);
-        tagOperationSpinner.setAdapter(adapter);
-
-
-        Button confirmOperationBtn = view.findViewById(R.id.confirmOperationBtn);
-        confirmOperationBtn.setOnClickListener(v -> {
-            String selectedOperation = tagOperationSpinner.getSelectedItem().toString();
-            switch (selectedOperation) {
-                case "Create":
-                    createTag();
-                    break;
-                case "Read":
-                    displayTagByID();
-                    break;
-                case "Update":
-                    updateTagByID();
-                    break;
-                case "Delete":
-                    deleteTagByID();
-                    break;
-                case "List":
-                    getAllTags();
-                    break;
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                MarkerTag selectedTag = (MarkerTag) parent.getItemAtPosition(position);
+                showTagDetailFragment(selectedTag);
             }
         });
-
-
-
         return view;
     }
 
 
+    private void showNewTagDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("New Tag");
 
-    private ArrayList<MarkerTag> getAllTags() {
-        MarkerTagApi markerTagApi = ApiClientFactory.getMarkerTagApi();
-        ArrayList<MarkerTag> markerTagArrayList = new ArrayList<>();
+        final EditText input = new EditText(getContext());
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
 
-        markerTagApi.getAllMarkerTags().enqueue(new SlimCallback<>(markerTags -> {
-            for (MarkerTag markerTag : markerTags) {
-                markerTagArrayList.add(markerTag);
+        builder.setPositiveButton("OK", (dialog, which) -> {
+            String tagName = input.getText().toString().trim();
+            if (!tagName.isEmpty()) {
+                createTag(tagName);
+            } else {
+                Toast.makeText(getContext(), "Tag name cannot be empty", Toast.LENGTH_SHORT).show();
             }
-        }, "GetAllTags"));
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
 
-        return markerTagArrayList;
+        builder.show();
+    }
+
+
+
+
+    private void showTagDetailFragment(MarkerTag markerTag) {
+        FragmentManager fragmentManager = getParentFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        MarkerTagDetailedViewFragment detailFragment = MarkerTagDetailedViewFragment.newInstance(markerTag);
+        fragmentTransaction.replace(R.id.frame, detailFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+
+
+
+    private void getAllTags() {
+        MarkerTagApi markerTagApi = ApiClientFactory.getMarkerTagApi();
+        markerTagApi.getAllMarkerTags().enqueue(new SlimCallback<>(markerTags -> {
+            ArrayAdapter<MarkerTag> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, markerTags);
+            listView.setAdapter(adapter);
+        }, "GetAllTags"));
     }
 
     private void displayTagByID() {
@@ -230,8 +237,7 @@ public class MarkerTagManagementFragment extends Fragment {
         }
     }
 
-    private void createTag() {
-        String tagName = tagNameEditText.getText().toString().trim();
+    private void createTag(String tagName) {
 
         if (!tagName.isEmpty()) {
             MarkerTagApi markerTagApi = ApiClientFactory.getMarkerTagApi();
@@ -246,6 +252,7 @@ public class MarkerTagManagementFragment extends Fragment {
                         String successMessage = "Tag created successfully with ID: " + createdTag.getId();
                         tagInfoTextView.setText(successMessage);
                         Toast.makeText(getActivity(), successMessage, Toast.LENGTH_SHORT).show();
+                        getAllTags();
                     } else {
                         Toast.makeText(getActivity(), "Failed to create tag", Toast.LENGTH_SHORT).show();
                     }
