@@ -4,26 +4,25 @@ import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
-import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.PopupMenu;
+import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import test.connect.geoexploreapp.api.AlertMarkerApi;
 import test.connect.geoexploreapp.api.ApiClientFactory;
 import test.connect.geoexploreapp.api.MarkerTagApi;
 import test.connect.geoexploreapp.api.SlimCallback;
-import test.connect.geoexploreapp.model.AlertMarker;
 import test.connect.geoexploreapp.model.MarkerTag;
 
 /**
@@ -43,6 +42,7 @@ public class MarkerTagManagementFragment extends Fragment {
     private String mParam2;
     private TextView tagInfoTextView;
     private EditText tagIdEditText, tagNameEditText;
+    private ListView listView;
 
     public MarkerTagManagementFragment() {
         // Required empty public constructor
@@ -81,15 +81,19 @@ public class MarkerTagManagementFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_marker_tag_management, container, false);
 
-        Button backButton = view.findViewById(R.id.backButton);
+        Button backButton = view.findViewById(R.id.markerTagBackButton);
         tagIdEditText = view.findViewById(R.id.tagIdEditText);
-        tagInfoTextView = view.findViewById(R.id.tagInfoTextView);
         tagNameEditText = view.findViewById(R.id.tagNameEditText);
-
-        tagInfoTextView.setMovementMethod(new ScrollingMovementMethod());
-
+        listView = view.findViewById(R.id.alertlistView);
 
         backButton.setOnClickListener(v -> getParentFragmentManager().popBackStack());
+
+
+        ArrayList<String> list = new ArrayList<>();
+
+
+
+
 
 
         String[] operations = new String[]{"Create", "Read", "Update", "Delete", "List"};
@@ -115,7 +119,7 @@ public class MarkerTagManagementFragment extends Fragment {
                     deleteTagByID();
                     break;
                 case "List":
-                    displayAllTags();
+                    getAllTags();
                     break;
             }
         });
@@ -127,18 +131,17 @@ public class MarkerTagManagementFragment extends Fragment {
 
 
 
-    private void displayAllTags() {
+    private ArrayList<MarkerTag> getAllTags() {
         MarkerTagApi markerTagApi = ApiClientFactory.getMarkerTagApi();
+        ArrayList<MarkerTag> markerTagArrayList = new ArrayList<>();
 
         markerTagApi.getAllMarkerTags().enqueue(new SlimCallback<>(markerTags -> {
-            StringBuilder tagInfo = new StringBuilder();
             for (MarkerTag markerTag : markerTags) {
-                tagInfo.append("ID: ").append(markerTag.getId()).append(", Name: ").append(markerTag.getName()).append("\n");
-            }
-            if (getActivity() != null) {
-                getActivity().runOnUiThread(() -> tagInfoTextView.setText(tagInfo.toString()));
+                markerTagArrayList.add(markerTag);
             }
         }, "GetAllTags"));
+
+        return markerTagArrayList;
     }
 
     private void displayTagByID() {
