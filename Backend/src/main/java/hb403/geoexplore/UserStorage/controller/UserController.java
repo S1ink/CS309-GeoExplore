@@ -77,14 +77,6 @@ public class UserController {
         return null;
     }
 
-    // Delete all
-    @Operation(summary = "Delete all the users in the database")
-    @DeleteMapping(path = "user/delete/all")
-    public @ResponseBody String deleteAll(){
-        userRepository.deleteAll();
-        return "Successfully deleted all users";
-    }
-
 
 
     //L of Crudl
