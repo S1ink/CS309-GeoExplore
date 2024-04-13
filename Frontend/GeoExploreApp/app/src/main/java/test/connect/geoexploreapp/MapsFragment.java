@@ -69,7 +69,7 @@ import test.connect.geoexploreapp.model.User;
 import test.connect.geoexploreapp.websocket.WebSocketListener;
 import test.connect.geoexploreapp.websocket.WebSocketManager;
 
-public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSocketListener {
+public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSocketListener {
 
     private GoogleMap mMap;
     private boolean isUpdateReportMode = false;
@@ -85,7 +85,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
     private TextView observationUpdateTextView;
     private User loggedInUser;
 
-    public MapsActivity() {
+    public MapsFragment() {
 
     }
 
@@ -93,7 +93,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        View view = inflater.inflate(R.layout.activity_maps, container, false);
+        View view = inflater.inflate(R.layout.fragment_maps, container, false);
 
 //        WebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/live/alerts/9"); // CHANGE URL FOR WEBSOCKET
         WebSocketManager.getInstance().setWebSocketListener(this);

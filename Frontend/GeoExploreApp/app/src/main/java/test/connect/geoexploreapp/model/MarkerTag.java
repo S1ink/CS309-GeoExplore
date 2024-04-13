@@ -1,6 +1,8 @@
 package test.connect.geoexploreapp.model;
 
-public class MarkerTag {
+import java.io.Serializable;
+
+public class MarkerTag implements Serializable {
     private long id;
     private String name;
 
@@ -17,5 +19,9 @@ public class MarkerTag {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String toString() {
+        return name;
     }
 }
