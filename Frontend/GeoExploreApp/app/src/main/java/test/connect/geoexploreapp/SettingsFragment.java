@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -81,9 +82,9 @@ public class SettingsFragment extends Fragment {
             isAdmin = args.getBoolean("IsAdmin",false);
             Log.d("SettingsActivity", "isAdmin: " + isAdmin);
 
-            Button btnEmergencyDashboard = view.findViewById(R.id.emergencyDashButton);
-            Button btnMarkerTagManagement = view.findViewById(R.id.markerTagMngmtBtn);
-            Button btnCreateUserGroup = view.findViewById(R.id.createUserGroupButton);
+            FrameLayout btnEmergencyDashboard = view.findViewById(R.id.emergencyDashButton);
+            FrameLayout btnMarkerTagManagement = view.findViewById(R.id.markerTagMngmtBtn);
+            FrameLayout btnCreateUserGroup = view.findViewById(R.id.createUserGroupButton);
 
             if (isAdmin) {
                 btnEmergencyDashboard.setVisibility(View.VISIBLE);
