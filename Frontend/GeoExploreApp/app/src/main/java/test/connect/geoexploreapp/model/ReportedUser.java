@@ -5,7 +5,6 @@ public class ReportedUser {
     private Long reportedUserId;
     private User reportedUser;
     private Boolean Harassment;
-
     private Boolean Misinformation;
     private Boolean Spamming;
     private Boolean InappropriateContent;

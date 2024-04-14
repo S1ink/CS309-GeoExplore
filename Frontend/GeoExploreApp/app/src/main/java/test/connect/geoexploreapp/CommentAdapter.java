@@ -123,12 +123,10 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
             public void onClick(DialogInterface dialog, int which) {
                 ReportedUser reportedUser = new ReportedUser();
                 reportedUser.setReportedUserId(comment.getUserId());
-                reportedUser.setReportedUser(commentUser);
                 reportedUser.setHarassment(harassmentCheck.isChecked());
                 reportedUser.setSpamming(spammingCheck.isChecked());
                 reportedUser.setMisinformation(missingInformationCheck.isChecked());
                 reportedUser.setInappropriateContent(inappropriateContentCheck.isChecked());
-                reportedUser.setNumReports(0);
                 createReport(context,reportedUser);
             }
         });
@@ -145,7 +143,6 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
 
 
     private void createReport(Context context, ReportedUser reportedUser) {
-        Log.e("CommentAdapter", "Ftest report: " + reportedUser.getHarassment()+reportedUser.getInappropriateContent()+reportedUser.getMisinformation()+reportedUser.getSpamming()+reportedUser.getReportedUser().getName()+reportedUser.getReportedUserId());
 
         ReportedUserApi reportedUserApi = ApiClientFactory.GetReportedUserApi();
         reportedUserApi.ReportUser(reportedUser).enqueue(new Callback<ReportedUser>() {
@@ -156,12 +153,12 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
                     String successMessage = "Report created successfully with ID: " + reportedUser.getId();
                     Toast.makeText(context, successMessage, Toast.LENGTH_SHORT).show();
                 } else {
+
                     try {
                         Log.e("ReportUser", "Failed to create report: " + response.code() + " - " + response.errorBody().string());
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
-                    Toast.makeText(context, "Failed to create report: " + response.code() , Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -183,7 +180,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
                     holder.commentUser.setTag(user);
                     Log.d("getting a user",  "got  user");
                 } else{
-                    holder.commentUser.setText("Anonymous");  // Default text if user not found
+                    holder.commentUser.setText("Anonymous");
 
                     Log.d("getting a user",  "Failed to get user");
                 }

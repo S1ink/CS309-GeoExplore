@@ -80,11 +80,13 @@ public class FeedActivity extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        getFeedItems();
         viewAllCommentsButton=view.findViewById(R.id.viewAllComments);
         searchComment=view.findViewById(R.id.searchComment);
         if (getArguments() != null) {
             user = (User) getArguments().getSerializable("UserObject");
         }
+
         if(user.getIsAdmin()){
             viewAllCommentsButton.setVisibility(View.VISIBLE);
             searchComment.setVisibility(View.VISIBLE);
@@ -111,7 +113,7 @@ public class FeedActivity extends Fragment {
 
 
 
-        getFeedItems();
+//        getFeedItems();
     }
 
     private void searchCommentPrompt() {

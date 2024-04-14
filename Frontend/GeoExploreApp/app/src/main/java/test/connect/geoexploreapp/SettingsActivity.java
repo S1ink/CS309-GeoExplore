@@ -139,16 +139,13 @@ public class SettingsActivity extends Fragment {
                 });
 
                 btnReportedUsers.setOnClickListener(new View.OnClickListener(){
-
                     @Override
                     public void onClick(View v) {
-                        Fragment reportedUsersFragment = new ReportedUsersFragment();
+                        ReportedUserActivity reportedUserActivity = ReportedUserActivity.newInstance();
                         FragmentManager fragmentManager = getParentFragmentManager();
-                        FragmentTransaction transaction = fragmentManager.beginTransaction();
-                        transaction.replace(R.id.frame, reportedUsersFragment);
-                        transaction.addToBackStack(null);
-                        transaction.commit();
-
+                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                        fragmentTransaction.replace(R.id.frame,reportedUserActivity);
+                        fragmentTransaction.commit();
 
                     }
                 });

@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -53,7 +52,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     private Button sendCommentButton;
     private Button cancelCommentButton;
     private User user;
-    private  FeedItem item;
+    private  FeedItem feedItem;
     private Context context;
     private CommentAdapter commentAdapter;
 
@@ -75,24 +74,23 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull FeedViewHolder holder, @SuppressLint("RecyclerView") int position) {
-       item= items.get(position);
+       feedItem = items.get(position);
 
-
-        if (item.getDescription() == null || item.getDescription().isEmpty()) {
+        if (feedItem.getDescription() == null || feedItem.getDescription().isEmpty()) {
             holder.description.setVisibility(View.GONE);
         } else {
             holder.description.setVisibility(View.VISIBLE);
-            holder.description.setText(item.getDescription());
+            holder.description.setText(feedItem.getDescription());
         }
 
-        holder.title.setText(item.getTitle());
-        holder.type.setText(item.getType());
-        holder.date.setText(item.getTime_created().toString());
-        getLocation(holder, item.getIo_latitude(),  item.getIo_longitude());
+        holder.title.setText(feedItem.getTitle());
+        holder.type.setText(feedItem.getType());
+        holder.date.setText(feedItem.getTime_created().toString());
+        getLocation(holder, feedItem.getIo_latitude(),  feedItem.getIo_longitude());
 
         holder.commentsRecyclerView.setLayoutManager(new LinearLayoutManager(holder.itemView.getContext()));
 
-        List<Comment> commentsForThisItem = item.getComments();
+        List<Comment> commentsForThisItem = feedItem.getComments();
         CommentAdapter commentAdapter = new CommentAdapter(commentsForThisItem, user, this, true);
         holder.commentsRecyclerView.setAdapter(commentAdapter);
         holder.commentButton.setOnClickListener(new View.OnClickListener() {
