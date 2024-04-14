@@ -9,8 +9,6 @@ import androidx.lifecycle.ViewModelProvider;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.google.gson.Gson;
-
 import test.connect.geoexploreapp.databinding.ActivityMainBinding;
 import test.connect.geoexploreapp.model.User;
 import test.connect.geoexploreapp.websocket.WebSocketManager;
@@ -55,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
                 FeedActivity feedActivity = FeedActivity.newInstance(user);
                 replaceFragment(feedActivity);
             } else if (itemId == R.id.settings) {
-                SettingsActivity settingsFragment = SettingsActivity.newInstance(user.getIsAdmin());
+                SettingsFragment settingsFragment = SettingsFragment.newInstance(user.getIsAdmin());
                 replaceFragment(settingsFragment);
             }else if(itemId == R.id.usergroups){
                 UserGroupActivity userGroupsFragment = UserGroupActivity.newInstance(user);
