@@ -93,7 +93,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         holder.commentsRecyclerView.setLayoutManager(new LinearLayoutManager(holder.itemView.getContext()));
 
         List<Comment> commentsForThisItem = item.getComments();
-        CommentAdapter commentAdapter = new CommentAdapter(commentsForThisItem, user, this);
+        CommentAdapter commentAdapter = new CommentAdapter(commentsForThisItem, user, this, true);
         holder.commentsRecyclerView.setAdapter(commentAdapter);
         holder.commentButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -282,44 +282,44 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         Log.e("WebSocket Error", ex.toString());
     }
 
-    @Override
-    public void onDeleteComment(Long commentId, int position) {
-        CommentApi commentApi = ApiClientFactory.GetCommentApi();
-        Log.d("checkkk",commentId.toString());
-       // Toast.makeText(context, "Fai delete comment", Toast.LENGTH_SHORT).show();
-
-        commentApi.deleteComment(commentId).enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-              //  JsonReader.setLenient(true);
-                Log.d("DeleteComment",  response.body().toString());
-
-                if (response.isSuccessful()) {
-                    ResponseBody responseMessage = response.body(); 
-
-                    Log.d("DeleteComment", "Successfully deleted comment: " + response.body());
-                    for (FeedItem item : items) {
-                        List<Comment> comments = item.getComments();
-                        if (comments.removeIf(comment -> comment.getId().equals(commentId))) {
-                            notifyDataSetChanged();
-                            Toast.makeText(context, "Comment deleted successfully", Toast.LENGTH_SHORT).show();
-                            break;
-                        }
-                    }
-                } else {
-                    Toast.makeText(context, "Failed to delete comment", Toast.LENGTH_SHORT).show();
-
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Toast.makeText(context, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                Log.d("DeleteComment", "failedt: " + t.getMessage());
-
-            }
-        });
-    }
+//    @Override
+//    public void onDeleteComment(Long commentId, int position) {
+//        CommentApi commentApi = ApiClientFactory.GetCommentApi();
+//        Log.d("checkkk",commentId.toString());
+//       // Toast.makeText(context, "Fai delete comment", Toast.LENGTH_SHORT).show();
+//
+//        commentApi.deleteComment(commentId).enqueue(new Callback<ResponseBody>() {
+//            @Override
+//            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+//              //  JsonReader.setLenient(true);
+//                Log.d("DeleteComment",  response.body().toString());
+//
+//                if (response.isSuccessful()) {
+//                    ResponseBody responseMessage = response.body();
+//
+//                    Log.d("DeleteComment", "Successfully deleted comment: " + responseMessage.toString());
+//                    for (FeedItem item : items) {
+//                        List<Comment> comments = item.getComments();
+//                        if (comments.removeIf(comment -> comment.getId().equals(commentId))) {
+//                            notifyDataSetChanged();
+//                            Toast.makeText(context, "Comment deleted successfully", Toast.LENGTH_SHORT).show();
+//                            break;
+//                        }
+//                    }
+//                } else {
+//                    Toast.makeText(context, "Failed to delete comment", Toast.LENGTH_SHORT).show();
+//
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<ResponseBody> call, Throwable t) {
+//                Toast.makeText(context, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+//                Log.d("DeleteComment", "failedt: " + t.getMessage());
+//
+//            }
+//        });
+//    }
 
     @Override
     public void onEditComment(Comment updatedComment, String newCommentText, int position) {

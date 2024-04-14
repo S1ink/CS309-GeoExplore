@@ -215,8 +215,7 @@ public class FeedActivity extends Fragment {
         RecyclerView commentsRecyclerView = popupView.findViewById(R.id.commentsRecyclerView);
         commentsRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        CommentActionListener commentActionListener = null;
-        CommentAdapter adapter = new CommentAdapter(allComments, user, commentActionListener);
+        CommentAdapter adapter = new CommentAdapter(allComments, user, null, false);
         commentsRecyclerView.setAdapter(adapter);
 
         builder.setView(popupView)

@@ -19,15 +19,19 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.io.IOException;
 import java.util.List;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import test.connect.geoexploreapp.api.ApiClientFactory;
+import test.connect.geoexploreapp.api.CommentApi;
 import test.connect.geoexploreapp.api.ReportedUserApi;
 import test.connect.geoexploreapp.api.UserApi;
 import test.connect.geoexploreapp.model.Comment;
+import test.connect.geoexploreapp.model.FeedItem;
 import test.connect.geoexploreapp.model.ReportedUser;
 import test.connect.geoexploreapp.model.User;
 
@@ -35,11 +39,13 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
     private List<Comment> comments;
     private User user;
     private CommentActionListener listener;
+    private boolean showFeatures;
 
-    public CommentAdapter(List<Comment> comments, User user, CommentActionListener listener) {
+    public CommentAdapter(List<Comment> comments, User user, CommentActionListener listener, boolean showFeatures) {
         this.comments = comments;
        this.user = user;
         this.listener = listener;
+        this.showFeatures = showFeatures;
     }
 
     @NonNull
@@ -56,19 +62,17 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         Log.d("getting user", "getting user for" + item.getUserId());
         User commentUser = getUserById(holder, item.getUserId());;
 
-        if(commentUser!=null){
-            holder.commentUser.setText(commentUser.getName());
-        }
        // holder.commentUser.setText(commentUser.getName());
         holder.comment.setText(item.getComment());
 
         boolean isUserCommenter = item.getUserId().equals(user.getId());
         boolean isAdmin =  user.getIsAdmin();
 
-        holder.reportButton.setVisibility(isUserCommenter ? View.GONE : View.VISIBLE );
-        holder.editButton.setVisibility(isUserCommenter ? View.VISIBLE : View.GONE);
-        holder.deleteButton.setVisibility(isUserCommenter || isAdmin ? View.VISIBLE : View.GONE);
-
+        holder.reportButton.setVisibility(!isUserCommenter && showFeatures ? View.VISIBLE : View.GONE);
+        holder.editButton.setVisibility(isUserCommenter && showFeatures? View.VISIBLE : View.GONE);
+        holder.deleteButton.setVisibility((isUserCommenter || isAdmin ) &&showFeatures ? View.VISIBLE : View.GONE);
+        holder.commentPostType.setVisibility(!showFeatures?View.VISIBLE : View.GONE);
+        holder.commentPostType.setText("Comment made for a " + item.getPostType());
         holder.editButton.setOnClickListener(v -> {
             if (listener != null) {
                 int pos = holder.getAdapterPosition();
@@ -117,7 +121,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
             public void onClick(DialogInterface dialog, int which) {
                 ReportedUser reportedUser = new ReportedUser();
                 reportedUser.setReportedUserId(comment.getUserId());
-                reportedUser.setReportedUser(commentUser);
+                reportedUser.setReportedUser(user);
                 reportedUser.setHarassment(harassmentCheck.isChecked());
                 reportedUser.setSpamming(spammingCheck.isChecked());
                 reportedUser.setMisinformation(missingInformationCheck.isChecked());
@@ -139,16 +143,19 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
 
 
     private void createReport(Context context, ReportedUser reportedUser) {
+        Log.e("CommentAdapter", "Ftest report: " + reportedUser.getHarassment()+reportedUser.getInappropriateContent()+reportedUser.getMisinformation()+reportedUser.getSpamming()+reportedUser.getReportedUser().getName()+reportedUser.getReportedUserId());
+
         ReportedUserApi reportedUserApi = ApiClientFactory.GetReportedUserApi();
         reportedUserApi.ReportUser(reportedUser).enqueue(new Callback<ReportedUser>() {
             @Override
             public void onResponse(Call<ReportedUser> call, Response<ReportedUser> response) {
-                if (response.isSuccessful()) {
+                if (response.isSuccessful()&&response!=null) {
                     ReportedUser reportedUser = response.body();
                     String successMessage = "Report created successfully with ID: " + reportedUser.getId();
                     Toast.makeText(context, successMessage, Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(context, "Failed to create tag", Toast.LENGTH_SHORT).show();
+                    Log.e("CommentAdapter", "Failed to create report: " + response.code());
+                    Toast.makeText(context, "Failed to create report: " + response.code(), Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -167,6 +174,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
             public void onResponse(Call<User> call, Response<User> response) {
                 if(response.isSuccessful()){
                     User user = response.body();
+                    holder.commentUser.setText(user.getName());
 
                     Log.d("getting a user",  "got  user");
                 } else{
@@ -188,13 +196,50 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Are you sure you want to delete this comment?")
                 .setPositiveButton("Delete", (dialog, which) -> {
-                    listener.onDeleteComment(commentDel.getId(), position);
+                    onDeleteComment(context, commentDel.getId(), position);
                 })
                 .setNegativeButton("Cancel", (dialog, which) -> dialog.cancel())
                 .show();
 
 
     }
+
+    private void onDeleteComment(Context context, Long id, int position) {
+            CommentApi commentApi = ApiClientFactory.GetCommentApi();
+            Log.d("checkkk",id.toString());
+            // Toast.makeText(context, "Fai delete comment", Toast.LENGTH_SHORT).show();
+
+            commentApi.deleteComment(id).enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    //  JsonReader.setLenient(true);
+                    Log.d("DeleteComment",  response.body().toString());
+
+                    if (response.isSuccessful()) {
+                        ResponseBody responseMessage = response.body();
+                        comments.remove(position);
+                        notifyItemRemoved(position);
+                        notifyItemRangeChanged(position, comments.size());
+                        Toast.makeText(context, "Comment deleted successfully", Toast.LENGTH_SHORT).show();
+
+                    } else {
+                        try {
+                            String errorBody = response.errorBody() != null ? response.errorBody().string() : "Unknown error";
+                            Toast.makeText(context, "Failed to delete comment: " + errorBody, Toast.LENGTH_LONG).show();
+                        } catch (IOException e) {
+                            Toast.makeText(context, "Error parsing error body", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    Toast.makeText(context, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    Log.d("DeleteComment", "failedt: " + t.getMessage());
+
+                }
+            });
+        }
 
 
     private void editCommentPrompt(Context context,  Comment comment, int position) {
@@ -235,7 +280,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
 
 
     static class CommentViewHolder extends RecyclerView.ViewHolder {
-        TextView commentUser, comment;
+        TextView commentUser, comment, commentPostType;
         ImageButton editButton, deleteButton, reportButton;
         CommentViewHolder(View itemView) {
             super(itemView);
@@ -244,6 +289,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
             editButton = itemView.findViewById(R.id.commentEdit); 
             deleteButton = itemView.findViewById(R.id.commentDelete);
             reportButton = itemView.findViewById(R.id.commentReport);
+            commentPostType = itemView.findViewById(R.id.commentPostType);
 
         }
     }

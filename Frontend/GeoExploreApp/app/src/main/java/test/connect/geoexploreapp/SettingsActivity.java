@@ -1,6 +1,7 @@
 package test.connect.geoexploreapp;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AlertDialog;
@@ -86,6 +87,7 @@ public class SettingsActivity extends Fragment {
             Button btnEmergencyDashboard = view.findViewById(R.id.emergencyDashButton);
             Button btnMarkerTagManagement = view.findViewById(R.id.markerTagMngmtBtn);
             Button btnCreateUserGroup = view.findViewById(R.id.createUserGroupButton);
+            Button btnSignOut = view.findViewById(R.id.signOut);
 
             if (isAdmin) {
                 btnSendEmergency.setVisibility(View.VISIBLE);
@@ -127,17 +129,29 @@ public class SettingsActivity extends Fragment {
                         transaction.commit();
                     }
                 });
+
+                btnCreateUserGroup.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        addUserGroupPrompt();
+                    }
+                });
             } else {
                 btnSendEmergency.setVisibility(View.GONE);
                 btnEmergencyDashboard.setVisibility(View.GONE);
+                btnCreateUserGroup.setVisibility(View.GONE);
             }
 
-            btnCreateUserGroup.setOnClickListener(new View.OnClickListener() {
+            btnSignOut.setOnClickListener(new View.OnClickListener(){
                 @Override
-                public void onClick(View view) {
-                    addUserGroupPrompt();
+                public void onClick(View v) {
+                    Intent intent = new Intent(getActivity(), LoginSignUpActivity.class);
+                    startActivity(intent);
+                    getActivity().finish();
                 }
             });
+
+
         }
 
         return view;
