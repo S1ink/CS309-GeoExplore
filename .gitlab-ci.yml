@@ -1,30 +1,23 @@
-stages:
-  - mavenbuild
-  - maventest
+stages:             # these stages (jobs) forms the CICD pipeline
+  - mavenbuild      # this is a JOB to build your Springboot application
+  - maventest       # this is a JOB to run tests in your Springboot application (it's okay you don't have any test for now)
 
 maven-build:
-  stage: mavenbuild
-  tags:
-    - Ethan_tag      # <-- change to your runner's tag
-  script:
+  stage: mavenbuild     # one of the stages listed above
+  tags:                 # to specify which runner to execute this job
+    - Ethan-cicd      # change to your runner's tag
+  script:               # what to execute for this job
     - cd Backend        # change 'Backend' to to where you have the pom.xml (do not add / in the beginning)
-    - mvn package
-  only:
-    refs:
-      - Ethan_CICD
-    changes:
-      - Backend/**/*
-
+    - mvn package       # maven package
+  artifacts:            # where to output the packaged jar file, change 'Backend' to to where you have the pom.xml
+    paths:
+      - Backend/target/*.jar
 
 maven-test:
-  stage: maventest
+  stage: maventest     # one of the stages listed above
   tags:
-    - Ethan_tag     # <-- change to your runner's tag
+    - ethan-cicd     # change to your runner's tag
   script:
     - cd Backend       # change 'Backend' to to where you have the pom.xml (do not add / in the beginning)
-    - mvn test
-  only:
-    refs:
-      - YOURNAME_CICD
-    changes:
-      - Backend/**/*
+    - mvn test         # maven test
+
