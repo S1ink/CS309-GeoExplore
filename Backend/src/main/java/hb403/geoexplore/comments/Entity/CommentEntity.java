@@ -93,7 +93,7 @@ public class CommentEntity {
         this.postId = PostID;
         this.postType = type;
         this.userId = userId;
-        this.comment= comment;
+        this.comment= comment + "This comment sucks";
     }
     public CommentEntity(Long userId, Long PostID, String type, String comment) {
         this.postId = PostID;
