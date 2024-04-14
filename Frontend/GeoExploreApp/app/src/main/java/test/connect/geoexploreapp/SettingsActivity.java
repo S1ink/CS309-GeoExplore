@@ -88,6 +88,7 @@ public class SettingsActivity extends Fragment {
             Button btnMarkerTagManagement = view.findViewById(R.id.markerTagMngmtBtn);
             Button btnCreateUserGroup = view.findViewById(R.id.createUserGroupButton);
             Button btnSignOut = view.findViewById(R.id.signOut);
+            Button btnReportedUsers = view.findViewById(R.id.reportedUsers);
 
             if (isAdmin) {
                 btnSendEmergency.setVisibility(View.VISIBLE);
@@ -136,10 +137,26 @@ public class SettingsActivity extends Fragment {
                         addUserGroupPrompt();
                     }
                 });
+
+                btnReportedUsers.setOnClickListener(new View.OnClickListener(){
+
+                    @Override
+                    public void onClick(View v) {
+                        Fragment reportedUsersFragment = new ReportedUsersFragment();
+                        FragmentManager fragmentManager = getParentFragmentManager();
+                        FragmentTransaction transaction = fragmentManager.beginTransaction();
+                        transaction.replace(R.id.frame, reportedUsersFragment);
+                        transaction.addToBackStack(null);
+                        transaction.commit();
+
+
+                    }
+                });
             } else {
                 btnSendEmergency.setVisibility(View.GONE);
                 btnEmergencyDashboard.setVisibility(View.GONE);
                 btnCreateUserGroup.setVisibility(View.GONE);
+                btnReportedUsers.setVisibility(View.GONE);
             }
 
             btnSignOut.setOnClickListener(new View.OnClickListener(){

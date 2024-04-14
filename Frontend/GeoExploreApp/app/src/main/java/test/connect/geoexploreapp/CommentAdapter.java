@@ -60,7 +60,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
     public void onBindViewHolder(@NonNull CommentViewHolder holder, int position) {
         Comment item = comments.get(position);
         Log.d("getting user", "getting user for" + item.getUserId());
-        User commentUser = getUserById(holder, item.getUserId());;
+         getUserById(holder, item.getUserId());;
 
        // holder.commentUser.setText(commentUser.getName());
         holder.comment.setText(item.getComment());
@@ -93,11 +93,12 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         });
 
         holder.reportButton.setOnClickListener(v -> {
-            if (listener != null) {
+            User taggedUser = (User) holder.commentUser.getTag();
+            if (listener != null&&taggedUser!=null) {
                 int pos = holder.getAdapterPosition();
                 Log.d("report test", String.valueOf(pos));
                 if(pos != RecyclerView.NO_POSITION) {
-                    reportCommentPrompt(v.getContext(),commentUser, pos);
+                    reportCommentPrompt(v.getContext(),taggedUser, pos);
                 }
             }
         });
@@ -106,6 +107,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
 
     private void reportCommentPrompt(Context context, User commentUser, int position) {
         Comment comment = comments.get(position);
+        Log.d("testtttttttttttttt",commentUser.getName() );
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Report User");
 
@@ -121,7 +123,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
             public void onClick(DialogInterface dialog, int which) {
                 ReportedUser reportedUser = new ReportedUser();
                 reportedUser.setReportedUserId(comment.getUserId());
-                reportedUser.setReportedUser(user);
+                reportedUser.setReportedUser(commentUser);
                 reportedUser.setHarassment(harassmentCheck.isChecked());
                 reportedUser.setSpamming(spammingCheck.isChecked());
                 reportedUser.setMisinformation(missingInformationCheck.isChecked());
@@ -154,8 +156,12 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
                     String successMessage = "Report created successfully with ID: " + reportedUser.getId();
                     Toast.makeText(context, successMessage, Toast.LENGTH_SHORT).show();
                 } else {
-                    Log.e("CommentAdapter", "Failed to create report: " + response.code());
-                    Toast.makeText(context, "Failed to create report: " + response.code(), Toast.LENGTH_SHORT).show();
+                    try {
+                        Log.e("ReportUser", "Failed to create report: " + response.code() + " - " + response.errorBody().string());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    Toast.makeText(context, "Failed to create report: " + response.code() , Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -166,18 +172,19 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         });
     }
 
-    private User getUserById(@NonNull CommentViewHolder holder, Long userId) {
+    private void getUserById(@NonNull CommentViewHolder holder, Long userId) {
         UserApi userApi = ApiClientFactory.GetUserApi();
-        User user = null;
         userApi.getUser(userId).enqueue(new Callback<User>(){
             @Override
             public void onResponse(Call<User> call, Response<User> response) {
                 if(response.isSuccessful()){
                     User user = response.body();
                     holder.commentUser.setText(user.getName());
-
+                    holder.commentUser.setTag(user);
                     Log.d("getting a user",  "got  user");
                 } else{
+                    holder.commentUser.setText("Anonymous");  // Default text if user not found
+
                     Log.d("getting a user",  "Failed to get user");
                 }
             }
@@ -186,7 +193,6 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
                 Log.d("getting a user",  "Failed");
             }
         });
-        return user;
 
     }
 
