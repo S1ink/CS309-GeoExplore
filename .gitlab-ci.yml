@@ -18,6 +18,12 @@ android-build:
   script:
     - cd Frontend/GeoExploreApp                 # change 'Frontend' to where you have 'gradlew' (do not add / in the beginning)
     - ./gradlew build               # gradle build
+  only:
+    refs:
+      - Aditi_CICD
+    changes:
+      - Frontend/**/*
+
 
 android-test:
    image: afirefly/android-ci:java17
@@ -31,3 +37,9 @@ android-test:
    script:
      - cd Frontend/GeoExploreApp                  # change 'Frontend' to where you have 'gradlew' (do not add / in the beginning)
      - ./gradlew test               # gradle test
+  only:
+    refs:
+      - Aditi_CICD
+    changes:
+      - Frontend/**/*
+
