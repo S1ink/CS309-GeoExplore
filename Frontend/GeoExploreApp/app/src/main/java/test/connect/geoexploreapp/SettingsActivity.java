@@ -16,7 +16,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -27,10 +26,10 @@ import test.connect.geoexploreapp.model.UserGroup;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link SettingsFragment#newInstance} factory method to
+ * Use the {@link SettingsActivity#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class SettingsFragment extends Fragment {
+public class SettingsActivity extends Fragment {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -41,7 +40,7 @@ public class SettingsFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    public SettingsFragment() {
+    public SettingsActivity() {
         // Required empty public constructor
     }
 
@@ -54,8 +53,8 @@ public class SettingsFragment extends Fragment {
      * @return A new instance of fragment SettingsActivity.
      */
     // TODO: Rename and change types and number of parameters
-    public static SettingsFragment newInstance(boolean isAdmin) {
-        SettingsFragment fragment = new SettingsFragment();
+    public static SettingsActivity newInstance(boolean isAdmin) {
+        SettingsActivity fragment = new SettingsActivity();
         Bundle args = new Bundle();
         args.putBoolean("IsAdmin", isAdmin); // get user admin status
         fragment.setArguments(args);
@@ -84,20 +83,29 @@ public class SettingsFragment extends Fragment {
             isAdmin = args.getBoolean("IsAdmin",false);
             Log.d("SettingsActivity", "isAdmin: " + isAdmin);
 
-            FrameLayout btnEmergencyDashboard = view.findViewById(R.id.emergencyDashButton);
-            FrameLayout btnMarkerTagManagement = view.findViewById(R.id.markerTagMngmtBtn);
-            FrameLayout btnCreateUserGroup = view.findViewById(R.id.createUserGroupButton);
-
-
-
+            Button btnSendEmergency = view.findViewById(R.id.sendEmergencyButton);
+            Button btnEmergencyDashboard = view.findViewById(R.id.emergencyDashButton);
+            Button btnMarkerTagManagement = view.findViewById(R.id.markerTagMngmtBtn);
+            Button btnCreateUserGroup = view.findViewById(R.id.createUserGroupButton);
             Button btnSignOut = view.findViewById(R.id.signOut);
             Button btnReportedUsers = view.findViewById(R.id.reportedUsers);
 
             if (isAdmin) {
+                btnSendEmergency.setVisibility(View.VISIBLE);
                 btnEmergencyDashboard.setVisibility(View.VISIBLE);
                 btnMarkerTagManagement.setVisibility(View.VISIBLE);
                 btnCreateUserGroup.setVisibility(View.VISIBLE);
-
+                btnSendEmergency.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Fragment emergencySendFragment = new EmergencySendFragment();
+                        FragmentManager fragmentManager = getParentFragmentManager();
+                        FragmentTransaction transaction = fragmentManager.beginTransaction();
+                        transaction.replace(R.id.frame, emergencySendFragment);
+                        transaction.addToBackStack(null);
+                        transaction.commit();
+                    }
+                });
 
                 btnEmergencyDashboard.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -142,6 +150,7 @@ public class SettingsFragment extends Fragment {
                     }
                 });
             } else {
+                btnSendEmergency.setVisibility(View.GONE);
                 btnEmergencyDashboard.setVisibility(View.GONE);
                 btnCreateUserGroup.setVisibility(View.GONE);
                 btnReportedUsers.setVisibility(View.GONE);

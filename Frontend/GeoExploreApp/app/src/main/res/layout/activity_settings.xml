@@ -1,117 +1,87 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    tools:context=".SettingsFragment">
+    android:gravity="center_horizontal">
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/textViewSettingsHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
+        android:text="Settings"
         android:layout_marginTop="30dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_gravity="center"/>
 
-        <ImageView
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/baseline_settings_24" />
+    <Button
+        android:id="@+id/sendEmergencyButton"
+        android:layout_width="310dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="20dp"
+        android:text="Send Emergency Alert"
+        android:visibility="gone"
+        android:textSize="18sp"
+        android:textColor="@color/white"
+        android:background="@drawable/button"/>
 
-        <TextView
-            android:id="@+id/textViewSettingsHeader"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Settings"
-            android:textSize="40sp"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:paddingStart="10dp"/>
-    </LinearLayout>
+    <Button
+        android:id="@+id/emergencyDashButton"
+        android:layout_width="310dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="20dp"
+        android:text="Emergency Alert Dashboard"
+        android:visibility="gone"
+        android:textSize="18sp"
+        android:textColor="@color/white"
+        android:background="@drawable/button"/>
 
-    <HorizontalScrollView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal">
+    <Button
+        android:id="@+id/markerTagMngmtBtn"
+        android:layout_width="310dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="20dp"
+        android:text="Marker Tag Management"
+        android:visibility="gone"
+        android:textSize="18sp"
+        android:textColor="@color/white"
+        android:background="@drawable/button"/>
 
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+    <Button
+        android:id="@+id/createUserGroupButton"
+        android:layout_width="310dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="20dp"
+        android:text="Create User Group"
+        android:visibility="gone"
+        android:textSize="18sp"
+        android:textColor="@color/white"
+        android:background="@drawable/button"/>
 
-            <FrameLayout
-                android:id="@+id/emergencyDashButton"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:layout_margin="20dp"
-                android:background="@drawable/cube_button_background"
-                android:gravity="center">
 
-                <ImageView
-                    android:id="@+id/alertIcon"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:src="@drawable/baseline_warning_24"
-                    android:layout_gravity="center"/>
+    <Button
+        android:id="@+id/signOut"
+        android:layout_width="310dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="20dp"
+        android:text="Sign Out"
+        android:visibility="visible"
+        android:textSize="18sp"
+        android:textColor="@color/white"
+        android:background="@drawable/button"/>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Alerts"
-                    android:textSize="14sp"
-                    android:layout_gravity="bottom|center_horizontal"
-                    android:layout_marginBottom="8dp"/>
-            </FrameLayout>
+    <Button
+        android:id="@+id/reportedUsers"
+        android:layout_width="310dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="20dp"
+        android:text="View Reported Users"
+        android:visibility="visible"
+        android:textSize="18sp"
+        android:textColor="@color/white"
+        android:background="@drawable/button"/>
 
-            <FrameLayout
-                android:id="@+id/markerTagMngmtBtn"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:layout_margin="20dp"
-                android:background="@drawable/cube_button_background"
-                android:gravity="center">
-
-                <ImageView
-                    android:id="@+id/tagIcon"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:src="@drawable/baseline_bookmark_24"
-                    android:layout_gravity="center"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Tags"
-                    android:textSize="14sp"
-                    android:layout_gravity="bottom|center_horizontal"
-                    android:layout_marginBottom="8dp"/>
-            </FrameLayout>
-
-            <FrameLayout
-                android:id="@+id/createUserGroupButton"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:layout_margin="20dp"
-                android:background="@drawable/cube_button_background"
-                android:gravity="center">
-
-                <ImageView
-                    android:id="@+id/groupIcon"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:src="@drawable/baseline_group_24"
-                    android:layout_gravity="center"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Groups"
-                    android:textSize="14sp"
-                    android:layout_gravity="bottom|center_horizontal"
-                    android:layout_marginBottom="8dp"/>
-            </FrameLayout>
-
-        </LinearLayout>
-    </HorizontalScrollView>
 </LinearLayout>
