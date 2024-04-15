@@ -20,7 +20,7 @@ android-build:
     - ./gradlew build               # gradle build
   only:
     refs:
-      - Aditi_CICD
+      - aditi-cicd 
     changes:
       - Frontend/**/*
 
@@ -39,7 +39,7 @@ android-test:
      - ./gradlew test               # gradle test
   only:
     refs:
-      - Aditi_CICD
+      - aditi-cicd 
     changes:
       - Frontend/**/*
 
