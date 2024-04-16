@@ -28,10 +28,10 @@ import test.connect.geoexploreapp.model.User;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link ProfileActivity#newInstance} factory method to
+ * Use the {@link ProfileFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class ProfileActivity extends Fragment {
+public class ProfileFragment extends Fragment {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -45,12 +45,12 @@ public class ProfileActivity extends Fragment {
     private static User user;
 
 
-    public ProfileActivity() {
+    public ProfileFragment() {
         // Required empty public constructor
     }
 
-    public static ProfileActivity newInstance(User user ) {
-        ProfileActivity fragment = new ProfileActivity();
+    public static ProfileFragment newInstance(User user ) {
+        ProfileFragment fragment = new ProfileFragment();
         args = new Bundle();
         args.putSerializable("UserObject", user);
         fragment.setArguments(args);
