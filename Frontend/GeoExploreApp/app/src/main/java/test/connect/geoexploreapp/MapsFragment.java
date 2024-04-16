@@ -70,6 +70,7 @@ import test.connect.geoexploreapp.websocket.WebSocketListener;
 import test.connect.geoexploreapp.websocket.WebSocketManager;
 
 public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSocketListener {
+
     private GoogleMap mMap;
     private boolean isUpdateReportMode = false;
     private boolean isUpdateEventMode = false;
@@ -92,7 +93,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        View view = inflater.inflate(R.layout.activity_maps, container, false);
+        View view = inflater.inflate(R.layout.fragment_maps, container, false);
 
         WebSocketManager.getInstance().setWebSocketListener(this);
 

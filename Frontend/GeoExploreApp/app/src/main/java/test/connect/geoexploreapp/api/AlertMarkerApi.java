@@ -16,7 +16,7 @@ public interface AlertMarkerApi {
 
     // crud[L] - Get a list of all the alerts in the database
     @GET("geomap/alerts")
-    Call<List<AlertMarker>> GetAllAlertMarker();
+    Call<List<AlertMarker>> getAllAlertMarker();
 
     // cru[D]l - Delete an alert in the database by it's id
     @DELETE("geomap/alerts/{id}")
