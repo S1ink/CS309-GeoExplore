@@ -1,5 +1,6 @@
 package hb403.geoexplore.UserStorage.entity;
 
+import hb403.geoexplore.UserStorage.repository.ReportedUserRepository;
 import hb403.geoexplore.UserStorage.repository.UserRepository;
 import hb403.geoexplore.comments.Entity.CommentEntity;
 import jakarta.persistence.*;
@@ -56,6 +57,12 @@ public class User {
     @JsonIgnore
     @OneToMany(mappedBy = "pertainsUser", fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE })
     private List<CommentEntity> Comments;
+
+    @Getter
+    @Setter
+    @JsonIgnore
+    @OneToOne(mappedBy = "reportedUser", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE })
+    private ReportedUser user;
 
     public User(Long id, String name, String emailId, String password) {
         this.id = id;

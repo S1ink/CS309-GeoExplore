@@ -1,10 +1,11 @@
 package test.connect.geoexploreapp.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class AlertMarker {
+public class AlertMarker implements Serializable {
     private long id;
     private String title;
     private String description;
@@ -99,4 +100,10 @@ public class AlertMarker {
     public void setTags(List<MarkerTag> tags) {
         this.tags = tags;
     }
+
+    public String toString() {
+        return title;
+    }
+
+
 }
