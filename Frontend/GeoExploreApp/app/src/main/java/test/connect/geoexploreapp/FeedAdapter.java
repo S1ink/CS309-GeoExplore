@@ -54,7 +54,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     private User user;
     private  FeedItem feedItem;
     private Context context;
-    private CommentAdapter commentAdapter;
 
     public FeedAdapter(List<FeedItem> items, User user, Context context) {
         this.items = items;

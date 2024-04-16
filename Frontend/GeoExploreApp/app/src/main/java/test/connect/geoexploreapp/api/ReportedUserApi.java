@@ -41,6 +41,4 @@ public interface ReportedUserApi {
     // @Operation(summary = "Lists all userReports")
     @GET("user/report/list")
     Call<List<ReportedUser>> ListOfReports();
-
-
 }

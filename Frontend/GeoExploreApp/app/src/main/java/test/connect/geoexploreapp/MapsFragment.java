@@ -274,7 +274,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
     }
 
     private void showAddDialog(LatLng latLng, String type) {
-        // Inflate the custom layout
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.activity_forms, null);
 
@@ -296,10 +295,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
                 .setPositiveButton("Create", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        // Here, you can access editTextTitle and editTextDescription for their values
                         String title = editTextTitle.getText().toString().trim();
                         String description = editTextDescription.getText().toString().trim();
-//                        String cityDepartment = editTextCityDepartment.getText().toString().trim();
                         String markerTagsInput = editTextMarkerTag.getText().toString().trim();
 
                         List<String> markerTags = parseMarkerTags(markerTagsInput);
