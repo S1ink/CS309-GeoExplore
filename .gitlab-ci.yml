@@ -18,11 +18,7 @@ android-build:
   script:
     - cd Frontend/GeoExploreApp                 # change 'Frontend' to where you have 'gradlew' (do not add / in the beginning)
     - ./gradlew build               # gradle build
-  only:
-    refs:
-      - aditi-cicd 
-    changes:
-      - Frontend/**/*
+ 
 
 
 android-test:
@@ -37,9 +33,5 @@ android-test:
    script:
      - cd Frontend/GeoExploreApp                  # change 'Frontend' to where you have 'gradlew' (do not add / in the beginning)
      - ./gradlew test               # gradle test
-  only:
-    refs:
-      - aditi-cicd 
-    changes:
-      - Frontend/**/*
+
 
