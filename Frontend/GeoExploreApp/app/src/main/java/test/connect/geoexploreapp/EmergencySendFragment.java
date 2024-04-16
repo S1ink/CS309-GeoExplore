@@ -112,7 +112,7 @@ public class EmergencySendFragment extends Fragment {
         setLocationButton.setOnClickListener(v -> {
             viewModel.setCreateEmergencyNotification(true);
             Log.d("EmergencyDashFragment","Emergency was set to true");
-            MapsActivity mapsFragment = new MapsActivity();
+            MapsFragment mapsFragment = new MapsFragment();
             FragmentManager fragmentManager = getParentFragmentManager();
             FragmentTransaction transaction = fragmentManager.beginTransaction();
             transaction.replace(R.id.frame, mapsFragment);

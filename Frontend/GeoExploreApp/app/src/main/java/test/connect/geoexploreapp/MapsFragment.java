@@ -69,7 +69,7 @@ import test.connect.geoexploreapp.model.User;
 import test.connect.geoexploreapp.websocket.WebSocketListener;
 import test.connect.geoexploreapp.websocket.WebSocketManager;
 
-public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSocketListener {
+public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSocketListener {
     private GoogleMap mMap;
     private boolean isUpdateReportMode = false;
     private boolean isUpdateEventMode = false;
@@ -84,7 +84,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
     private TextView observationUpdateTextView;
     private User loggedInUser;
 
-    public MapsActivity() {
+    public MapsFragment() {
 
     }
 

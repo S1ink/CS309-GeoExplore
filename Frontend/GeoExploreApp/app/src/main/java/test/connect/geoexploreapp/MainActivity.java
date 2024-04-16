@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         binding.bottomNavigationView.setSelectedItemId(R.id.maps);
-        replaceFragment(new MapsActivity());
+        replaceFragment(new MapsFragment());
 
         binding.bottomNavigationView.setOnItemSelectedListener(item -> {
 
@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
                 ProfileFragment profileFragment = ProfileFragment.newInstance(user);
                 replaceFragment(profileFragment);
             } else if (itemId == R.id.maps) {
-                replaceFragment(new MapsActivity());
+                replaceFragment(new MapsFragment());
             } else if(itemId == R.id.show_feed){
                 WebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/comments/"+user.getId()); //URL ADD LATER
                 FeedActivity feedActivity = FeedActivity.newInstance(user);
