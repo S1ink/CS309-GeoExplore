@@ -1,6 +1,7 @@
 package test.connect.geoexploreapp;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AlertDialog;
@@ -15,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -25,21 +27,19 @@ import test.connect.geoexploreapp.model.UserGroup;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link SettingsActivity#newInstance} factory method to
+ * Use the {@link SettingsFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class SettingsActivity extends Fragment {
+public class SettingsFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
 
-    public SettingsActivity() {
+    public SettingsFragment() {
         // Required empty public constructor
     }
 
@@ -52,8 +52,8 @@ public class SettingsActivity extends Fragment {
      * @return A new instance of fragment SettingsActivity.
      */
     // TODO: Rename and change types and number of parameters
-    public static SettingsActivity newInstance(boolean isAdmin) {
-        SettingsActivity fragment = new SettingsActivity();
+    public static SettingsFragment newInstance(boolean isAdmin) {
+        SettingsFragment fragment = new SettingsFragment();
         Bundle args = new Bundle();
         args.putBoolean("IsAdmin", isAdmin); // get user admin status
         fragment.setArguments(args);
@@ -72,8 +72,7 @@ public class SettingsActivity extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.activity_settings, container, false);
+        View view = inflater.inflate(R.layout.fragment_settings, container, false);
 
         Bundle args = getArguments();
 
@@ -83,27 +82,18 @@ public class SettingsActivity extends Fragment {
             isAdmin = args.getBoolean("IsAdmin",false);
             Log.d("SettingsActivity", "isAdmin: " + isAdmin);
 
-            Button btnSendEmergency = view.findViewById(R.id.sendEmergencyButton);
-            Button btnEmergencyDashboard = view.findViewById(R.id.emergencyDashButton);
-            Button btnMarkerTagManagement = view.findViewById(R.id.markerTagMngmtBtn);
-            Button btnCreateUserGroup = view.findViewById(R.id.createUserGroupButton);
+            FrameLayout btnEmergencyDashboard = view.findViewById(R.id.emergencyDashButton);
+            FrameLayout btnMarkerTagManagement = view.findViewById(R.id.markerTagMngmtBtn);
+            FrameLayout btnCreateUserGroup = view.findViewById(R.id.createUserGroupButton);
+
+            FrameLayout btnSignOut = view.findViewById(R.id.signOut);
+            FrameLayout btnReportedUsers = view.findViewById(R.id.reportedUsers);
 
             if (isAdmin) {
-                btnSendEmergency.setVisibility(View.VISIBLE);
                 btnEmergencyDashboard.setVisibility(View.VISIBLE);
                 btnMarkerTagManagement.setVisibility(View.VISIBLE);
                 btnCreateUserGroup.setVisibility(View.VISIBLE);
-                btnSendEmergency.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        Fragment emergencySendFragment = new EmergencySendFragment();
-                        FragmentManager fragmentManager = getParentFragmentManager();
-                        FragmentTransaction transaction = fragmentManager.beginTransaction();
-                        transaction.replace(R.id.frame, emergencySendFragment);
-                        transaction.addToBackStack(null);
-                        transaction.commit();
-                    }
-                });
+
 
                 btnEmergencyDashboard.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -128,31 +118,50 @@ public class SettingsActivity extends Fragment {
                         transaction.commit();
                     }
                 });
+
+                btnCreateUserGroup.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        addUserGroupPrompt();
+                    }
+                });
+
+                btnReportedUsers.setOnClickListener(new View.OnClickListener(){
+                    @Override
+                    public void onClick(View v) {
+                        ReportedUserActivity reportedUserActivity = ReportedUserActivity.newInstance();
+                        FragmentManager fragmentManager = getParentFragmentManager();
+                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                        fragmentTransaction.replace(R.id.frame,reportedUserActivity);
+                        fragmentTransaction.commit();
+
+                    }
+                });
             } else {
-                btnSendEmergency.setVisibility(View.GONE);
                 btnEmergencyDashboard.setVisibility(View.GONE);
+                btnCreateUserGroup.setVisibility(View.GONE);
+                btnReportedUsers.setVisibility(View.GONE);
             }
 
-            btnCreateUserGroup.setOnClickListener(new View.OnClickListener() {
+            btnSignOut.setOnClickListener(new View.OnClickListener(){
                 @Override
-                public void onClick(View view) {
-                    addUserGroupPrompt();
+                public void onClick(View v) {
+                    Intent intent = new Intent(getActivity(), LoginSignUpActivity.class);
+                    startActivity(intent);
+                    getActivity().finish();
                 }
             });
 
-            
+
         }
-
-
 
         return view;
     }
 
-    private void addUserGroupPrompt() {
+    private void addUserGroupPrompt(){
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Create User Group");
 
-        // Set up the input
         final EditText input = new EditText(getContext());
         input.setInputType(InputType.TYPE_CLASS_TEXT);
         input.setHint("Add the title of the user group");
@@ -163,7 +172,6 @@ public class SettingsActivity extends Fragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String groupName = input.getText().toString();
-                // Call your method to handle the creation of the group with the entered name
                 UserGroup userGrouptoAdd = new UserGroup();
                 userGrouptoAdd.setTitle(groupName);
                 addUserGroup(userGrouptoAdd);
@@ -186,17 +194,15 @@ public class SettingsActivity extends Fragment {
             @Override
             public void onResponse(Call<UserGroup> call, Response<UserGroup> response) {
                 if(response.isSuccessful()) {
-                    UserGroup createdGroup = response.body(); // The created group object, if the API returns it
+                    UserGroup createdGroup = response.body();
                     Log.d("addUserGroup", "Group created successfully: " + createdGroup.getTitle());
                 } else {
-                    // The request failed, handle errors
-                    Log.e("addUserGroup", "Failed to create group. Response Code: " + response.code());
+                    Log.e("addUserGroup", "Failed to create group: " + response.code());
                 }
             }
 
             @Override
             public void onFailure(Call<UserGroup> call, Throwable t) {
-                // An error occurred during the network request
                 Log.e("addUserGroup", "Error creating group", t);
             }
         });

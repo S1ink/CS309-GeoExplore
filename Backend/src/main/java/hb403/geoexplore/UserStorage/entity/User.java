@@ -78,6 +78,12 @@ public class User {
     @OneToMany(mappedBy = "pertainsUser", fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE })
     private List<CommentEntity> Comments;
 
+    @Getter
+    @Setter
+    @JsonIgnore
+    @OneToOne(mappedBy = "reportedUser", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE })
+    private ReportedUser user;
+
     public User(Long id, String name, String emailId, String password) {
         this.id = id;
         this.name = name;

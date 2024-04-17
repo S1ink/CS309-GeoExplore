@@ -1,29 +1,33 @@
 package test.connect.geoexploreapp;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
-import android.text.method.ScrollingMovementMethod;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.PopupMenu;
+import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import test.connect.geoexploreapp.api.AlertMarkerApi;
 import test.connect.geoexploreapp.api.ApiClientFactory;
 import test.connect.geoexploreapp.api.MarkerTagApi;
 import test.connect.geoexploreapp.api.SlimCallback;
-import test.connect.geoexploreapp.model.AlertMarker;
 import test.connect.geoexploreapp.model.MarkerTag;
 
 /**
@@ -43,6 +47,7 @@ public class MarkerTagManagementFragment extends Fragment {
     private String mParam2;
     private TextView tagInfoTextView;
     private EditText tagIdEditText, tagNameEditText;
+    private ListView listView;
 
     public MarkerTagManagementFragment() {
         // Required empty public constructor
@@ -81,154 +86,72 @@ public class MarkerTagManagementFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_marker_tag_management, container, false);
 
-        Button backButton = view.findViewById(R.id.backButton);
-        tagIdEditText = view.findViewById(R.id.tagIdEditText);
-        tagInfoTextView = view.findViewById(R.id.tagInfoTextView);
-        tagNameEditText = view.findViewById(R.id.tagNameEditText);
-
-        tagInfoTextView.setMovementMethod(new ScrollingMovementMethod());
-
+        Button backButton = view.findViewById(R.id.markerTagBackButton);
+        Button newTagBtn = view.findViewById(R.id.newTagBtn);
+        listView = view.findViewById(R.id.tagListView);
 
         backButton.setOnClickListener(v -> getParentFragmentManager().popBackStack());
+        newTagBtn.setOnClickListener(v -> showNewTagDialog());
+
+        getAllTags();
 
 
-        String[] operations = new String[]{"Create", "Read", "Update", "Delete", "List"};
-        Spinner tagOperationSpinner = view.findViewById(R.id.tagOperationSpinner);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, operations);
-        tagOperationSpinner.setAdapter(adapter);
-
-
-        Button confirmOperationBtn = view.findViewById(R.id.confirmOperationBtn);
-        confirmOperationBtn.setOnClickListener(v -> {
-            String selectedOperation = tagOperationSpinner.getSelectedItem().toString();
-            switch (selectedOperation) {
-                case "Create":
-                    createTag();
-                    break;
-                case "Read":
-                    displayTagByID();
-                    break;
-                case "Update":
-                    updateTagByID();
-                    break;
-                case "Delete":
-                    deleteTagByID();
-                    break;
-                case "List":
-                    displayAllTags();
-                    break;
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                MarkerTag selectedTag = (MarkerTag) parent.getItemAtPosition(position);
+                showTagDetailFragment(selectedTag);
             }
         });
-
-
-
         return view;
     }
 
 
+    private void showNewTagDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("New Tag");
 
-    private void displayAllTags() {
+        final EditText input = new EditText(getContext());
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+
+        builder.setPositiveButton("OK", (dialog, which) -> {
+            String tagName = input.getText().toString().trim();
+            if (!tagName.isEmpty()) {
+                createTag(tagName);
+            } else {
+                Toast.makeText(getContext(), "Tag name cannot be empty", Toast.LENGTH_SHORT).show();
+            }
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+        builder.show();
+    }
+
+
+
+
+    private void showTagDetailFragment(MarkerTag markerTag) {
+        FragmentManager fragmentManager = getParentFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        MarkerTagDetailedViewFragment detailFragment = MarkerTagDetailedViewFragment.newInstance(markerTag);
+        fragmentTransaction.replace(R.id.frame, detailFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+
+
+
+    private void getAllTags() {
         MarkerTagApi markerTagApi = ApiClientFactory.getMarkerTagApi();
-
         markerTagApi.getAllMarkerTags().enqueue(new SlimCallback<>(markerTags -> {
-            StringBuilder tagInfo = new StringBuilder();
-            for (MarkerTag markerTag : markerTags) {
-                tagInfo.append("ID: ").append(markerTag.getId()).append(", Name: ").append(markerTag.getName()).append("\n");
-            }
-            if (getActivity() != null) {
-                getActivity().runOnUiThread(() -> tagInfoTextView.setText(tagInfo.toString()));
-            }
+            ArrayAdapter<MarkerTag> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, markerTags);
+            listView.setAdapter(adapter);
         }, "GetAllTags"));
     }
 
-    private void displayTagByID() {
-        String idString = tagIdEditText.getText().toString();
-        if (!idString.isEmpty()) {
-            try {
-                Long id = Long.parseLong(idString);
-                MarkerTagApi markerTagApi = ApiClientFactory.getMarkerTagApi();
-                markerTagApi.getMarkerTagById(id).enqueue(new SlimCallback<>(markerTag -> {
-                    if (markerTag != null) {
-                        String tagInfo = "ID: " + markerTag.getId() + ", Name: " + markerTag.getName();
-                        tagInfoTextView.setText(tagInfo);
-                    }
-                }, "getTagByID"));
-            } catch (NumberFormatException e) {
-                Toast.makeText(getContext(), "Enter a valid ID", Toast.LENGTH_LONG).show();
-            }
-        } else {
-            Toast.makeText(getContext(), "ID cannot be empty", Toast.LENGTH_LONG).show();
-        }
-    }
-
-    private void deleteTagByID() {
-        String idString = tagIdEditText.getText().toString();
-        if (!idString.isEmpty()) {
-            try {
-                Long id = Long.parseLong(idString);
-                MarkerTagApi markerTagApi = ApiClientFactory.getMarkerTagApi();
-                markerTagApi.deleteMarkerTagById(id).enqueue(new Callback<Void>() {
-                    @Override
-                    public void onResponse(Call<Void> call, Response<Void> response) {
-                        if (response.isSuccessful()) {
-                            String deleteSuccessText = "Tag with ID: " + id + " deleted successfully";
-                            tagInfoTextView.setText(deleteSuccessText);
-                        } else {
-                            Toast.makeText(getActivity(), "Failed to delete tag", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<Void> call, Throwable t) {
-                        Toast.makeText(getActivity(), "Error deleting tag: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
-            } catch (NumberFormatException e) {
-                Toast.makeText(getContext(), "Enter a valid ID", Toast.LENGTH_LONG).show();
-            }
-        } else {
-            Toast.makeText(getContext(), "ID cannot be empty", Toast.LENGTH_LONG).show();
-        }
-    }
-
-    private void updateTagByID() {
-        String idString = tagIdEditText.getText().toString();
-        String newName = tagNameEditText.getText().toString();
-
-        if (!idString.isEmpty() && !newName.isEmpty()) {
-            try {
-                Long id = Long.parseLong(idString);
-                MarkerTag updatedTag = new MarkerTag();
-                updatedTag.setName(newName);
-
-                MarkerTagApi markerTagApi = ApiClientFactory.getMarkerTagApi();
-                markerTagApi.updateMarkerTag(id, updatedTag).enqueue(new Callback<MarkerTag>() {
-                    @Override
-                    public void onResponse(Call<MarkerTag> call, Response<MarkerTag> response) {
-                        if (response.isSuccessful()) {
-                            String updateSuccessText = "Tag with ID: " + id + " updated successfully to " + newName;
-                            tagInfoTextView.setText(updateSuccessText);
-                            Toast.makeText(getActivity(), updateSuccessText, Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(getActivity(), "Failed to update tag", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<MarkerTag> call, Throwable t) {
-                        Toast.makeText(getActivity(), "Error updating tag", Toast.LENGTH_SHORT).show();
-                    }
-                });
-            } catch (NumberFormatException e) {
-                Toast.makeText(getContext(), "Enter a valid ID", Toast.LENGTH_LONG).show();
-            }
-        } else {
-            Toast.makeText(getContext(), "ID and new name cannot be empty", Toast.LENGTH_LONG).show();
-        }
-    }
-
-    private void createTag() {
-        String tagName = tagNameEditText.getText().toString().trim();
+    private void createTag(String tagName) {
 
         if (!tagName.isEmpty()) {
             MarkerTagApi markerTagApi = ApiClientFactory.getMarkerTagApi();
@@ -243,6 +166,7 @@ public class MarkerTagManagementFragment extends Fragment {
                         String successMessage = "Tag created successfully with ID: " + createdTag.getId();
                         tagInfoTextView.setText(successMessage);
                         Toast.makeText(getActivity(), successMessage, Toast.LENGTH_SHORT).show();
+                        getAllTags();
                     } else {
                         Toast.makeText(getActivity(), "Failed to create tag", Toast.LENGTH_SHORT).show();
                     }

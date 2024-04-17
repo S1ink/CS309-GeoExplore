@@ -7,9 +7,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class SlimCallback<T> implements Callback<T> {
-
     LambdaInterface<T> lambdaInterface;
-
     String logTag;
 
     public SlimCallback(LambdaInterface<T> lambdaInterface){
@@ -20,8 +18,6 @@ public class SlimCallback<T> implements Callback<T> {
         this.logTag = customTag;
     }
 
-
-
     @Override
     public void onResponse(Call<T> call, Response<T> response){
 
@@ -31,7 +27,6 @@ public class SlimCallback<T> implements Callback<T> {
         else{
             Log.d(logTag, "Code:  "+response.code()+"  Msg:  " + response.message());
         }
-
     }
 
     @Override

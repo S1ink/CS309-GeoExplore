@@ -69,7 +69,7 @@ import test.connect.geoexploreapp.model.User;
 import test.connect.geoexploreapp.websocket.WebSocketListener;
 import test.connect.geoexploreapp.websocket.WebSocketManager;
 
-public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSocketListener {
+public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSocketListener {
 
     private GoogleMap mMap;
     private boolean isUpdateReportMode = false;
@@ -85,7 +85,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
     private TextView observationUpdateTextView;
     private User loggedInUser;
 
-    public MapsActivity() {
+    public MapsFragment() {
 
     }
 
@@ -93,9 +93,8 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        View view = inflater.inflate(R.layout.activity_maps, container, false);
+        View view = inflater.inflate(R.layout.fragment_maps, container, false);
 
-//        WebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/live/alerts/9"); // CHANGE URL FOR WEBSOCKET
         WebSocketManager.getInstance().setWebSocketListener(this);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
@@ -115,9 +114,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
             this.loggedInUser = loggedInUser;
             if (loggedInUser != null && !isUserSet){
                 Log.d("TEST", "Web socket connection");
-//                String userID = String.valueOf(loggedInUser.getId());
-//                WebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/live/alerts/" + userID); // CHANGE URL FOR WEBSOCKET "wss://socketsbay.com/wss/v2/1/demo/"
-//                WebSocketManager.getInstance().setWebSocketListener(this);
+
                 isUserSet = true;
             }else {
                 Log.e("WebSocket", "Logged in user is null. Cannot establish WebSocket connection.");
@@ -278,24 +275,19 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
     }
 
     private void showAddDialog(LatLng latLng, String type) {
-        // Inflate the custom layout
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.activity_forms, null);
 
         EditText editTextTitle = view.findViewById(R.id.editTextTitle);
         EditText editTextDescription = view.findViewById(R.id.editTextDescription);
-//        EditText editTextCityDepartment = view.findViewById(R.id.editTextCityDepartment);
         EditText editTextMarkerTag = view.findViewById(R.id.editTextMarkerTag);
 
         if ("Report".equals(type)) {
-            editTextDescription.setVisibility(View.GONE); // Hide description for Report
-//            editTextCityDepartment.setVisibility(View.GONE);
+            editTextDescription.setVisibility(View.GONE);
         } else if ("Event".equals(type)) {
             editTextDescription.setVisibility(View.GONE);
-            //editTextCityDepartment.setVisibility(View.VISIBLE); // Show city/department for Event
         } else {
             editTextDescription.setVisibility(View.VISIBLE);
-//            editTextCityDepartment.setVisibility(View.GONE); // Hide city/department for Observation
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -304,10 +296,8 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
                 .setPositiveButton("Create", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        // Here, you can access editTextTitle and editTextDescription for their values
                         String title = editTextTitle.getText().toString().trim();
                         String description = editTextDescription.getText().toString().trim();
-//                        String cityDepartment = editTextCityDepartment.getText().toString().trim();
                         String markerTagsInput = editTextMarkerTag.getText().toString().trim();
 
                         List<String> markerTags = parseMarkerTags(markerTagsInput);
@@ -324,7 +314,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
 
                     }
                 })
-                .setNegativeButton("Cancel", null); // Dismiss dialog without doing anything
+                .setNegativeButton("Cancel", null);
 
         AlertDialog dialog = builder.create();
         dialog.show();
@@ -618,9 +608,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         newReportMarker.setIo_longitude(latLng.longitude);
         newReportMarker.setTitle(reportTitle);
         newReportMarker.setCreator(loggedInUser);
-//        newReportMarker.setTime_created(new Date());
-//        newReportMarker.setTime_updated(new Date());
-//        newReportMarker.setTags(markerTags);
+
 
         reportMarkerApi.addReport(newReportMarker).enqueue(new SlimCallback<>(createdReportMarker -> {
             addTagsToReport(createdReportMarker.getId(), markerTags);
@@ -713,10 +701,8 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         observation.setIo_longitude(latLng.longitude);
         observation.setCreator(loggedInUser);
         observation.setTitle(observationTitle);
-//        observation.setTime_created(new Date());
-//        observation.setTime_updated(new Date());
+
         observation.setDescription(observationDescription);
-//        observation.setTags(markerTags);
 
         observationApi.saveObs(observation).enqueue(new SlimCallback<>(obs -> {
             addTagsToObservation(obs.getId(), markerTags);
@@ -752,8 +738,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         updatedObservation.setTitle(newTitle);
         updatedObservation.setIo_latitude(latLng.latitude);
         updatedObservation.setIo_longitude(latLng.longitude);
-        //updatedObservation.setTime_updated(new Date());
-        //updatedObservation.setDescription(newDescription);
+
         Log.d("Updating...", updatedObservation.getTitle() + " "+ updatedObservation.getId()+" " +updatedObservation.getDescription());
         observationApi.updateObs(id, updatedObservation).enqueue(new SlimCallback<>(obs -> {
             Log.d("Update 1", "Update check");
@@ -813,10 +798,6 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         newEventMarker.setIo_longitude(latLng.longitude);
         newEventMarker.setCreator(loggedInUser);
         newEventMarker.setTitle(eventTitle);
-//        newEventMarker.setTime_created(new Date());
-//        newEventMarker.setTime_updated(new Date());
-//        newEventMarker.setCity_department(cityDepartment);
-//        newEventMarker.setTags(markerTags);
 
         reportMarkerApi.addEvent(newEventMarker).enqueue(new SlimCallback<>(createdEventMarker -> {
             addTagsToEvent(createdEventMarker.getId(), markerTags);
@@ -827,11 +808,7 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
                     .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_celebration_24)));
         }, "CreateNewEvent"));
 
-//        try {
-//            newEventMarker.setLocation(getLocation(latLng.latitude,latLng.longitude));
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
+
     }
     private void displayEventByID(Long id) {
         EventMarkerApi eventMarkerApi = ApiClientFactory.getEventMarkerApi();
@@ -906,7 +883,6 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
             }
         }, "GetAllEvents"));
     }
-
 
     // Methods for collecting CRUDL info from user
     private void promptForReportId(LatLng latLng) {
@@ -1093,10 +1069,6 @@ public class MapsActivity extends Fragment implements OnMapReadyCallback, WebSoc
         final EditText titleInput = new EditText(getActivity());
         titleInput.setHint("New Title");
         layout.addView(titleInput);
-
-//        final EditText cityDepartmentInput = new EditText(getActivity());
-//        cityDepartmentInput.setHint("New City Department");
-//        layout.addView(cityDepartmentInput);
 
         builder.setView(layout);
 

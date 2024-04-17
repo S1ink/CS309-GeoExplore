@@ -93,14 +93,14 @@ public class CommentController {
     @Operation(summary = "Get a comment from the database by its id")
     @GetMapping(path = "/comment/{id}")
     public @ResponseBody CommentEntity getComment(@PathVariable Long id){
-        return commentRepository.getById(id);
+        return commentRepository.findById(id).get();
     }
 
     //U of Crudl
     @Operation(summary = "Update a comment already in the database by its id")
     @PutMapping(path = "/comment/{id}/update")
     public @ResponseBody CommentEntity updateComment(@PathVariable Long id, @RequestBody CommentEntity updated){
-        try {CommentEntity updater = commentRepository.getById(id); //making sure the comment exists in the repository
+        try {CommentEntity updater = commentRepository.findById(id).get(); //making sure the comment exists in the repository
             CommentEntity update = new CommentEntity(id, updated.getPostId(), updater.getUserId(), updater.getPostType(), updated.getComment() + " \n(comment edited)");
             if (update.getPostType().equals("Observation")) {
                 final ObservationMarker tempObservation = observationRepository.findById(update.getPostId()).get();
@@ -213,7 +213,7 @@ public class CommentController {
     @ResponseBody
     public List<CommentEntity> getCommentsForObs(@PathVariable Long postId){
         try{
-            List<CommentEntity> CommentsOnObs = observationRepository.getById(postId).getComments();
+            List<CommentEntity> CommentsOnObs = observationRepository.findById(postId).get().getComments();
             return CommentsOnObs;
         }catch(Exception e){
             System.out.println(e);
@@ -235,7 +235,7 @@ public class CommentController {
 
         }*/
         try{
-            List<CommentEntity> CommentsOnEvent = eventRepository.getById(postId).getComments();
+            List<CommentEntity> CommentsOnEvent = eventRepository.findById(postId).get().getComments();
             return CommentsOnEvent;
         }catch(Exception e){
             System.out.println(e);
@@ -247,7 +247,7 @@ public class CommentController {
     @GetMapping(path = "/user/comments/{user_table_Id}")
     @ResponseBody
     public List<CommentEntity> getCommentsForUser(@PathVariable Long user_table_Id){
-        return userRepository.getById(user_table_Id).getComments();
+        return userRepository.findById(user_table_Id).get().getComments();
     }
 
     @Operation(summary = "Gets a list of all comments for a specific event")
@@ -264,12 +264,12 @@ public class CommentController {
             }
         }*/
         try{
-            List<CommentEntity> CommentsOnReport = reportRepository.getById(postId).getComments();
+            List<CommentEntity> CommentsOnReport = reportRepository.findById(postId).get().getComments();
             return CommentsOnReport;
         }catch(Exception e){
             System.out.println(e);
         }
-        return reportRepository.getById(postId).getComments();
+        return reportRepository.findById(postId).get().getComments();
     }
 
 }

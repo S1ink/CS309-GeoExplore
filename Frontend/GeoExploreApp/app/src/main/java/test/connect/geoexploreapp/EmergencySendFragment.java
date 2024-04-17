@@ -112,7 +112,7 @@ public class EmergencySendFragment extends Fragment {
         setLocationButton.setOnClickListener(v -> {
             viewModel.setCreateEmergencyNotification(true);
             Log.d("EmergencyDashFragment","Emergency was set to true");
-            MapsActivity mapsFragment = new MapsActivity();
+            MapsFragment mapsFragment = new MapsFragment();
             FragmentManager fragmentManager = getParentFragmentManager();
             FragmentTransaction transaction = fragmentManager.beginTransaction();
             transaction.replace(R.id.frame, mapsFragment);
@@ -141,16 +141,12 @@ public class EmergencySendFragment extends Fragment {
             alertMarker.setIo_longitude(Double.parseDouble(longitude));
             alertMarker.setCreator(loggedInUser);
 
-
             Gson gson = new Gson();
             String jsonMessage = gson.toJson(alertMarker);
 
-
             WebSocketManager.getInstance().sendMessage(jsonMessage);
 
-
         });
-
         return view;
     }
 }
