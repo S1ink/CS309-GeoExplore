@@ -32,7 +32,6 @@ public class LoginTabFragment extends Fragment {
     EditText UserEmail,UserPassword;
     Button loginSubmit;
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -45,15 +44,12 @@ public class LoginTabFragment extends Fragment {
         UserPassword=view.findViewById(R.id.login_password);
          loginSubmit = view.findViewById(R.id.login_button);
 
-        // Set the click listener for the button
         loginSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String email = UserEmail.getText().toString().toLowerCase().trim();
                 String passcode = UserPassword.getText().toString();
-                // Perform your actions here
-                // For example, show an alert dialog
-                //showAlert("Login Attempted!");
+
 
                 isValidCredentials(email, passcode, new CredentialsCallback() {
                     @Override
@@ -63,7 +59,6 @@ public class LoginTabFragment extends Fragment {
                         }
                     }
                 });
-
             }
         });
     }

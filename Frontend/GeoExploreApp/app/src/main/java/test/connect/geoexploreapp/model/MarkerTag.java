@@ -5,7 +5,6 @@ import java.io.Serializable;
 public class MarkerTag implements Serializable {
     private long id;
     private String name;
-
     public long getId() {
         return id;
     }

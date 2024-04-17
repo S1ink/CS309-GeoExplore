@@ -1,6 +1,7 @@
 package test.connect.geoexploreapp;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AlertDialog;
@@ -71,7 +72,6 @@ public class SettingsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
 
         Bundle args = getArguments();
@@ -85,6 +85,9 @@ public class SettingsFragment extends Fragment {
             FrameLayout btnEmergencyDashboard = view.findViewById(R.id.emergencyDashButton);
             FrameLayout btnMarkerTagManagement = view.findViewById(R.id.markerTagMngmtBtn);
             FrameLayout btnCreateUserGroup = view.findViewById(R.id.createUserGroupButton);
+
+            FrameLayout btnSignOut = view.findViewById(R.id.signOut);
+            FrameLayout btnReportedUsers = view.findViewById(R.id.reportedUsers);
 
             if (isAdmin) {
                 btnEmergencyDashboard.setVisibility(View.VISIBLE);
@@ -115,30 +118,50 @@ public class SettingsFragment extends Fragment {
                         transaction.commit();
                     }
                 });
+
+                btnCreateUserGroup.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        addUserGroupPrompt();
+                    }
+                });
+
+                btnReportedUsers.setOnClickListener(new View.OnClickListener(){
+                    @Override
+                    public void onClick(View v) {
+                        ReportedUserActivity reportedUserActivity = ReportedUserActivity.newInstance();
+                        FragmentManager fragmentManager = getParentFragmentManager();
+                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                        fragmentTransaction.replace(R.id.frame,reportedUserActivity);
+                        fragmentTransaction.commit();
+
+                    }
+                });
             } else {
                 btnEmergencyDashboard.setVisibility(View.GONE);
+                btnCreateUserGroup.setVisibility(View.GONE);
+                btnReportedUsers.setVisibility(View.GONE);
             }
 
-            btnCreateUserGroup.setOnClickListener(new View.OnClickListener() {
+            btnSignOut.setOnClickListener(new View.OnClickListener(){
                 @Override
-                public void onClick(View view) {
-                    addUserGroupPrompt();
+                public void onClick(View v) {
+                    Intent intent = new Intent(getActivity(), LoginSignUpActivity.class);
+                    startActivity(intent);
+                    getActivity().finish();
                 }
             });
 
-            
+
         }
-
-
 
         return view;
     }
 
-    private void addUserGroupPrompt() {
+    private void addUserGroupPrompt(){
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Create User Group");
 
-        // Set up the input
         final EditText input = new EditText(getContext());
         input.setInputType(InputType.TYPE_CLASS_TEXT);
         input.setHint("Add the title of the user group");
@@ -149,7 +172,6 @@ public class SettingsFragment extends Fragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String groupName = input.getText().toString();
-                // Call your method to handle the creation of the group with the entered name
                 UserGroup userGrouptoAdd = new UserGroup();
                 userGrouptoAdd.setTitle(groupName);
                 addUserGroup(userGrouptoAdd);
@@ -172,17 +194,15 @@ public class SettingsFragment extends Fragment {
             @Override
             public void onResponse(Call<UserGroup> call, Response<UserGroup> response) {
                 if(response.isSuccessful()) {
-                    UserGroup createdGroup = response.body(); // The created group object, if the API returns it
+                    UserGroup createdGroup = response.body();
                     Log.d("addUserGroup", "Group created successfully: " + createdGroup.getTitle());
                 } else {
-                    // The request failed, handle errors
-                    Log.e("addUserGroup", "Failed to create group. Response Code: " + response.code());
+                    Log.e("addUserGroup", "Failed to create group: " + response.code());
                 }
             }
 
             @Override
             public void onFailure(Call<UserGroup> call, Throwable t) {
-                // An error occurred during the network request
                 Log.e("addUserGroup", "Error creating group", t);
             }
         });
