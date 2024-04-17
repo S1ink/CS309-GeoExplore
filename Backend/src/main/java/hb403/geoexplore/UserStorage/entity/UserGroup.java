@@ -26,6 +26,8 @@ public class UserGroup {
 
 	private String title;
 
+	private Boolean share_locations = false;
+
 	@ManyToMany(
 		fetch = FetchType.EAGER,
 		cascade = { CascadeType.PERSIST, CascadeType.MERGE }

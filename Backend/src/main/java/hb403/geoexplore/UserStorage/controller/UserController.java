@@ -23,10 +23,11 @@ public class UserController {
     //C of Crudl
     @Operation(summary = "Add a new user to the database")
     @PostMapping(path = "/user/create")
-    public @ResponseBody User UserCreate(@RequestBody User newUser){
+    public @ResponseBody User UserCreate(@RequestBody User newUser) {
         if(newUser != null) {
             User newestUser = new User(newUser.getName(), newUser.getEmailId(), newUser.getPassword());
-            userRepository.save(newestUser);
+            newestUser = userRepository.save(newestUser);
+            newestUser.enforceLocationTable();
             return newestUser;
         }
         return null;
@@ -39,7 +40,9 @@ public class UserController {
     public @ResponseBody User getUser(@PathVariable Long id){
         if(id != null) {
             try {
-                return userRepository.findById(id).get();
+                final User u = userRepository.findById(id).get();
+                u.enforceLocationTable();
+                return u;
             } catch(Exception e) {
 
             }
@@ -50,13 +53,14 @@ public class UserController {
     //U of Crudl
     @Operation(summary = "Update a user already in the database by its id")
     @PutMapping(path = "/user/{id}/update")
-    public @ResponseBody User updateUser(@PathVariable Long id, @RequestBody User updated){
+    public @ResponseBody User updateUser(@PathVariable Long id, @RequestBody User updated) {
         if(id != null && updated != null) {
             User original = userRepository.findById(id).get();
-            User updater = new User(id, updated.getName(), updated.getEmailId(), updated.getPassword());
-            updater.setComments(original.getComments());
-            userRepository.save(updater);
-            return updater;
+            // User updater = new User(id, updated.getName(), updated.getEmailId(), updated.getPassword());
+            updated.setComments(original.getComments());
+            updated.enforceLocationIO();
+            updated = userRepository.save(updated);
+            return updated;
         }
         return null;
     }
@@ -82,8 +86,12 @@ public class UserController {
     //L of Crudl
     @Operation(summary = "Get a list of all the users in the database")
     @GetMapping(path = "/userinfo")
-    @ResponseBody List<User>  getAllUsers() {
-        return userRepository.findAll();
+    @ResponseBody List<User> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        for(User u : users) {
+            u.enforceLocationTable();
+        }
+        return users;
     }
 
     // Get a list of groups that a user is in
