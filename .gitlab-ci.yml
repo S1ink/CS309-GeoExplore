@@ -14,6 +14,7 @@ maven-build:
   tags:                 # to specify which runner to execute this job
     - backend-cicd      # change to your runner's tag
   script:               # what to execute for this job
+    - echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk" | sudo tee '/etc/java/maven.conf'   # overwrite maven conf since it gets messed up when they restart the server every week
     - cd Backend        # change 'Backend' to to where you have the pom.xml (do not add / in the beginning)
     - mvn package       # maven package
   artifacts:            # where to output the packaged jar file, change 'Backend' to to where you have the pom.xml
@@ -79,4 +80,4 @@ android-test:
     - ./gradlew test               # gradle test
   only:
     changes:
-      - Frontent/**/*
+      - Frontend/**/*
