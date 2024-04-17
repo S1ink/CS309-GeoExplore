@@ -80,4 +80,4 @@ android-test:
     - ./gradlew test               # gradle test
   only:
     changes:
-      - Frontent/**/*
+      - Frontend/**/*

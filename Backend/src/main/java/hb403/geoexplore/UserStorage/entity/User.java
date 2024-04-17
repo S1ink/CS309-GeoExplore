@@ -40,6 +40,7 @@ public class User {
 
     @JsonIgnore
     private String encryptedPassword;
+
     @JsonIgnore
     private boolean isAdmin;
 
