@@ -1,4 +1,4 @@
-package hb403.geoexplore.comments;
+package hb403.geoexplore.websocket;
 
 import java.io.IOException;
 import java.util.*;
@@ -25,94 +25,69 @@ import jakarta.websocket.server.*;
 
 @ServerEndpoint("/comments/{user_id}")
 @Controller
-public class CommentWebsocket {
+public class CommentWebsocket extends WebSocketBase {
 
-
+    private static UserRepository users_repo;
     private static CommentRepository commentRepository;
-
     public static ObservationRepository observationRepository;
-
-    private static UserRepository userRepository;
-
     private static EventRepository eventRepository;
-    
     private static ReportRepository reportRepository;
 
 
     @Autowired
+    public void autoUserRepository(UserRepository repo) {
+        CommentWebsocket.users_repo = repo;
+    }
+    @Autowired
     public void autoCommentRepository(CommentRepository repo) {
         CommentWebsocket.commentRepository = repo;
     }
-
     @Autowired
     public void autoObservationRepository(ObservationRepository repo) {
         CommentWebsocket.observationRepository = repo;
     }
-
-    @Autowired
-    public void autoUserRepository(UserRepository repo) {
-        CommentWebsocket.userRepository = repo;
-    }
-
     @Autowired
     public void autoEventRepository(EventRepository repo){
         CommentWebsocket.eventRepository = repo;
     }
-
-
     @Autowired
     public void autoReportRepository(ReportRepository repo){
         CommentWebsocket.reportRepository = repo;
     }
 
-    private static Map<Session, Long> session_user_ids = new HashMap<>();
-    private static Map<Long, Long> user_id_duplicates = new HashMap<>();
-	private static Set<Long> user_ids = new HashSet<>();
+
+    protected static Map<Session, Long> session_user_ids = new HashMap<>();
+	protected static Map<Long, SessionInfo> user_id_sessions = new HashMap<>();
+
+    public CommentWebsocket() {
+        super("Comment WS", true);
+    }
+
+    @Override
+	protected UserRepository getUserRepo() {
+		return CommentWebsocket.users_repo;
+	}
+    @Override
+	protected Map<Session, Long> getSessionUserIds() {
+		return CommentWebsocket.session_user_ids;
+	}
+	@Override
+	protected Map<Long, SessionInfo> getUserIdSessions() {
+		return CommentWebsocket.user_id_sessions;
+	}
 
 
     @OnOpen
     public void onOpenSession (Session session, @PathParam("user_id") Long id) throws IOException {
-        if(session == null || id == null) {
-			System.out.println("[Comment WS]: Failed to start session - one or more params were null.");
-			return;
-		}
-        boolean
-			already_present = user_ids.contains(id),
-			valid_user = userRepository.findById(id).isPresent();
-		if (/*!already_present &&*/ valid_user) {
-			if(user_ids.add(id)) {
-				user_id_duplicates.put(id, 1L);
-			} else {
-				user_id_duplicates.put(id, user_id_duplicates.get(id) + 1L);	// increment
-			}
-            session_user_ids.put(session, id);
-            System.out.println("[Comment WS]: Successfully added session for user id " + id);
-        } else {
-            System.out.println("[Comment WS]: Failed to add session for user id " + id + " -- already present: " + already_present + ", valid: " + valid_user);
-        }
-        this.printStatus();
+        super.onOpenBase(session, id);
     }
     @OnClose
     public void OnClose(Session session) throws IOException{
-        try {
-            final Long id = session_user_ids.remove(session);
-            final Long num = user_id_duplicates.get(id) - 1L;
-			if(num <= 0) {
-				user_id_duplicates.remove(id);
-				user_ids.remove(id);
-			} else {
-				user_id_duplicates.put(id, num);
-			}
-            System.out.println("[Comment WS]: Successfully closed session for user id " + id);
-        } catch (Exception e) {
-            System.out.println(e);
-            System.out.println("[Comment WS]: Failed on close user session!?");
-        }
-        this.printStatus();
+        super.onCloseBase(session);
     }
     @OnMessage
     public void OnMessage(Session session, String message){
-        if (session == null || message == null || userRepository.findById(session_user_ids.get(session)).isEmpty()){
+        if (session == null || message == null || users_repo.findById(session_user_ids.get(session)).isEmpty()) {
             System.out.println("[Comment WS]: Invalid message, session, or user!");
             return;
         }
@@ -150,10 +125,10 @@ public class CommentWebsocket {
                 System.out.println("[Comment WS]: Failed to parse message due to invalid post type.");
                 return;
             }
-            User tempUser = userRepository.findById(temp.getUserId()).get();
+            User tempUser = users_repo.findById(temp.getUserId()).get();
             tempUser.getComments().add(temp);
             temp.setPertainsUser(tempUser);
-            userRepository.saveAndFlush(tempUser);
+            users_repo.saveAndFlush(tempUser);
             message_out = mapperForComments.writeValueAsString(temp);
         } catch (Exception e) {
             System.out.println(e);
@@ -176,20 +151,8 @@ public class CommentWebsocket {
     }
     @OnError
     public void OnError(Session session, Throwable throwable){
-        System.out.println("[Comment WS - ERROR]: " + throwable.getMessage());
-        this.printStatus();
+        super.onErrorBase(session, throwable);
     }
-
-
-
-    private void printStatus() {
-		String fmt = "[Comment WS - STATUS]: Users: " + user_ids.size() + ", Sessions: " + session_user_ids.size() + ", IDS: { ";
-		for(Long id : user_ids) {
-			fmt += String.format("%d (%d), ", id, user_id_duplicates.get(id));
-		}
-		fmt += "}";
-		System.out.println(fmt);
-	}
 
 
 }
