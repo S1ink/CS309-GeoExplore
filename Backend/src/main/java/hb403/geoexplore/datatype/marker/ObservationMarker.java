@@ -57,6 +57,12 @@ public class ObservationMarker extends MarkerBase {
 			inverseJoinColumns = @JoinColumn(name = "group_id"))
 	private Set<UserGroup> pertainsGroup = new HashSet<>();
 
+	@Getter
+	@Setter
+	@JsonIgnore
+	@OneToOne(mappedBy = "observation", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE })
+	private hb403.geoexplore.datatype.Image Image;
+
 	public void addToPertainsGroup(UserGroup group_to_add){
 		pertainsGroup.add(group_to_add);
 	}
