@@ -7,15 +7,13 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
@@ -27,14 +25,16 @@ import org.springframework.boot.test.web.server.LocalServerPort;	// SBv3
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @RunWith(SpringRunner.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SamSystemTest {
 	
 	@LocalServerPort
 	int port;
 
-	private User test_user = null;
-	private long test_user_id = -1L;
-	private Response post_test_response = null;
+	private static User
+		create_test_user = null,
+		update_test_user = null;
+	private static long test_user_id = -1L;
 
 	@Before
 	public void setUp() {
@@ -42,30 +42,29 @@ public class SamSystemTest {
 		RestAssured.port = port;
 		RestAssured.baseURI = "http://localhost";
 
-		this.test_user = new User();
-		this.test_user.setId(-1L);
-		this.test_user.setName("NEW USER (AUTOMATED TEST)");
-		this.test_user.setEmailId("email@iastate.edu");
-		this.test_user.setPassword("87fdj203dxcjk392");
-		this.test_user.setLocation_privacy(LocationSharing.PUBLIC);
-		this.test_user.setIo_latitude(10.0);
-		this.test_user.setIo_longitude(-10.0);
-		this.test_user.setLast_location_update(new Date());
+	}
 
-		// we have to pre-post since we need to user id for subsequent accesses
-		this.post_test_response = 
-			RestAssured
-				.given()
-				.contentType("application/json")
-				.body(this.test_user)
-				.post("/user/create");
+	@BeforeClass
+	public static void setUpStatic() {
+		create_test_user = new User();
+		create_test_user.setId(-1L);
+		create_test_user.setName("NEW USER (AUTOMATED TEST)");
+		create_test_user.setEmailId("email@iastate.edu");
+		create_test_user.setPassword("87fdj203dxcjk392");
+		create_test_user.setLocation_privacy(LocationSharing.PUBLIC);
+		create_test_user.setIo_latitude(10.0);
+		create_test_user.setIo_longitude(-10.0);
+		create_test_user.setLast_location_update(new Date());
 
-		try {
-			this.test_user_id = this.post_test_response.getBody().as(User.class).getId();
-		} catch(Exception e) {
-			this.test_user_id = -1L;	// fail
-		}
-
+		update_test_user = new User();
+		update_test_user.setId(-1L);
+		update_test_user.setName("UPDATED USER (AUTOMATED TEST)");
+		update_test_user.setEmailId("updated@iastate.edu");
+		update_test_user.setPassword("f908fds098f90d");
+		update_test_user.setLocation_privacy(LocationSharing.GROUP);
+		update_test_user.setIo_latitude(-25.0);
+		update_test_user.setIo_longitude(25.0);
+		update_test_user.setLast_location_update(new Date());
 	}
 
 
@@ -76,82 +75,96 @@ public class SamSystemTest {
 		assertEquals(	a.getLocation_privacy(), 	b.getLocation_privacy()					);
 		assertEquals(	a.getIo_latitude(), 		b.getIo_latitude()						);
 		assertEquals(	a.getIo_longitude(), 		b.getIo_longitude()						);
-		// assertTrue(		a.getLast_location_update()	.equals( b.getLast_location_update() )	);
+		System.out.printf("A time: %d, B time: %d\n", a.getLast_location_update().getTime(), b.getLast_location_update().getTime());
+		assertTrue(		a.getLast_location_update().getTime() <= b.getLast_location_update().getTime()	);	// these are always a little off... :|
 	}
 
-	// @Test
-	public void postUserTest() {
+	@Test
+	public void A_postUserTest() {
 
-		assertEquals(200, this.post_test_response.getStatusCode());
+		System.out.printf("Running POST test -- ID is %d\n", test_user_id);
+
+		final Response resp = 
+			RestAssured
+				.given()
+				.contentType("application/json")
+				.body(create_test_user)
+				.post("/user/create");
+
+		try {
+			test_user_id = resp.getBody().as(User.class).getId();
+		} catch(Exception e) {
+			test_user_id = -1L;	// fail
+		}
+
+		assertEquals(200, resp.getStatusCode());
 		// System.out.println(this.post_test_response.getBody().asPrettyString());
-		final User u = this.post_test_response.getBody().as(User.class);
+		final User u = resp.getBody().as(User.class);
 
-		assertTrue(this.test_user_id >= 0);
-		SamSystemTest.assertUsersEqual(this.test_user, u);
+		assertTrue(test_user_id >= 0);
+		SamSystemTest.assertUsersEqual(create_test_user, u);
 
 	}
 
-	// @Test
-	public void getUserTest() {
+	@Test
+	public void B_getUserTest() {
 
-		assertTrue(this.test_user_id >= 0);
+		System.out.printf("Running GET test -- ID is %d\n", test_user_id);
+
+		assertTrue(test_user_id >= 0);
 
 		final Response resp =
-			RestAssured.get("/user/{id}", this.test_user_id);
+			RestAssured.get("/user/{id}", test_user_id);
 
 		assertEquals(200, resp.getStatusCode());
 		final User u = resp.getBody().as(User.class);
 
-		assertEquals(this.test_user_id, u.getId());
-		SamSystemTest.assertUsersEqual(this.test_user, u);
+		assertEquals(test_user_id, u.getId());
+		SamSystemTest.assertUsersEqual(create_test_user, u);
 
 	}
 
-	// @Test
-	public void updateUserTest() {
+	@Test
+	public void C_updateUserTest() {
 
-		assertTrue(this.test_user_id >= 0);
+		System.out.printf("Running PUT test -- ID is %d\n", test_user_id);
 
-		this.test_user.setName("UPDATED USER (AUTOMATED TEST)");
-		this.test_user.setEmailId("updated@iastate.edu");
-		this.test_user.setPassword("f908fds098f90d");
-		this.test_user.setLocation_privacy(LocationSharing.GROUP);
-		this.test_user.setIo_latitude(-25.0);
-		this.test_user.setIo_longitude(25.0);
-		this.test_user.setLast_location_update(new Date());
+		assertTrue(test_user_id >= 0);
 
 		final Response resp =
 			RestAssured
 				.given()
 				.contentType("application/json")
-				.body(this.test_user)
-				.put("/user/{id}/update", this.test_user_id);
+				.body(update_test_user)
+				.put("/user/{id}/update", test_user_id);
 
 		assertEquals(200, resp.getStatusCode());
 		// System.out.println(resp.getBody().asPrettyString());
 		final User u = resp.getBody().as(User.class);
 
-		assertEquals(this.test_user_id, u.getId());
-		SamSystemTest.assertUsersEqual(this.test_user, u);
+		assertEquals(test_user_id, u.getId());
+		SamSystemTest.assertUsersEqual(update_test_user, u);
 
 	}
 
-	// @Test
-	public void deleteUserTest() {
+	@Test
+	public void D_deleteUserTest() {
 
-		assertTrue(this.test_user_id >= 0);
+		System.out.printf("Running DELETE test -- ID is %d\n", test_user_id);
+
+		assertTrue(test_user_id >= 0);
 
 		final Response resp =
-			RestAssured.delete("/user/{id}/delete", this.test_user_id);
+			RestAssured.delete("/user/{id}/delete", test_user_id);
 
 		assertEquals(200, resp.getStatusCode());
 		final User u = resp.getBody().as(User.class);
 
-		assertEquals(this.test_user_id, u.getId());
-		SamSystemTest.assertUsersEqual(this.test_user, u);
+		assertEquals(test_user_id, u.getId());
+		SamSystemTest.assertUsersEqual(update_test_user, u);
 
 		final Response verify =
-			RestAssured.get("/user/{id}", this.test_user_id);
+			RestAssured.get("/user/{id}", test_user_id);
 
 		assertEquals(200, verify.getStatusCode());
 		try {
@@ -164,13 +177,13 @@ public class SamSystemTest {
 	}
 
 
-	@Test
-	public void testSequential() {
-		this.postUserTest();
-		this.getUserTest();
-		this.updateUserTest();
-		this.deleteUserTest();
-	}
+	// @Test
+	// public void testSequential() {
+	// 	this.postUserTest();
+	// 	this.getUserTest();
+	// 	this.updateUserTest();
+	// 	this.deleteUserTest();
+	// }
 
 
 }
