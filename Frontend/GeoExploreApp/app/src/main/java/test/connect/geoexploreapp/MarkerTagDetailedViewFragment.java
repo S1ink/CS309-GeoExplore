@@ -60,7 +60,7 @@ public class MarkerTagDetailedViewFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_marker_tag_detailed_view, container, false);inflater.inflate(R.layout.fragment_marker_tag_detailed_view, container, false);
+        View view = inflater.inflate(R.layout.fragment_marker_tag_detailed_view, container, false);
         Button backButton = view.findViewById(R.id.backButton);
         Button deleteButton = view.findViewById(R.id.tagDetailDeleteBtn);
         Button updateButton = view.findViewById(R.id.tagDetailUpdateBtn);
