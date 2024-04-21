@@ -23,7 +23,7 @@ import org.junit.Test;
 
 public class YusefSystemTest {
 
-    private static final int SIMULATED_DELAY_MS = 500;
+    private static final int SIMULATED_DELAY_MS = 1000;
 
     @Rule
     public ActivityTestRule<LoginSignUpActivity> activityRule = new ActivityTestRule<>(LoginSignUpActivity.class);
@@ -51,11 +51,11 @@ public class YusefSystemTest {
         onView(allOf(withText("Signup"), isDescendantOfA(withId(R.id.tab_layout))))
                 .perform(click());
 
-        onView(withId(R.id.firstName)).perform(typeText("Testing"), ViewActions.closeSoftKeyboard());
+        onView(withId(R.id.firstName)).perform(typeText("Testing2"), ViewActions.closeSoftKeyboard());
 
-        onView(withId(R.id.lastName)).perform(typeText("Yusef"), ViewActions.closeSoftKeyboard());
+        onView(withId(R.id.lastName)).perform(typeText("Yusef2"), ViewActions.closeSoftKeyboard());
 
-        onView(withId(R.id.signup_email)).perform(typeText("yusef@test.com"), ViewActions.closeSoftKeyboard());
+        onView(withId(R.id.signup_email)).perform(typeText("yusef2@test.com"), ViewActions.closeSoftKeyboard());
 
         onView(withId(R.id.signup_password)).perform(typeText("pass"), ViewActions.closeSoftKeyboard());
 
