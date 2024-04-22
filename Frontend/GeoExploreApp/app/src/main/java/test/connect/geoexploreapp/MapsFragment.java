@@ -704,14 +704,28 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
 
         observation.setDescription(observationDescription);
 
-        observationApi.saveObs(observation).enqueue(new SlimCallback<>(obs -> {
-            addTagsToObservation(obs.getId(), markerTags);
-            LatLng position = new LatLng(obs.getIo_latitude(), obs.getIo_longitude());
-            mMap.addMarker(new MarkerOptions()
-                    .position(position)
-                    .title(obs.getId() + " " + obs.getTitle())
-                    .icon(bitmapDescriptorFromVector(getContext(), R.drawable.baseline_photo_camera_24)));
-        }, "CreateNewObservation"));
+        observationApi.saveObs(observation).enqueue(new Callback<Observation>() {
+            @Override
+            public void onResponse(Call<Observation> call, Response<Observation> response) {
+                if (response.isSuccessful()) {
+                    Observation obs = response.body();
+                    addTagsToObservation(obs.getId(), markerTags);
+                    LatLng position = new LatLng(obs.getIo_latitude(), obs.getIo_longitude());
+                    mMap.addMarker(new MarkerOptions()
+                            .position(position)
+                            .title(obs.getId() + " " + obs.getTitle())
+                            .icon(bitmapDescriptorFromVector(getContext(), R.drawable.baseline_photo_camera_24)));
+                    Toast.makeText(getContext(), "Observation created successfully!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), "Failed to create observation: " + response.message(), Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Observation> call, Throwable t) {
+                Toast.makeText(getContext(),"Error: " + t.getMessage(),Toast.LENGTH_LONG).show();
+            }
+        });
 
     }
     private void displayObservationByID(Long id) {
