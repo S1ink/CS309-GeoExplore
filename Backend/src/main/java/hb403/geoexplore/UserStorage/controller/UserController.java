@@ -25,10 +25,13 @@ public class UserController {
     @PostMapping(path = "/user/create")
     public @ResponseBody User UserCreate(@RequestBody User newUser) {
         if(newUser != null) {
-            User newestUser = new User(newUser.getName(), newUser.getEmailId(), newUser.getPassword());
-            newestUser = userRepository.save(newestUser);
-            newestUser.enforceLocationTable();
-            return newestUser;
+            // User newestUser = new User(newUser.getName(), newUser.getEmailId(), newUser.getPassword());
+            newUser.enforceLocationIO();
+            newUser.checkIfAdmin();
+            newUser.encryptPassword();
+            newUser = userRepository.save(newUser);
+            newUser.enforceLocationTable();
+            return newUser;
         }
         return null;
     }
@@ -59,7 +62,12 @@ public class UserController {
             // User updater = new User(id, updated.getName(), updated.getEmailId(), updated.getPassword());
             updated.setComments(original.getComments());
             updated.enforceLocationIO();
+            updated.encryptPassword();
+            updated.checkIfAdmin();
+            updated.setId(id);
             updated = userRepository.save(updated);
+            updated.enforceLocationTable();
+            System.out.println("user update ids match before/after?: " + (updated.getId() == id));
             return updated;
         }
         return null;
@@ -68,12 +76,13 @@ public class UserController {
     // D of Crudl
     @Operation(summary = "Delete a user from the database by its id")
     @DeleteMapping(path = "/user/{id}/delete")
-    public @ResponseBody String deleteUser(@PathVariable Long id){
+    public @ResponseBody User deleteUser(@PathVariable Long id){
         if(id != null) {
             try {
                 User deleted = userRepository.findById(id).get();
                 userRepository.deleteById(id);
-                return "Successfully deleted: \n" + deleted.toString();
+                deleted.enforceLocationTable();
+                return deleted;
             } catch(Exception e) {
 
             }
