@@ -307,10 +307,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
                             return;
                         }
                         if("Report".equals(type)){
-                            createNewReport(latLng, title, markerTags);
+                            createNewReport(latLng, title, markerTags, statusMessage);
 
                         }else if("Event".equals(type)){
-                            createNewEvent(latLng, title, markerTags);
+                            createNewEvent(latLng, title, markerTags, statusMessage);
 
                         }else{
                             createNewObservation(latLng, title,description, markerTags, statusMessage);
@@ -610,7 +610,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
 
 
     // Report CRUDL
-    private void createNewReport(final LatLng latLng, String reportTitle, List<String> markerTags) {
+    private void createNewReport(final LatLng latLng, String reportTitle, List<String> markerTags, TextView statusMessage) {
         ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
 
         ReportMarker newReportMarker = new ReportMarker();
@@ -618,16 +618,31 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
         newReportMarker.setIo_longitude(latLng.longitude);
         newReportMarker.setTitle(reportTitle);
         newReportMarker.setCreator(loggedInUser);
+        reportMarkerApi.addReport(newReportMarker).enqueue(new Callback<ReportMarker>() {
+            @Override
+            public void onResponse(Call<ReportMarker> call, Response<ReportMarker> response) {
+                if (response.isSuccessful()) {
+                    ReportMarker createdReportMarker = response.body();
+                    addTagsToReport(createdReportMarker.getId(), markerTags);
+                    LatLng position = new LatLng(createdReportMarker.getIo_latitude(), createdReportMarker.getIo_longitude());
+                    mMap.addMarker(new MarkerOptions()
+                            .position(position)
+                            .title(createdReportMarker.getId() + " " + createdReportMarker.getTitle())
+                            .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_report_24)));
+                    statusMessage.setText("Observation created successfully!");
+                } else {
+                    statusMessage.setText("Failed to create observation.");
+                }
+                statusMessage.setVisibility(View.VISIBLE);
 
+            }
 
-        reportMarkerApi.addReport(newReportMarker).enqueue(new SlimCallback<>(createdReportMarker -> {
-            addTagsToReport(createdReportMarker.getId(), markerTags);
-            LatLng position = new LatLng(createdReportMarker.getIo_latitude(), createdReportMarker.getIo_longitude());
-            mMap.addMarker(new MarkerOptions()
-                    .position(position)
-                    .title(createdReportMarker.getId() + " " + createdReportMarker.getTitle())
-                    .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_report_24)));
-        }, "CreateNewReport"));
+            @Override
+            public void onFailure(Call<ReportMarker> call, Throwable t) {
+                Toast.makeText(getContext(),"Error: " + t.getMessage(),Toast.LENGTH_LONG).show();
+
+            }
+        });
 
     }
     private void displayReportByID(Long id) {
@@ -711,7 +726,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
         observation.setIo_longitude(latLng.longitude);
         observation.setCreator(loggedInUser);
         observation.setTitle(observationTitle);
-
         observation.setDescription(observationDescription);
 
         observationApi.saveObs(observation).enqueue(new Callback<Observation>() {
@@ -816,7 +830,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
     }
 
     // Event CRUDL
-    private void createNewEvent(final LatLng latLng, String eventTitle, List<String> markerTags) {
+    private void createNewEvent(final LatLng latLng, String eventTitle, List<String> markerTags, TextView statusMessage) {
         EventMarkerApi reportMarkerApi = ApiClientFactory.getEventMarkerApi();
 
         EventMarker newEventMarker = new EventMarker();
@@ -824,16 +838,30 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
         newEventMarker.setIo_longitude(latLng.longitude);
         newEventMarker.setCreator(loggedInUser);
         newEventMarker.setTitle(eventTitle);
+        reportMarkerApi.addEvent(newEventMarker).enqueue(new Callback<EventMarker>() {
+            @Override
+            public void onResponse(Call<EventMarker> call, Response<EventMarker> response) {
+                if (response.isSuccessful()) {
+                    EventMarker createdEventMarker = response.body();
+                    addTagsToEvent(createdEventMarker.getId(), markerTags);
+                    LatLng position = new LatLng(createdEventMarker.getIo_latitude(), createdEventMarker.getIo_longitude());
+                    mMap.addMarker(new MarkerOptions()
+                            .position(position)
+                            .title(createdEventMarker.getId() + " " + createdEventMarker.getTitle())
+                            .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_celebration_24)));
+                    statusMessage.setText("Observation created successfully!");
+                } else {
+                    statusMessage.setText("Failed to create observation.");
+                }
+                statusMessage.setVisibility(View.VISIBLE);
+            }
 
-        reportMarkerApi.addEvent(newEventMarker).enqueue(new SlimCallback<>(createdEventMarker -> {
-            addTagsToEvent(createdEventMarker.getId(), markerTags);
-            LatLng position = new LatLng(createdEventMarker.getIo_latitude(), createdEventMarker.getIo_longitude());
-            mMap.addMarker(new MarkerOptions()
-                    .position(position)
-                    .title(createdEventMarker.getId() + " " + createdEventMarker.getTitle())
-                    .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_celebration_24)));
-        }, "CreateNewEvent"));
+            @Override
+            public void onFailure(Call<EventMarker> call, Throwable t) {
+                Toast.makeText(getContext(),"Error: " + t.getMessage(),Toast.LENGTH_LONG).show();
 
+            }
+        });
 
     }
     private void displayEventByID(Long id) {

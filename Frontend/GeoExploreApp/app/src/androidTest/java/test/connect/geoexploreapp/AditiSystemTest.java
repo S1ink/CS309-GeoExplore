@@ -127,6 +127,88 @@ public class AditiSystemTest {
         onView(withId(R.id.statusMessage)).check(matches(withText("Observation created successfully!")));
 
     }
+
+    @Test
+    public void CreateEvent(){
+        onView(withId(R.id.login_email)).perform(typeText(emailId));
+        onView(withId(R.id.login_password)).perform(typeText(password));
+        onView(withId(R.id.login_button)).perform(click());
+
+        try {
+            Thread.sleep(SIMULATED_DELAY_MS);
+        } catch (InterruptedException e) {
+        }
+
+        // Verify that volley returned the correct value
+        onView(withId(R.id.mainActivity)).check(matches(isDisplayed()));
+
+        onView(withId(R.id.map)).check(matches(isDisplayed()));
+
+        onView(withId(R.id.map)).perform(longClick());
+        onView(withText("What do you want to create?"))
+                .inRoot(isDialog()) //
+                .check(matches(isDisplayed()));
+
+        onView(allOf(withId(android.R.id.text1), withText("Event")))
+                .inRoot(isDialog())
+                .perform(click());
+
+
+        onView(withId(R.id.editTextTitle)).perform(typeText("Lion stopped"));
+        closeSoftKeyboard();
+
+        onView(withText("Create")).perform(click());
+
+        // Put thread to sleep to allow volley to handle the request
+        try {
+            Thread.sleep(SIMULATED_DELAY_MS);
+        } catch (InterruptedException e) {
+        }
+
+        onView(withId(R.id.statusMessage)).check(matches(withText("Event created successfully!")));
+
+    }
+
+    @Test
+    public void CreateReport(){
+        onView(withId(R.id.login_email)).perform(typeText(emailId));
+        onView(withId(R.id.login_password)).perform(typeText(password));
+        onView(withId(R.id.login_button)).perform(click());
+
+        try {
+            Thread.sleep(SIMULATED_DELAY_MS);
+        } catch (InterruptedException e) {
+        }
+
+        // Verify that volley returned the correct value
+        onView(withId(R.id.mainActivity)).check(matches(isDisplayed()));
+
+        onView(withId(R.id.map)).check(matches(isDisplayed()));
+
+        onView(withId(R.id.map)).perform(longClick());
+        onView(withText("What do you want to create?"))
+                .inRoot(isDialog()) //
+                .check(matches(isDisplayed()));
+
+        onView(allOf(withId(android.R.id.text1), withText("Report")))
+                .inRoot(isDialog())
+                .perform(click());
+
+
+        onView(withId(R.id.editTextTitle)).perform(typeText("Lion stopped"));
+        closeSoftKeyboard();
+
+        onView(withText("Create")).perform(click());
+
+        // Put thread to sleep to allow volley to handle the request
+        try {
+            Thread.sleep(SIMULATED_DELAY_MS);
+        } catch (InterruptedException e) {
+        }
+
+        onView(withId(R.id.statusMessage)).check(matches(withText("Report created successfully!")));
+
+    }
 }
 
 
