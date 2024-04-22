@@ -9,6 +9,7 @@ import java.util.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import hb403.geoexplore.datatype.Image;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -61,7 +62,7 @@ public class ObservationMarker extends MarkerBase {
 	@Setter
 	@JsonIgnore
 	@OneToOne(mappedBy = "observation", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE })
-	private hb403.geoexplore.datatype.Image Image;
+	private Image image;
 
 	public void addToPertainsGroup(UserGroup group_to_add){
 		pertainsGroup.add(group_to_add);
