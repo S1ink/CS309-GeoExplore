@@ -27,7 +27,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-
+//@RunWith(SpringRunner.class)
 public class EthanSystemTest {
 
   @LocalServerPort
@@ -49,6 +49,7 @@ public class EthanSystemTest {
 		this.tempObs.setDescription("A new way to dance");
 		this.tempObs.setIo_latitude(42.03);
 		this.tempObs.setIo_longitude(93.63);
+		this.tempObs.enforceLocationIO();
 
 		this.tag = new MarkerTag(); //set up tag to be tested
 		this.tag.setId(tag_id);
@@ -57,7 +58,7 @@ public class EthanSystemTest {
 
 
 	//Variables that need to be preserved throughout testing
-	Long id = (long) 49; //this just needs to be updated to what the observation's id will be, I kept running into bugs when trying to get it.
+	Long id = (long) 57; //this just needs to be updated to what the observation's id will be, I kept running into bugs when trying to get it.
 
 
 	//test 1 of 4, this will be testing the creation of an observation
@@ -86,10 +87,11 @@ public class EthanSystemTest {
 			e.printStackTrace();
 		}
 	}
-	//test 2 of 4, this is a test to update the observation just changing the title
+	//test 2 of 4, this is a test to update the observation just changing the title and description with location staying the same
 	@Test
 	public void observationUpdateTest() {
 		tempObs.setTitle("Salsa");
+		tempObs.setDescription("A new fun way to dance");
 		Response response = RestAssured.given().
 				contentType("application/JSON").
 				body(this.tempObs).
@@ -104,7 +106,9 @@ public class EthanSystemTest {
 			JSONObject returnObj = new JSONObject(returnString);
 			//JSONObject returnObj = returnArr.getJSONObject(returnArr.length()-1);
 			assertEquals("Salsa", returnObj.get("title"));
-			assertEquals("A new way to dance",returnObj.get("description"));
+			assertEquals("A new fun way to dance",returnObj.get("description"));
+			assertEquals(42.03, returnObj.get("io_latitude"));
+			assertEquals(93.63,returnObj.get("io_longitude") );
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -128,8 +132,10 @@ public class EthanSystemTest {
 			JSONObject returnObj = new JSONObject(returnString);
 			System.out.println(tag.toString());
 			System.out.println(returnObj.get("tags"));
-			assertNotEquals(null, returnObj.get("tags")); //since the tags in the json come out as an array of tags this should work
-			//assertEquals("A new way to dance",returnObj.get("description"));
+			assertNotEquals(null, returnObj.get("tags")); //since the tags in the object, come as a value I can't match for some reason I just make sure it's not null
+			assertEquals("Salsa", returnObj.get("title"));
+			assertEquals("A new fun way to dance",returnObj.get("description"));
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
