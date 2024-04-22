@@ -1,8 +1,10 @@
 package test.connect.geoexploreapp;
 
+
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
@@ -10,6 +12,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
 
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -28,6 +31,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import com.google.android.gms.location.Priority;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -51,6 +55,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import android.location.Location;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -68,9 +79,11 @@ import test.connect.geoexploreapp.model.ReportMarker;
 import test.connect.geoexploreapp.model.User;
 import test.connect.geoexploreapp.websocket.WebSocketListener;
 import test.connect.geoexploreapp.websocket.WebSocketManager;
+import android.Manifest;
 
 public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSocketListener {
 
+    public static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
     private GoogleMap mMap;
     private boolean isUpdateReportMode = false;
     private boolean isUpdateEventMode = false;
@@ -84,6 +97,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
     private TextView eventUpdateTextView;
     private TextView observationUpdateTextView;
     private User loggedInUser;
+    private FusedLocationProviderClient fusedLocationProviderClient;
+    private LocationRequest locationRequest;
+    private LocationCallback locationCallback;
 
     public MapsFragment() {
 
@@ -96,6 +112,32 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
         View view = inflater.inflate(R.layout.fragment_maps, container, false);
 
         WebSocketManager.getInstance().setWebSocketListener(this);
+
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity());
+
+
+
+
+        locationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 300000)  // 5 minutes
+                .setMinUpdateIntervalMillis(150000)
+                .build();
+
+
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult != null) {
+                    for (Location location : locationResult.getLocations()) {
+                        double latitude = location.getLatitude();
+                        double longitude = location.getLongitude();
+
+                        // websocket send here
+
+                        Log.d("MapsFragment", "Latitude: " + latitude + ", Longitude: " + longitude);
+                    }
+                }
+            }
+        };
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map);
@@ -134,7 +176,53 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
             }
         });
 
+        startLocationUpdates();
+
         return view;
+    }
+
+
+    private void startLocationUpdates() {
+        // check permissions
+        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+
+            // start sending location if permission granted
+            try {
+                fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null);
+            } catch (SecurityException e) {
+                Log.e("MapsFragment", "issue with permissions", e);
+            }
+        } else {
+            // request perms if not granted
+            ActivityCompat.requestPermissions(
+                    requireActivity(),
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                    LOCATION_PERMISSION_REQUEST_CODE
+            );
+        }
+    }
+
+    private void stopLocationUpdates() {
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback);  // stop the updates
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        startLocationUpdates();  // resume the locatyion updates
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        stopLocationUpdates();  // stop the location updates
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        stopLocationUpdates();  // stops location when user exits
     }
 
     @Override
