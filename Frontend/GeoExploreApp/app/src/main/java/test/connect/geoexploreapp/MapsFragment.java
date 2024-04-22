@@ -281,6 +281,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
         EditText editTextTitle = view.findViewById(R.id.editTextTitle);
         EditText editTextDescription = view.findViewById(R.id.editTextDescription);
         EditText editTextMarkerTag = view.findViewById(R.id.editTextMarkerTag);
+        TextView statusMessage = view.findViewById(R.id.statusMessage);
 
         if ("Report".equals(type)) {
             editTextDescription.setVisibility(View.GONE);
@@ -301,7 +302,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
                         String markerTagsInput = editTextMarkerTag.getText().toString().trim();
 
                         List<String> markerTags = parseMarkerTags(markerTagsInput);
-
+                        if (title.isEmpty()) {
+                            editTextTitle.setError("Title cannot be empty");
+                            return;
+                        }
                         if("Report".equals(type)){
                             createNewReport(latLng, title, markerTags);
 
@@ -309,12 +313,18 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
                             createNewEvent(latLng, title, markerTags);
 
                         }else{
-                            createNewObservation(latLng, title,description, markerTags);
+                            createNewObservation(latLng, title,description, markerTags, statusMessage);
                         }
+                        dialog.dismiss();
 
                     }
                 })
-                .setNegativeButton("Cancel", null);
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                            }
+                        });
 
         AlertDialog dialog = builder.create();
         dialog.show();
@@ -693,7 +703,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
     }
 
     // Observation CRUDL
-    private void createNewObservation(final LatLng latLng, String observationTitle, String observationDescription, List<String> markerTags) {
+    private void createNewObservation(final LatLng latLng, String observationTitle, String observationDescription, List<String> markerTags, TextView statusMessage) {
         ObservationApi observationApi = ApiClientFactory.GetObservationApi();
 
         Observation observation = new Observation();
@@ -715,10 +725,12 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
                             .position(position)
                             .title(obs.getId() + " " + obs.getTitle())
                             .icon(bitmapDescriptorFromVector(getContext(), R.drawable.baseline_photo_camera_24)));
-                    Toast.makeText(getContext(), "Observation created successfully!", Toast.LENGTH_SHORT).show();
+                    statusMessage.setText("Observation created successfully!");
                 } else {
-                    Toast.makeText(getContext(), "Failed to create observation: " + response.message(), Toast.LENGTH_LONG).show();
+                    statusMessage.setText("Failed to create observation.");
                 }
+                statusMessage.setVisibility(View.VISIBLE);
+
             }
 
             @Override

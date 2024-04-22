@@ -112,9 +112,9 @@ public class AditiSystemTest {
                 .perform(click());
 
 
-        onView(withId(R.id.editTextTitle)).perform(typeText("Lion Running1"));
+        onView(withId(R.id.editTextTitle)).perform(typeText("Lion stopped"));
         closeSoftKeyboard();
-        onView(withId(R.id.editTextDescription)).perform(typeText("Saw a lion running. Be careful.1"));
+        onView(withId(R.id.editTextDescription)).perform(typeText("Saw a lion. Be careful.1"));
         closeSoftKeyboard();
         onView(withText("Create")).perform(click());
 
@@ -124,16 +124,9 @@ public class AditiSystemTest {
         } catch (InterruptedException e) {
         }
 
-        ActivityScenario<MainActivity> scenario = ActivityScenario.launch(MainActivity.class);
-        scenario.onActivity(activity -> {
-            onView(withText("Observation created successfully!"))
-                    .inRoot(withDecorView(not(activity.getWindow().getDecorView()))) // Ensure the toast is shown
-                    .check(matches(isDisplayed()));
-        });
-
+        onView(withId(R.id.statusMessage)).check(matches(withText("Observation created successfully!")));
 
     }
-
-
 }
+
 
