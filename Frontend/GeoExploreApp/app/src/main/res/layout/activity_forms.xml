@@ -40,14 +40,5 @@
         android:hint="Enter Tags (Seperated by commas)"
         android:inputType="textMultiLine"
         android:background="@drawable/edittext_bkg"/>
-    <TextView
-        android:id="@+id/statusMessage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Status messages appear here"
-        android:visibility="gone"
-        android:textColor="@color/design_default_color_error"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"/>
 
 </LinearLayout>

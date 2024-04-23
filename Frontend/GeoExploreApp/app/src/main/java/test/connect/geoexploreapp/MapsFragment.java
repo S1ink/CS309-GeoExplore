@@ -15,6 +15,8 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 
+import android.os.Handler;
+import android.os.Looper;
 import android.text.InputType;
 import android.util.Log;
 import android.view.Gravity;
@@ -80,7 +82,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
     private int reportIdStatus = 0; // For promptForReportID method. 1 to Read, 2 to Delete, 3 to Update
     private int eventIdStatus = 0; // For promptForEventID method. 1 to Read, 2 to Delete, 3 to Update
     private int observationIdStatus = 0; // For promptForReportID method. 1 to Read, 2 to Delete, 3 to Update
-    private TextView reportUpdateTextView;
+    private TextView reportUpdateTextView, statusMessage;
     private TextView eventUpdateTextView;
     private TextView observationUpdateTextView;
     private User loggedInUser;
@@ -99,6 +101,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map);
+
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
@@ -124,7 +127,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
         reportUpdateTextView = view.findViewById(R.id.activity_maps_report_update_text_view);
         eventUpdateTextView = view.findViewById(R.id.activity_maps_event_update_text_view);
         observationUpdateTextView = view.findViewById(R.id.activity_maps_observation_update_text_view);
-
+        statusMessage = view.findViewById(R.id.statusMessage);
 
         FloatingActionButton fab = view.findViewById(R.id.fab_main);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -281,7 +284,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
         EditText editTextTitle = view.findViewById(R.id.editTextTitle);
         EditText editTextDescription = view.findViewById(R.id.editTextDescription);
         EditText editTextMarkerTag = view.findViewById(R.id.editTextMarkerTag);
-        TextView statusMessage = view.findViewById(R.id.statusMessage);
 
         if ("Report".equals(type)) {
             editTextDescription.setVisibility(View.GONE);
@@ -307,13 +309,13 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
                             return;
                         }
                         if("Report".equals(type)){
-                            createNewReport(latLng, title, markerTags, statusMessage);
+                            createNewReport(latLng, title, markerTags);
 
                         }else if("Event".equals(type)){
-                            createNewEvent(latLng, title, markerTags, statusMessage);
+                            createNewEvent(latLng, title, markerTags);
 
                         }else{
-                            createNewObservation(latLng, title,description, markerTags, statusMessage);
+                            createNewObservation(latLng, title,description, markerTags);
                         }
                         dialog.dismiss();
 
@@ -610,7 +612,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
 
 
     // Report CRUDL
-    private void createNewReport(final LatLng latLng, String reportTitle, List<String> markerTags, TextView statusMessage) {
+    private void createNewReport(final LatLng latLng, String reportTitle, List<String> markerTags) {
         ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
 
         ReportMarker newReportMarker = new ReportMarker();
@@ -629,11 +631,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
                             .position(position)
                             .title(createdReportMarker.getId() + " " + createdReportMarker.getTitle())
                             .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_report_24)));
-                    statusMessage.setText("Observation created successfully!");
+                    showStatus("Report created successfully!");
                 } else {
-                    statusMessage.setText("Failed to create observation.");
+                    Log.d("save report fail", "failed " + response.errorBody());
+
                 }
-                statusMessage.setVisibility(View.VISIBLE);
 
             }
 
@@ -645,6 +647,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
         });
 
     }
+
     private void displayReportByID(Long id) {
         ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
 
@@ -718,7 +721,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
     }
 
     // Observation CRUDL
-    private void createNewObservation(final LatLng latLng, String observationTitle, String observationDescription, List<String> markerTags, TextView statusMessage) {
+    private void createNewObservation(final LatLng latLng, String observationTitle, String observationDescription, List<String> markerTags) {
         ObservationApi observationApi = ApiClientFactory.GetObservationApi();
 
         Observation observation = new Observation();
@@ -739,11 +742,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
                             .position(position)
                             .title(obs.getId() + " " + obs.getTitle())
                             .icon(bitmapDescriptorFromVector(getContext(), R.drawable.baseline_photo_camera_24)));
-                    statusMessage.setText("Observation created successfully!");
+                    showStatus("Observation created successfully!");
                 } else {
-                    statusMessage.setText("Failed to create observation.");
+                   Log.d("save obs fail", "failed " + response.errorBody());
                 }
-                statusMessage.setVisibility(View.VISIBLE);
 
             }
 
@@ -754,6 +756,20 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
         });
 
     }
+
+    private void showStatus(String s) {
+        statusMessage.setText(s);
+        statusMessage.setVisibility(View.VISIBLE);
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (statusMessage != null) {
+                    statusMessage.setVisibility(View.GONE);
+                }
+            }
+        }, 1000);
+    }
+
     private void displayObservationByID(Long id) {
         ObservationApi observationApi = ApiClientFactory.GetObservationApi();
 
@@ -767,6 +783,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
                         .title(obj.getId() + " " + obj.getTitle())
                         .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_photo_camera_24)));
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 10));
+                showStatus("Observation found successfully!");
             }
         }, "getObservationByID"));
     }
@@ -830,7 +847,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
     }
 
     // Event CRUDL
-    private void createNewEvent(final LatLng latLng, String eventTitle, List<String> markerTags, TextView statusMessage) {
+    private void createNewEvent(final LatLng latLng, String eventTitle, List<String> markerTags) {
         EventMarkerApi reportMarkerApi = ApiClientFactory.getEventMarkerApi();
 
         EventMarker newEventMarker = new EventMarker();
@@ -849,11 +866,12 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
                             .position(position)
                             .title(createdEventMarker.getId() + " " + createdEventMarker.getTitle())
                             .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_celebration_24)));
-                    statusMessage.setText("Observation created successfully!");
+                    showStatus("Event created successfully!");
+
                 } else {
-                    statusMessage.setText("Failed to create observation.");
+                    Log.d("save report fail", "failed " + response.errorBody());
+
                 }
-                statusMessage.setVisibility(View.VISIBLE);
             }
 
             @Override

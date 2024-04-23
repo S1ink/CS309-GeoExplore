@@ -85,6 +85,15 @@
         android:text="Tap on the map to select the location to update observation"
         android:visibility="gone"
         android:layout_marginTop="16dp"/>
+    <TextView
+        android:id="@+id/statusMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:textSize="16sp"
+        android:visibility="gone"
+        android:textColor="#FF0000"
+        android:text="Status message"/>
 
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
