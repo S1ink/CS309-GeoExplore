@@ -86,6 +86,7 @@ public class SettingsFragment extends Fragment {
             FrameLayout btnMarkerTagManagement = view.findViewById(R.id.markerTagMngmtBtn);
             FrameLayout btnCreateUserGroup = view.findViewById(R.id.createUserGroupButton);
 
+            FrameLayout btnEditLocationPreference = view.findViewById(R.id.locationPreferenceButton);
             FrameLayout btnSignOut = view.findViewById(R.id.signOut);
             FrameLayout btnReportedUsers = view.findViewById(R.id.reportedUsers);
 
@@ -142,6 +143,14 @@ public class SettingsFragment extends Fragment {
                 btnCreateUserGroup.setVisibility(View.GONE);
                 btnReportedUsers.setVisibility(View.GONE);
             }
+
+            btnEditLocationPreference.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // update user with location preference
+
+                }
+            });
 
             btnSignOut.setOnClickListener(new View.OnClickListener(){
                 @Override
