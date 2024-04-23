@@ -42,7 +42,7 @@ public class User {
     @JsonIgnore
     private String encryptedPassword;
 
-    @JsonIgnore
+    // @JsonIgnore
     private boolean isAdmin;
 
     @Enumerated(value = EnumType.STRING)
