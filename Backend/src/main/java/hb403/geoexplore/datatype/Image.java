@@ -1,5 +1,6 @@
 package hb403.geoexplore.datatype;
 
+import hb403.geoexplore.UserStorage.entity.User;
 import hb403.geoexplore.datatype.marker.ObservationMarker;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -27,5 +28,10 @@ public class Image {
     @JoinColumn(name = "marker_id")
     private ObservationMarker observation;
 
+    /*@Getter
+    @Setter
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private User user;*/
 
 }

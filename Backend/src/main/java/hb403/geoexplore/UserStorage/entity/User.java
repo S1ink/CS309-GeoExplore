@@ -3,6 +3,7 @@ package hb403.geoexplore.UserStorage.entity;
 import hb403.geoexplore.UserStorage.repository.ReportedUserRepository;
 import hb403.geoexplore.UserStorage.repository.UserRepository;
 import hb403.geoexplore.comments.Entity.CommentEntity;
+import hb403.geoexplore.datatype.Image;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -63,6 +64,12 @@ public class User {
     @JsonIgnore
     @OneToOne(mappedBy = "reportedUser", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE })
     private ReportedUser user;
+
+    /*@Getter
+    @Setter
+    @JsonIgnore
+    @OneToOne(mappedBy = "user", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE })
+    private Image image;*/
 
     public User(Long id, String name, String emailId, String password) {
         this.id = id;
