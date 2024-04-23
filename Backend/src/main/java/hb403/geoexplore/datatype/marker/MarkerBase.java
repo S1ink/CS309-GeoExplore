@@ -2,6 +2,7 @@ package hb403.geoexplore.datatype.marker;
 
 import hb403.geoexplore.datatype.EntityBase;
 import hb403.geoexplore.datatype.MarkerTag;
+import hb403.geoexplore.util.GeometryUtil;
 
 import java.util.*;
 
@@ -69,7 +70,7 @@ public abstract class MarkerBase extends EntityBase {
 
 	/** Synchronize the stored table location and IO lat/long values (copies from the IO variables */
 	public void enforceLocationIO() {
-		this.location = new Point(new Coordinate(this.io_latitude, this.io_longitude), new PrecisionModel(), 0);
+		this.location = GeometryUtil.makePoint(new Coordinate(this.io_latitude, this.io_longitude));
 	}
 	/** Synchronize the stored table location and IO lat/long values (copies from the table entry) */
 	public void enforceLocationTable() {

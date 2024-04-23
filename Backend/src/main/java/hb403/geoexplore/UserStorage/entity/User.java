@@ -3,6 +3,7 @@ package hb403.geoexplore.UserStorage.entity;
 import hb403.geoexplore.UserStorage.LocationSharing;
 import hb403.geoexplore.UserStorage.repository.UserRepository;
 import hb403.geoexplore.comments.Entity.CommentEntity;
+import hb403.geoexplore.util.GeometryUtil;
 
 import org.locationtech.jts.geom.*;
 import jakarta.persistence.*;
@@ -172,7 +173,7 @@ public class User {
 
     /** Synchronize the stored table location and IO lat/long values (copies from the IO variables */
 	public void enforceLocationIO() {
-		this.location = new Point(new Coordinate(this.io_latitude, this.io_longitude), new PrecisionModel(), 0);
+		this.location = GeometryUtil.makePoint(new Coordinate(this.io_latitude, this.io_longitude));
         this.last_location_update = new Date();     // could be wrong? eh who cares
 	}
 	/** Synchronize the stored table location and IO lat/long values (copies from the table entry) */

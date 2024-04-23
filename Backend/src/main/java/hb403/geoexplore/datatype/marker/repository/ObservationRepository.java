@@ -2,7 +2,7 @@ package hb403.geoexplore.datatype.marker.repository;
 
 import hb403.geoexplore.datatype.marker.ObservationMarker;
 
-import java.util.List;
+import java.util.Set;
 
 import org.locationtech.jts.geom.Geometry;
 
@@ -19,7 +19,7 @@ public interface ObservationRepository extends JpaRepository<ObservationMarker, 
 	void deleteById(int id);
 
 	@Query(value = "SELECT m from ObservationMarker m WHERE within(m.location, :bounds) = true")
-	public List<ObservationMarker> findWithin(@Param("bounds") Geometry bounds);
+	public Set<ObservationMarker> findWithin(@Param("bounds") Geometry bounds);
 
 
 }
