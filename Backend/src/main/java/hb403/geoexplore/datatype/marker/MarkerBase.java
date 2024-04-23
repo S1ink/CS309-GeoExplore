@@ -1,6 +1,6 @@
 package hb403.geoexplore.datatype.marker;
 
-import hb403.geoexplore.UserStorage.entity.User;
+import hb403.geoexplore.datatype.EntityBase;
 import hb403.geoexplore.datatype.MarkerTag;
 
 import java.util.*;
@@ -21,17 +21,12 @@ import lombok.*;
 @MappedSuperclass
 @Getter
 @Setter
-public abstract class MarkerBase {
+public abstract class MarkerBase extends EntityBase {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "marker_id")
 	protected Long id = -1L;
-
-	@Column()
-	protected String title;
-	@Column()
-	protected String description;
 
 	@Lob
 	@JsonSerialize(using = GeometrySerializer.class)
@@ -44,20 +39,6 @@ public abstract class MarkerBase {
 	protected Double io_latitude = 0.0;		// lat as serialized/deserialized -- not stored in the tables (@Transient)
 	@Transient
 	protected Double io_longitude = 0.0;		// long as serialize/deserialized -- not stored in the tables (@Transient)
-
-	@ManyToOne(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.MERGE })	// caused an error - might have to implement per-entity
-	@JoinColumn(name = "creator_user_id", referencedColumnName = "user_id")
-	protected User creator;		// jsonignore (just send id?)
-
-	@Temporal(value = TemporalType.TIMESTAMP)
-	@Column()
-	protected Date time_created = new Date();	// default ts of whenever constructed
-	@Temporal(value = TemporalType.TIMESTAMP)
-	@Column()
-	protected Date time_updated = new Date();
-
-	@Column()
-	protected String meta;
 
 	@ManyToMany(
 		fetch = FetchType.EAGER,
@@ -97,15 +78,6 @@ public abstract class MarkerBase {
 			this.io_longitude = this.location.getY();
 		}
 	}
-
-	public void applyNewTimestamp() {
-		this.time_created = new Date();
-		this.applyUpdatedTimestamp();
-	}
-	public void applyUpdatedTimestamp() {
-		this.time_updated = new Date();
-	}
-
 
 
 }
