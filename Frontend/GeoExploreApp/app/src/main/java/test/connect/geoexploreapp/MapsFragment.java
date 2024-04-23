@@ -118,7 +118,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
 
 
 
-        locationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 300000)  // 5 minutes
+        locationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 30000)  // 30 seconds
                 .setMinUpdateIntervalMillis(150000)
                 .build();
 
@@ -145,7 +145,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
             mapFragment.getMapAsync(this);
         }
 
-        // check if admin needs location
         SharedViewModel viewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
 
         viewModel.getCreateEmergencyNotification().observe(getViewLifecycleOwner(), isCreateEmergency -> {
@@ -155,7 +154,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
         viewModel.getLoggedInUser().observe(getViewLifecycleOwner(), loggedInUser -> {
             this.loggedInUser = loggedInUser;
             if (loggedInUser != null && !isUserSet){
-                Log.d("TEST", "Web socket connection");
 
                 isUserSet = true;
             }else {
