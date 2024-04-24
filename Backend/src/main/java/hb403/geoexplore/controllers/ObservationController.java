@@ -8,6 +8,7 @@ import hb403.geoexplore.datatype.MarkerTag;
 import hb403.geoexplore.datatype.marker.AlertMarker;
 import hb403.geoexplore.datatype.marker.ObservationMarker;
 import hb403.geoexplore.datatype.marker.ReportMarker;
+import hb403.geoexplore.datatype.marker.repository.ImageRepository;
 import hb403.geoexplore.datatype.marker.repository.MarkerTagRepository;
 import hb403.geoexplore.datatype.marker.repository.ObservationRepository;
 import hb403.geoexplore.util.GeometryUtil;
@@ -31,6 +32,8 @@ public class ObservationController {
     protected UserRepository users_repo;
     @Autowired
     protected CommentRepository commentRepository;
+    @Autowired
+    ImageController imageController;
 
 
     // C of Crudl, adds observation to repo
@@ -86,6 +89,9 @@ public class ObservationController {
         if (id != null) {
             try {
                 final ObservationMarker ref = this.getObs(id);
+                if (ref.getImage() != null){ //deletes the image in the file if the observation gets deleted
+                    imageController.deleteImage(ref.getImage().getId());
+                }
                 this.obs_repo.deleteById(id);
                 ref.enforceLocationTable();
                 return ref;

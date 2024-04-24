@@ -1,6 +1,5 @@
 package hb403.geoexplore.controllers;
 
-import hb403.geoexplore.UserStorage.entity.User;
 import hb403.geoexplore.UserStorage.repository.UserRepository;
 import hb403.geoexplore.datatype.Image;
 import hb403.geoexplore.datatype.marker.ObservationMarker;
@@ -48,33 +47,31 @@ public class ImageController {
     @Operation(summary = "Upload an image to an observation")
     @PostMapping("observation/image/{postId}")
     public String observationFileUpload(@RequestParam("image") MultipartFile imageFile, @PathVariable long postId) {
-
         try {
-            if (imageFile == null || postId == 0){
-
+            ObservationMarker tempObs = observationRepository.findById(postId).get(); //Checks if post id is null or invalid
+            if (imageFile == null) {
+                System.out.println("[Post] Image file is null");
+            } else if (postId == 0) {
+                System.out.println("[Post] Post Id is invalid");
             }
+            /*else if (!imageFile.toString().contains("jpg")){ //Might try to implement this enforcement but it didn't work at first, I'll look into it a bit more though
+                System.out.println("[Post] File is not a JPEG");
+            }*/
             else {
                 AtomicBoolean isRepeat = new AtomicBoolean(false);
+
                 File destinationFile = new File(directory + Objects.requireNonNull(imageFile.getOriginalFilename()));//File.separator was removed because it wasn't letting me upload with it
                 System.out.println(destinationFile);
                 Image image = new Image();
                 image.setFilePath(destinationFile.getAbsolutePath());
-                List<Image> sort = imageRepository.findAll();
-                sort.forEach(imageInRepo -> { // a way to tell if the image is a repeat within the file storage
-                    if (imageInRepo.getFilePath().equals(image.getFilePath())) {
-                        isRepeat.set(true);
-                    }
-                });
-
-                if (!isRepeat.get()) {
+                if (!directory.contains(imageFile.toString())) { //checks just the file itself
                     imageFile.transferTo(destinationFile);  // save file to disk only if image is not a repeat
+
                 }
-                //image.setFilePath(destinationFile.getAbsolutePath());
-                ObservationMarker tempObs = observationRepository.findById(postId).get();
+
                 tempObs.setImage(image);
                 image.setObservation(tempObs);
                 observationRepository.save(tempObs);
-                //imageRepository.save(image);
                 return "File uploaded successfully: " + destinationFile.getAbsolutePath();
             }
         } catch (Exception e) {
@@ -122,22 +119,38 @@ public class ImageController {
     @GetMapping(value = "/image/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
     byte[] getImageById(@PathVariable long id) throws IOException {
         if (id != 0) {
-            Image image = imageRepository.findById(id).get();
-            File imageFile = new File(image.getFilePath());
-            return Files.readAllBytes(imageFile.toPath());
-        }
-        else {
+            try {
+                Image image = imageRepository.findById(id).get();
+                File imageFile = new File(image.getFilePath());
+                return Files.readAllBytes(imageFile.toPath());
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw e;
+            }
+        } else {
+            System.out.println("[GET] Id is null");
             return null;
         }
+
     }
 
     @Operation(summary = "gets image from repository using observation id")
     @GetMapping(value = "/observation/image/{post_id}", produces = MediaType.IMAGE_JPEG_VALUE)
     byte[] getImageByPostId(@PathVariable long post_id) throws IOException {
-        ObservationMarker temp = observationRepository.findById(post_id).get();
-        Image image = temp.getImage();
-        File imageFile = new File(image.getFilePath());
-        return Files.readAllBytes(imageFile.toPath());
+        if (post_id != 0) {
+            try {
+                ObservationMarker temp = observationRepository.findById(post_id).get();
+                Image image = temp.getImage();
+                File imageFile = new File(image.getFilePath());
+                return Files.readAllBytes(imageFile.toPath());
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw e;
+            }
+        } else {
+            System.out.println("[GET] Id is null");
+            return null;
+        }
     }
 
     /*@Operation(summary = "gets image from repository using user id")
@@ -150,50 +163,37 @@ public class ImageController {
     }*/
 
 
-
-
     @PutMapping("/observation/image/{id}")
     public String imageUpdate(@RequestParam("image") MultipartFile imageFile, @PathVariable long id) { //this one is complicated for image file management
         try {
-            if (imageFile == null || id == 0){
-
-            }
-            else {
+            if (imageFile == null || id == 0) {
+                System.out.println("[PUT] imageFile is null or id is invalid");
+            } else {
                 imageRepository.findById(id).isPresent();
                 AtomicBoolean isRepeat = new AtomicBoolean(false);
-                File destinationFile = new File(directory +  Objects.requireNonNull(imageFile.getOriginalFilename()));
+                File destinationFile = new File(directory + Objects.requireNonNull(imageFile.getOriginalFilename()));
                 System.out.println(destinationFile);
                 Image image;
 
                 image = imageRepository.findById(id).get();
-                List<Image> sort = imageRepository.findAll();
-                sort.forEach(imageInRepo -> { // a way to tell if the image is a repeat within the file storage
-                    if (imageInRepo.getFilePath().equals(image.getFilePath()) && !Objects.equals(imageInRepo.getId(), image.getId())) {
-                        isRepeat.set(true);
-                    }
-                });
-                if (!isRepeat.get()) {//deletes image file from storage if the image is not a repeat
-                    try {
-                        File imageFileDelete = new File(image.getFilePath());
-                        Files.delete(imageFileDelete.toPath());
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
+                findRepeat(image);
                 isRepeat.set(false);
 
-
-                sort.forEach(imageInRepo -> { // a way to tell if the image is a repeat within the file storage
+                /*sort.forEach(imageInRepo -> { // checks if the new image is
                     if (imageInRepo.getFilePath().equals(destinationFile.getAbsolutePath())) {
                         System.out.println(image.getFilePath());
                         System.out.println(imageInRepo.getFilePath());
                         isRepeat.set(true);
                     }
-                });
-                System.out.println(isRepeat.get());
-                if (!isRepeat.get()) {
+                });*/
+                if (!directory.contains(imageFile.toString())) { //checks just the file itself
                     imageFile.transferTo(destinationFile);  // save file to disk only if image is not a repeat
+
                 }
+                System.out.println(isRepeat.get());
+                /*if (!isRepeat.get()) {
+                    imageFile.transferTo(destinationFile);  // save file to disk only if image is not a repeat
+                }*/
                 image.setFilePath(destinationFile.getAbsolutePath());
                 System.out.println(isRepeat.get());//expected false
                 ObservationMarker tempObs = image.getObservation();
@@ -209,28 +209,15 @@ public class ImageController {
         return null;
     }
 
+
     @Operation(summary = "Deletes the image using the image ID")
     @DeleteMapping("/image/{Id}")
     public String deleteImage(@PathVariable long Id) {
         try {
-            AtomicBoolean isRepeat = new AtomicBoolean(false);
+
             Image temp = imageRepository.findById(Id).get();
 
-            List<Image> sort = imageRepository.findAll();
-            sort.forEach(image -> { // a way to tell if the image is a repeat within the file storage
-                if (image.getFilePath().equals(temp.getFilePath()) && !Objects.equals(image.getId(), temp.getId())) {
-                    isRepeat.set(true);
-                }
-            });
-
-            if (!isRepeat.get()) {//deletes image file from storage if the image is not a repeat
-                try {
-                    File imageFile = new File(temp.getFilePath());
-                    Files.delete(imageFile.toPath());
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
+            findRepeat(temp);
 
             ObservationMarker tempObs = temp.getObservation();
             tempObs.setImage(null);
@@ -252,6 +239,25 @@ public class ImageController {
         return imageRepository.findAll();
     }
 
+
+    //First checks if there are multiple images in the repository that use the same file, and if there is it doesn't delete it but if it's the only one using it, the file is deleted
+    private void findRepeat(Image image) {
+        AtomicBoolean isRepeat = new AtomicBoolean(false);
+        List<Image> sort = imageRepository.findAll();
+        sort.forEach(imageInRepo -> {
+            if (imageInRepo.getFilePath().equals(image.getFilePath()) && !Objects.equals(imageInRepo.getId(), image.getId())) {
+                isRepeat.set(true);
+            }
+        });
+        if (!isRepeat.get()) {//deletes image file from storage if the image is not a repeat
+            try {
+                File imageFileDelete = new File(image.getFilePath());
+                Files.delete(imageFileDelete.toPath());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 
 }
 
