@@ -26,7 +26,9 @@ public class MainActivity extends AppCompatActivity {
 
 
         user = (User) getIntent().getSerializableExtra("UserObject");
-
+        if (user == null) {
+            throw new IllegalArgumentException("User object is null");
+        }
         String userID = String.valueOf(user.getId());
         WebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/live/alerts/" + userID);
 
