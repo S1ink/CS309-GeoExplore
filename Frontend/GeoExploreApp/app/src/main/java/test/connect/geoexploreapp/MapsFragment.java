@@ -1,15 +1,20 @@
 package test.connect.geoexploreapp;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
+import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -58,12 +63,14 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import test.connect.geoexploreapp.api.ApiClientFactory;
 import test.connect.geoexploreapp.api.EventMarkerApi;
+import test.connect.geoexploreapp.api.ImageApi;
 import test.connect.geoexploreapp.api.MarkerTagApi;
 import test.connect.geoexploreapp.api.ObservationApi;
 import test.connect.geoexploreapp.api.ReportMarkerApi;
 import test.connect.geoexploreapp.api.SlimCallback;
 import test.connect.geoexploreapp.model.AlertMarker;
 import test.connect.geoexploreapp.model.EventMarker;
+import test.connect.geoexploreapp.model.Image;
 import test.connect.geoexploreapp.model.MarkerTag;
 import test.connect.geoexploreapp.model.Observation;
 import test.connect.geoexploreapp.model.ReportMarker;
@@ -73,6 +80,7 @@ import test.connect.geoexploreapp.websocket.WebSocketManager;
 
 public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSocketListener {
 
+    private ActivityResultLauncher<String> mFilePickerLauncher;
     private GoogleMap mMap;
     private boolean isUpdateReportMode = false;
     private boolean isUpdateEventMode = false;
@@ -88,6 +96,28 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
     private User loggedInUser;
 
     public MapsFragment() {
+
+    }
+
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mFilePickerLauncher = registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
+            if (uri != null) {
+                handleFileUri(uri);
+            }
+        });
+    }
+
+    private void handleFileUri(Object uri) {
+        Log.d("File URI", "Selected File URI: " + uri.toString());
+        //uplod picture
+        Image img = new Image();
+//        img.setFilePath((String) uri);
+//        img.setObservation();
+//        ImageApi imageApi = ApiClientFactory.GetImageApi();
+//        imageApi.observationFileUpload()
 
     }
 
@@ -284,13 +314,17 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
         EditText editTextTitle = view.findViewById(R.id.editTextTitle);
         EditText editTextDescription = view.findViewById(R.id.editTextDescription);
         EditText editTextMarkerTag = view.findViewById(R.id.editTextMarkerTag);
+        Button uploadImageObservation = view.findViewById(R.id.uploadImage);
 
         if ("Report".equals(type)) {
             editTextDescription.setVisibility(View.GONE);
+            uploadImageObservation.setVisibility(View.GONE);
         } else if ("Event".equals(type)) {
             editTextDescription.setVisibility(View.GONE);
+            uploadImageObservation.setVisibility(View.GONE);
         } else {
             editTextDescription.setVisibility(View.VISIBLE);
+            uploadImageObservation.setVisibility(View.VISIBLE);
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -328,9 +362,18 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
                             }
                         });
 
+        uploadImageObservation.setOnClickListener(v -> openFileExplorer());
+
+
         AlertDialog dialog = builder.create();
         dialog.show();
     }
+
+    private void openFileExplorer() {
+        mFilePickerLauncher.launch("*/*");
+        }
+
+
 
     private List<String> parseMarkerTags(String input) {
         List<String> markerTags = new ArrayList<>();

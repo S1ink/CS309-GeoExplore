@@ -32,6 +32,7 @@ public class ApiClientFactory {
     public static ReportedUserApi GetReportedUserApi(){
         return GetApiClientSeed().create(ReportedUserApi.class);
     }
+    public static ImageApi GetImageApi(){return GetApiClientSeed().create(ImageApi.class);}
 
 
 
