@@ -17,7 +17,6 @@ public class ReportMarker implements FeedItem{
     private String meta;
     private List<MarkerTag> tags;
     private List<User> confirmed_by;
-    //    private String address;
     private List<Comment> comments;
 
     public ReportMarker() {
@@ -83,10 +82,6 @@ public class ReportMarker implements FeedItem{
     }
 
 
-//    public String getLocation()  {
-//        return address;
-//    }
-
     @Override
     public List<Comment> getComments() {
         return comments;
@@ -95,10 +90,6 @@ public class ReportMarker implements FeedItem{
     public void setComments(List<Comment> comments) {
         this.comments=comments;
     }
-
-//    public void setLocation(String address)  {
-//        this.address =address;
-//    }
 
     public User getCreator() {
         return creator;
