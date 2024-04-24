@@ -84,6 +84,12 @@ public class User {
     @OneToOne(mappedBy = "reportedUser", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE })
     private ReportedUser user;
 
+    /*@Getter
+    @Setter
+    @JsonIgnore
+    @OneToOne(mappedBy = "user", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE })
+    private Image image;*/
+
     public User(Long id, String name, String emailId, String password) {
         this.id = id;
         this.name = name;
