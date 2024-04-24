@@ -15,6 +15,8 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 
+import android.os.Handler;
+import android.os.Looper;
 import android.text.InputType;
 import android.util.Log;
 import android.view.Gravity;
@@ -80,7 +82,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
     private int reportIdStatus = 0; // For promptForReportID method. 1 to Read, 2 to Delete, 3 to Update
     private int eventIdStatus = 0; // For promptForEventID method. 1 to Read, 2 to Delete, 3 to Update
     private int observationIdStatus = 0; // For promptForReportID method. 1 to Read, 2 to Delete, 3 to Update
-    private TextView reportUpdateTextView;
+    private TextView reportUpdateTextView, statusMessage;
     private TextView eventUpdateTextView;
     private TextView observationUpdateTextView;
     private User loggedInUser;
@@ -99,6 +101,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map);
+
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
@@ -124,7 +127,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
         reportUpdateTextView = view.findViewById(R.id.activity_maps_report_update_text_view);
         eventUpdateTextView = view.findViewById(R.id.activity_maps_event_update_text_view);
         observationUpdateTextView = view.findViewById(R.id.activity_maps_observation_update_text_view);
-
+        statusMessage = view.findViewById(R.id.statusMessage);
 
         FloatingActionButton fab = view.findViewById(R.id.fab_main);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -301,7 +304,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
                         String markerTagsInput = editTextMarkerTag.getText().toString().trim();
 
                         List<String> markerTags = parseMarkerTags(markerTagsInput);
-
+                        if (title.isEmpty()) {
+                            editTextTitle.setError("Title cannot be empty");
+                            return;
+                        }
                         if("Report".equals(type)){
                             createNewReport(latLng, title, markerTags);
 
@@ -311,10 +317,16 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
                         }else{
                             createNewObservation(latLng, title,description, markerTags);
                         }
+                        dialog.dismiss();
 
                     }
                 })
-                .setNegativeButton("Cancel", null);
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                            }
+                        });
 
         AlertDialog dialog = builder.create();
         dialog.show();
@@ -608,18 +620,34 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
         newReportMarker.setIo_longitude(latLng.longitude);
         newReportMarker.setTitle(reportTitle);
         newReportMarker.setCreator(loggedInUser);
+        reportMarkerApi.addReport(newReportMarker).enqueue(new Callback<ReportMarker>() {
+            @Override
+            public void onResponse(Call<ReportMarker> call, Response<ReportMarker> response) {
+                if (response.isSuccessful()) {
+                    ReportMarker createdReportMarker = response.body();
+                    addTagsToReport(createdReportMarker.getId(), markerTags);
+                    LatLng position = new LatLng(createdReportMarker.getIo_latitude(), createdReportMarker.getIo_longitude());
+                    mMap.addMarker(new MarkerOptions()
+                            .position(position)
+                            .title(createdReportMarker.getId() + " " + createdReportMarker.getTitle())
+                            .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_report_24)));
+                    showStatus("Report created successfully!");
+                } else {
+                    Log.d("save report fail", "failed " + response.errorBody());
 
+                }
 
-        reportMarkerApi.addReport(newReportMarker).enqueue(new SlimCallback<>(createdReportMarker -> {
-            addTagsToReport(createdReportMarker.getId(), markerTags);
-            LatLng position = new LatLng(createdReportMarker.getIo_latitude(), createdReportMarker.getIo_longitude());
-            mMap.addMarker(new MarkerOptions()
-                    .position(position)
-                    .title(createdReportMarker.getId() + " " + createdReportMarker.getTitle())
-                    .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_report_24)));
-        }, "CreateNewReport"));
+            }
+
+            @Override
+            public void onFailure(Call<ReportMarker> call, Throwable t) {
+                Toast.makeText(getContext(),"Error: " + t.getMessage(),Toast.LENGTH_LONG).show();
+
+            }
+        });
 
     }
+
     private void displayReportByID(Long id) {
         ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
 
@@ -701,19 +729,47 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
         observation.setIo_longitude(latLng.longitude);
         observation.setCreator(loggedInUser);
         observation.setTitle(observationTitle);
-
         observation.setDescription(observationDescription);
 
-        observationApi.saveObs(observation).enqueue(new SlimCallback<>(obs -> {
-            addTagsToObservation(obs.getId(), markerTags);
-            LatLng position = new LatLng(obs.getIo_latitude(), obs.getIo_longitude());
-            mMap.addMarker(new MarkerOptions()
-                    .position(position)
-                    .title(obs.getId() + " " + obs.getTitle())
-                    .icon(bitmapDescriptorFromVector(getContext(), R.drawable.baseline_photo_camera_24)));
-        }, "CreateNewObservation"));
+        observationApi.saveObs(observation).enqueue(new Callback<Observation>() {
+            @Override
+            public void onResponse(Call<Observation> call, Response<Observation> response) {
+                if (response.isSuccessful()) {
+                    Observation obs = response.body();
+                    addTagsToObservation(obs.getId(), markerTags);
+                    LatLng position = new LatLng(obs.getIo_latitude(), obs.getIo_longitude());
+                    mMap.addMarker(new MarkerOptions()
+                            .position(position)
+                            .title(obs.getId() + " " + obs.getTitle())
+                            .icon(bitmapDescriptorFromVector(getContext(), R.drawable.baseline_photo_camera_24)));
+                    showStatus("Observation created successfully!");
+                } else {
+                   Log.d("save obs fail", "failed " + response.errorBody());
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<Observation> call, Throwable t) {
+                Toast.makeText(getContext(),"Error: " + t.getMessage(),Toast.LENGTH_LONG).show();
+            }
+        });
 
     }
+
+    private void showStatus(String s) {
+        statusMessage.setText(s);
+        statusMessage.setVisibility(View.VISIBLE);
+        new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (statusMessage != null) {
+                    statusMessage.setVisibility(View.GONE);
+                }
+            }
+        }, 1000);
+    }
+
     private void displayObservationByID(Long id) {
         ObservationApi observationApi = ApiClientFactory.GetObservationApi();
 
@@ -727,6 +783,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
                         .title(obj.getId() + " " + obj.getTitle())
                         .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_photo_camera_24)));
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 10));
+                showStatus("Observation found successfully!");
             }
         }, "getObservationByID"));
     }
@@ -798,16 +855,31 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
         newEventMarker.setIo_longitude(latLng.longitude);
         newEventMarker.setCreator(loggedInUser);
         newEventMarker.setTitle(eventTitle);
+        reportMarkerApi.addEvent(newEventMarker).enqueue(new Callback<EventMarker>() {
+            @Override
+            public void onResponse(Call<EventMarker> call, Response<EventMarker> response) {
+                if (response.isSuccessful()) {
+                    EventMarker createdEventMarker = response.body();
+                    addTagsToEvent(createdEventMarker.getId(), markerTags);
+                    LatLng position = new LatLng(createdEventMarker.getIo_latitude(), createdEventMarker.getIo_longitude());
+                    mMap.addMarker(new MarkerOptions()
+                            .position(position)
+                            .title(createdEventMarker.getId() + " " + createdEventMarker.getTitle())
+                            .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_celebration_24)));
+                    showStatus("Event created successfully!");
 
-        reportMarkerApi.addEvent(newEventMarker).enqueue(new SlimCallback<>(createdEventMarker -> {
-            addTagsToEvent(createdEventMarker.getId(), markerTags);
-            LatLng position = new LatLng(createdEventMarker.getIo_latitude(), createdEventMarker.getIo_longitude());
-            mMap.addMarker(new MarkerOptions()
-                    .position(position)
-                    .title(createdEventMarker.getId() + " " + createdEventMarker.getTitle())
-                    .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_celebration_24)));
-        }, "CreateNewEvent"));
+                } else {
+                    Log.d("save report fail", "failed " + response.errorBody());
 
+                }
+            }
+
+            @Override
+            public void onFailure(Call<EventMarker> call, Throwable t) {
+                Toast.makeText(getContext(),"Error: " + t.getMessage(),Toast.LENGTH_LONG).show();
+
+            }
+        });
 
     }
     private void displayEventByID(Long id) {
