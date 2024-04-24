@@ -77,8 +77,8 @@ import test.connect.geoexploreapp.model.MarkerTag;
 import test.connect.geoexploreapp.model.Observation;
 import test.connect.geoexploreapp.model.ReportMarker;
 import test.connect.geoexploreapp.model.User;
+import test.connect.geoexploreapp.websocket.AlertWebSocketManager;
 import test.connect.geoexploreapp.websocket.WebSocketListener;
-import test.connect.geoexploreapp.websocket.WebSocketManager;
 import android.Manifest;
 
 public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSocketListener {
@@ -111,7 +111,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
 
         View view = inflater.inflate(R.layout.fragment_maps, container, false);
 
-        WebSocketManager.getInstance().setWebSocketListener(this);
+        AlertWebSocketManager.getInstance().setWebSocketListener(this);
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 

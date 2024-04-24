@@ -17,7 +17,8 @@ import android.widget.Toast;
 
 import test.connect.geoexploreapp.databinding.ActivityMainBinding;
 import test.connect.geoexploreapp.model.User;
-import test.connect.geoexploreapp.websocket.WebSocketManager;
+import test.connect.geoexploreapp.websocket.AlertWebSocketManager;
+import test.connect.geoexploreapp.websocket.CommentWebSocketManager;
 
 import android.Manifest;
 public class MainActivity extends AppCompatActivity {
@@ -37,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
         user = (User) getIntent().getSerializableExtra("UserObject");
 
         String userID = String.valueOf(user.getId());
-        WebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/live/alerts/" + userID);
+        AlertWebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/live/alerts/" + userID);
 
         if(user!= null){
             SharedViewModel viewModel = new ViewModelProvider(this).get(SharedViewModel.class);
@@ -66,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
             } else if (itemId == R.id.maps) {
                 replaceFragment(new MapsFragment());
             } else if(itemId == R.id.show_feed){
-                WebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/comments/"+user.getId()); //URL ADD LATER
+                CommentWebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/comments/"+user.getId()); //URL ADD LATER
                 FeedActivity feedActivity = FeedActivity.newInstance(user);
                 replaceFragment(feedActivity);
             } else if (itemId == R.id.settings) {
