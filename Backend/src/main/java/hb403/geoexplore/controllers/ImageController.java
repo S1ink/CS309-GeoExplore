@@ -34,7 +34,7 @@ public class ImageController {
     //FOR ACTUAL IMAGE FILE STORING
     //for local testing in backend String directory = "C:\\Users\\Ethan\\OneDrive\\Documents\\Se-309\\hb4_3\\hb4_3\\Backend\\images\\"
     //On server String directory = "\\hb403\\images\\";
-    private static final String directory = "/hb403/images";
+    private static final String directory = "/hb403/images/";
 
     @Autowired
     private ImageRepository imageRepository;
