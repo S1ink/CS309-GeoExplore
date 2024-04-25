@@ -44,6 +44,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 
 import org.java_websocket.handshake.ServerHandshake;
@@ -78,10 +80,11 @@ import test.connect.geoexploreapp.model.Observation;
 import test.connect.geoexploreapp.model.ReportMarker;
 import test.connect.geoexploreapp.model.User;
 import test.connect.geoexploreapp.websocket.AlertWebSocketManager;
+import test.connect.geoexploreapp.websocket.LocationWebSocketManager;
 import test.connect.geoexploreapp.websocket.WebSocketListener;
 import android.Manifest;
 
-public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSocketListener {
+public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
     public static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
     private GoogleMap mMap;
@@ -100,6 +103,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
     private FusedLocationProviderClient fusedLocationProviderClient;
     private LocationRequest locationRequest;
     private LocationCallback locationCallback;
+    private WebSocketListener alertWebSocketListener;
+    private WebSocketListener locationWebSocketListener;
 
     public MapsFragment() {
 
@@ -111,7 +116,68 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
 
         View view = inflater.inflate(R.layout.fragment_maps, container, false);
 
-        AlertWebSocketManager.getInstance().setWebSocketListener(this);
+        alertWebSocketListener = new WebSocketListener() {
+            @Override
+            public void onWebSocketOpen(ServerHandshake handshakedata) {
+                Log.d("AlertWebSocket", "Connected");
+            }
+
+            @Override
+            public void onWebSocketMessage(String message) {
+                if (message.contains("io_latitude")) {
+                    AlertMarker alertMarker = new Gson().fromJson(message, AlertMarker.class);
+                    showEmergencyNotification(alertMarker.getTitle(), alertMarker.getDescription(),
+                            alertMarker.getIo_latitude(), alertMarker.getIo_longitude());
+                }
+            }
+
+            @Override
+            public void onWebSocketClose(int code, String reason, boolean remote) {
+                Log.d("AlertWebSocket", "Closed: " + reason);
+            }
+
+            @Override
+            public void onWebSocketError(Exception ex) {
+                Log.e("AlertWebSocket", "Error", ex);
+            }
+        };
+
+        locationWebSocketListener = new WebSocketListener() {
+            @Override
+            public void onWebSocketOpen(ServerHandshake handshakedata) {
+                Log.d("LocationWebSocket", "Connected");
+            }
+
+            @Override
+            public void onWebSocketMessage(String message) {
+                if (message.contains("latitude") && message.contains("emergency")) {
+                    try {
+                        JsonObject locationJson = JsonParser.parseString(message).getAsJsonObject();
+                        int user_id = locationJson.get("user_id").getAsInt();
+                        double latitude = locationJson.get("latitude").getAsDouble();
+                        double longitude = locationJson.get("longitude").getAsDouble();
+                        boolean isEmergency = locationJson.get("emergency").getAsBoolean();
+
+                        Log.d("LocationWebSocket", "Latitude: " + latitude + ", Longitude: " + longitude);
+                    } catch (JsonSyntaxException e) {
+                        Log.e("LocationWebSocket", "Error parsing location data", e);
+                    }
+                }
+            }
+
+            @Override
+            public void onWebSocketClose(int code, String reason, boolean remote) {
+                Log.d("LocationWebSocket", "Closed: " + reason);
+            }
+
+            @Override
+            public void onWebSocketError(Exception ex) {
+                Log.e("LocationWebSocket", "Error", ex);
+            }
+        };
+
+        AlertWebSocketManager.getInstance().setWebSocketListener(alertWebSocketListener);
+        LocationWebSocketManager.getInstance().setWebSocketListener(locationWebSocketListener);
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
@@ -132,6 +198,15 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
                         double longitude = location.getLongitude();
 
                         // websocket send here
+
+                        JsonObject locationData = new JsonObject();
+                        locationData.addProperty("latitude", latitude);
+                        locationData.addProperty("longitude", longitude);
+
+                        Gson gson = new Gson();
+                        String jsonMessage = gson.toJson(locationData);
+
+                        LocationWebSocketManager.getInstance().sendMessage(jsonMessage);
 
                         Log.d("MapsFragment", "Latitude: " + latitude + ", Longitude: " + longitude);
                     }
@@ -224,32 +299,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
     }
 
     @Override
-    public void onWebSocketMessage(String message){
-        Log.d("WebSocket", "Received message: " + message);
-        if(message.contains("io_latitude")){
-            try {
-                AlertMarker alertMarker = new Gson().fromJson(message, AlertMarker.class);
-
-                showEmergencyNotification(alertMarker.getTitle(), alertMarker.getDescription(),
-                        alertMarker.getIo_latitude(), alertMarker.getIo_longitude());
-            } catch (JsonSyntaxException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    @Override
-    public void onWebSocketClose(int code, String reason, boolean remote){
-
-    }
-
-    @Override
-    public void onWebSocketOpen(ServerHandshake handshakedata) {}
-
-    @Override
-    public void onWebSocketError(Exception ex) {}
-
-    @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
@@ -330,6 +379,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
                 .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_crisis_alert_24)));
 
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(emergencyLocation, 14));
+    }
+
+    public void displayerUserOnMap(double latitude, double longitude, User user){
+
     }
 
 

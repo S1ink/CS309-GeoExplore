@@ -19,6 +19,7 @@ import test.connect.geoexploreapp.databinding.ActivityMainBinding;
 import test.connect.geoexploreapp.model.User;
 import test.connect.geoexploreapp.websocket.AlertWebSocketManager;
 import test.connect.geoexploreapp.websocket.CommentWebSocketManager;
+import test.connect.geoexploreapp.websocket.LocationWebSocketManager;
 
 import android.Manifest;
 public class MainActivity extends AppCompatActivity {
@@ -39,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
         String userID = String.valueOf(user.getId());
         AlertWebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/live/alerts/" + userID);
+        LocationWebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/live/location/" + userID);
 
         if(user!= null){
             SharedViewModel viewModel = new ViewModelProvider(this).get(SharedViewModel.class);
