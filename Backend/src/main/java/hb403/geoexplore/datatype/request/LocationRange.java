@@ -4,6 +4,8 @@ import hb403.geoexplore.util.GeometryUtil;
 
 import org.locationtech.jts.geom.Polygon;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 
 public class LocationRange {
 	
@@ -14,6 +16,7 @@ public class LocationRange {
 		max_longitude;
 
 
+	@JsonIgnore
 	public boolean isValid() {
 		return (
 			this.min_latitude != null &&
@@ -22,6 +25,7 @@ public class LocationRange {
 			this.max_longitude != null
 		);
 	}
+	@JsonIgnore
 	public boolean isInvalid() {
 		return (
 			this.min_latitude == null ||
@@ -30,6 +34,7 @@ public class LocationRange {
 			this.max_longitude == null
 		);
 	}
+	@JsonIgnore
 	public Polygon getRect() {
 		if(this.isInvalid()) return null;
 		return GeometryUtil.makeRectangle(
