@@ -40,6 +40,7 @@ import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -54,8 +55,10 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import android.location.Location;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -105,6 +108,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     private LocationCallback locationCallback;
     private WebSocketListener alertWebSocketListener;
     private WebSocketListener locationWebSocketListener;
+    private List<Marker> userMarkers = new ArrayList<>();
+    private Map<Integer, Marker> userMarkersMap = new HashMap<>();
 
     public MapsFragment() {
 
@@ -157,6 +162,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                         double latitude = locationJson.get("latitude").getAsDouble();
                         double longitude = locationJson.get("longitude").getAsDouble();
                         boolean isEmergency = locationJson.get("emergency").getAsBoolean();
+
+                        displayUserOnMap(user_id,latitude,longitude);
 
                         Log.d("LocationWebSocket", "Latitude: " + latitude + ", Longitude: " + longitude);
                     } catch (JsonSyntaxException e) {
@@ -381,8 +388,30 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(emergencyLocation, 14));
     }
 
-    public void displayerUserOnMap(double latitude, double longitude, User user){
 
+    public void clearUserMarkers() {
+        getActivity().runOnUiThread(() -> {
+            for (Marker marker : userMarkers) {
+                marker.remove();
+            }
+            userMarkers.clear();
+        });
+    }
+    public void displayUserOnMap(int userId, double latitude, double longitude) {
+        getActivity().runOnUiThread(() -> {
+            LatLng userLocation = new LatLng(latitude, longitude);
+
+            Marker existingMarker = userMarkersMap.get(userId);
+            if (existingMarker != null) {
+                existingMarker.setPosition(userLocation);
+            } else {
+                Marker newMarker = mMap.addMarker(new MarkerOptions()
+                        .position(userLocation)
+                        .icon(bitmapDescriptorFromVector(getContext(), R.drawable.baseline_person_24)));
+
+                userMarkersMap.put(userId, newMarker);
+            }
+        });
     }
 
 
