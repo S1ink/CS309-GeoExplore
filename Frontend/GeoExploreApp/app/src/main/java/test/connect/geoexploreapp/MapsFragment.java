@@ -76,6 +76,7 @@ import test.connect.geoexploreapp.api.MarkerTagApi;
 import test.connect.geoexploreapp.api.ObservationApi;
 import test.connect.geoexploreapp.api.ReportMarkerApi;
 import test.connect.geoexploreapp.api.SlimCallback;
+import test.connect.geoexploreapp.api.UserApi;
 import test.connect.geoexploreapp.model.AlertMarker;
 import test.connect.geoexploreapp.model.EventMarker;
 import test.connect.geoexploreapp.model.MarkerTag;
@@ -161,7 +162,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                         int user_id = locationJson.get("user_id").getAsInt();
                         double latitude = locationJson.get("latitude").getAsDouble();
                         double longitude = locationJson.get("longitude").getAsDouble();
-                        boolean isEmergency = locationJson.get("emergency").getAsBoolean();
 
                         displayUserOnMap(user_id,latitude,longitude);
 
@@ -191,7 +191,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
 
 
-        locationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 30000)  // 30 seconds
+        locationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10000)  // 10 seconds
                 .setMinUpdateIntervalMillis(150000)
                 .build();
 
@@ -205,7 +205,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                         double longitude = location.getLongitude();
 
                         // websocket send here
-
                         JsonObject locationData = new JsonObject();
                         locationData.addProperty("latitude", latitude);
                         locationData.addProperty("longitude", longitude);
@@ -388,28 +387,51 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(emergencyLocation, 14));
     }
 
-
-    public void clearUserMarkers() {
-        getActivity().runOnUiThread(() -> {
-            for (Marker marker : userMarkers) {
-                marker.remove();
-            }
-            userMarkers.clear();
-        });
-    }
     public void displayUserOnMap(int userId, double latitude, double longitude) {
-        getActivity().runOnUiThread(() -> {
-            LatLng userLocation = new LatLng(latitude, longitude);
+        LatLng userLocation = new LatLng(latitude, longitude);
 
+        // Find or create the marker for the user
+        getActivity().runOnUiThread(() -> {
             Marker existingMarker = userMarkersMap.get(userId);
+
             if (existingMarker != null) {
+                // Update the position
                 existingMarker.setPosition(userLocation);
             } else {
+                // Create a new marker if it doesn't exist
                 Marker newMarker = mMap.addMarker(new MarkerOptions()
                         .position(userLocation)
                         .icon(bitmapDescriptorFromVector(getContext(), R.drawable.baseline_person_24)));
 
                 userMarkersMap.put(userId, newMarker);
+            }
+        });
+
+        UserApi userApi = ApiClientFactory.GetUserApi();
+
+        Call<User> call = userApi.getUser((long) userId);
+        call.enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    User user = response.body();
+                    String userName = user.getName();
+
+                    // Update the marker title with the user's name
+                    getActivity().runOnUiThread(() -> {
+                        Marker marker = userMarkersMap.get(userId);
+                        if (marker != null) {
+                            marker.setTitle(userName); // Set the title to display the user's name
+                        }
+                    });
+                } else {
+                    Log.e("MapsFragment", "Failed to get user details: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                Log.e("MapsFragment", "Error fetching user details", t);
             }
         });
     }
