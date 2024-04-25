@@ -4,14 +4,16 @@ import hb403.geoexplore.UserStorage.entity.User;
 import hb403.geoexplore.UserStorage.repository.UserRepository;
 import hb403.geoexplore.comments.CommentRepo.CommentRepository;
 import hb403.geoexplore.comments.Entity.CommentEntity;
-import hb403.geoexplore.datatype.LocationRange;
 import hb403.geoexplore.datatype.MarkerTag;
 import hb403.geoexplore.datatype.marker.AlertMarker;
+import hb403.geoexplore.datatype.marker.EventMarker;
 import hb403.geoexplore.datatype.marker.ObservationMarker;
 import hb403.geoexplore.datatype.marker.ReportMarker;
 import hb403.geoexplore.datatype.marker.repository.ImageRepository;
 import hb403.geoexplore.datatype.marker.repository.MarkerTagRepository;
 import hb403.geoexplore.datatype.marker.repository.ObservationRepository;
+import hb403.geoexplore.datatype.request.Location;
+import hb403.geoexplore.datatype.request.LocationRange;
 import hb403.geoexplore.util.GeometryUtil;
 
 import java.util.*;
@@ -148,6 +150,20 @@ public class ObservationController {
 		} catch(Exception e) {
 			System.out.println("ObservationMarker.getObservationsWithinRect(): Encountered exception! -- " + e.getMessage());
 			// continue >>> (return null)
+		}
+		return null;
+	}
+
+    /** */
+	@Operation(summary = "Get the distance to an observation from a specified location (IN MILES)")
+	@GetMapping(path = "geomap/observation/{id}/distance")
+	public @ResponseBody Double getDistanceToMarkerById(@PathVariable Long id, @RequestBody Location src) {
+		if(id != null && src != null && src.isValid()) {
+			final ObservationMarker m = this.getObs(id);
+			if(m != null) {
+				m.enforceLocationTable();
+				return GeometryUtil.EARTH_RADIUS_MILES * GeometryUtil.arcangleDegInRad(src.longitude, src.latitude, m.getIo_longitude(), m.getIo_latitude());	// longitude is theta, latitude is phi
+			}
 		}
 		return null;
 	}

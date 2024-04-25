@@ -1,4 +1,4 @@
-package hb403.geoexplore.datatype;
+package hb403.geoexplore.datatype.request;
 
 import hb403.geoexplore.util.GeometryUtil;
 

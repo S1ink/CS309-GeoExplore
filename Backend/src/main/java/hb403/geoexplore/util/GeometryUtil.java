@@ -8,6 +8,8 @@ import org.locationtech.jts.util.GeometricShapeFactory;
 
 public final class GeometryUtil {
 
+	public static double EARTH_RADIUS_MILES = 3958.8;
+
 	public static final int DEFAULT_CIRCLE_KEYPOINTS = 32;
 	
 	public static final WKTReader wkt_reader = new WKTReader();
@@ -58,6 +60,46 @@ public final class GeometryUtil {
 				new Coordinate(xmin, ymin)
 			}
 		);
+	}
+
+
+	/** Compute the dot product of the unit vectors formed using the provided locations in spherical coordinates -- units are radians */
+	public static double arcdot(double t1, double p1, double t2, double p2) {
+
+		final double
+			sin_theta1 = Math.sin(t1),
+			sin_theta2 = Math.sin(t2),
+			sin_phi1 = Math.sin(p1),
+			sin_phi2 = Math.sin(p2),
+			cos_theta1 = Math.cos(t1),
+			cos_theta2 = Math.cos(t2),
+			cos_phi1 = Math.cos(p1),
+			cos_phi2 = Math.cos(p2);
+
+		return (
+			((cos_theta1 * cos_theta2) + (sin_theta1 * sin_theta2)) * (sin_phi1 * sin_phi2) +
+			(cos_phi1 * cos_phi2)
+		);
+
+	}
+	/** Compute the arc-angle between two sets of spherical coordinates -- units are radians */
+	public static double arcangle(double t1, double p1, double t2, double p2) {
+		return Math.acos(arcdot(t1, p1, t2, p2));
+	}
+
+	public static double arcdotDeg(double t1, double p1, double t2, double p2) {
+		return arcdot(
+			Math.toRadians(t1),
+			Math.toRadians(p1),
+			Math.toRadians(t2),
+			Math.toRadians(p2)
+		);
+	}
+	public static double arcangleDegInRad(double t1, double p1, double t2, double p2) {
+		return Math.acos(arcdotDeg(t1, p1, t2, p2));
+	}
+	public static double arcangleDegInDeg(double t1, double p1, double t2, double p2) {
+		return Math.toDegrees(arcangleDegInRad(t1, p1, t2, p2));
 	}
 
 

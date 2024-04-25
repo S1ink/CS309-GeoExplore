@@ -1,11 +1,12 @@
 package hb403.geoexplore.controllers;
 
-import hb403.geoexplore.datatype.LocationRange;
 import hb403.geoexplore.datatype.MarkerTag;
 import hb403.geoexplore.datatype.marker.AlertMarker;
 import hb403.geoexplore.datatype.marker.EventMarker;
 import hb403.geoexplore.datatype.marker.repository.AlertRepository;
 import hb403.geoexplore.datatype.marker.repository.MarkerTagRepository;
+import hb403.geoexplore.datatype.request.Location;
+import hb403.geoexplore.datatype.request.LocationRange;
 import hb403.geoexplore.util.GeometryUtil;
 
 import java.util.*;
@@ -106,6 +107,26 @@ public class AlertController {
 		} catch(Exception e) {
 			System.out.println("AlertMarker.getEventsWithinRect(): Encountered exception! -- " + e.getMessage());
 			// continue >>> (return null)
+		}
+		return null;
+	}
+
+	// @Operation(summary = "Get the set of alerts whose locations are bounded by the provided location window, sorted by distance from the provided location")
+	// @GetMapping(path = "geomap/alerts/within/rect/sorted")
+	// public @ResponseBody List<AlertMarker> getProxSortedAlertsWithinRect(@RequestBody LocationRange) {
+
+	// }
+
+	/** */
+	@Operation(summary = "Get the distance to an alert from a specified location (IN MILES)")
+	@GetMapping(path = "geomap/alerts/{id}/distance")
+	public @ResponseBody Double getDistanceToMarkerById(@PathVariable Long id, @RequestBody Location src) {
+		if(id != null && src != null && src.isValid()) {
+			final AlertMarker m = this.getAlertById(id);
+			if(m != null) {
+				m.enforceLocationTable();
+				return GeometryUtil.EARTH_RADIUS_MILES * GeometryUtil.arcangleDegInRad(src.longitude, src.latitude, m.getIo_longitude(), m.getIo_latitude());	// longitude is theta, latitude is phi
+			}
 		}
 		return null;
 	}
