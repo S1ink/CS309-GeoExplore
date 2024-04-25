@@ -390,15 +390,14 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     public void displayUserOnMap(int userId, double latitude, double longitude) {
         LatLng userLocation = new LatLng(latitude, longitude);
 
-        // Find or create the marker for the user
         getActivity().runOnUiThread(() -> {
             Marker existingMarker = userMarkersMap.get(userId);
 
             if (existingMarker != null) {
-                // Update the position
+                // update the position
                 existingMarker.setPosition(userLocation);
             } else {
-                // Create a new marker if it doesn't exist
+                // create new user marker if new
                 Marker newMarker = mMap.addMarker(new MarkerOptions()
                         .position(userLocation)
                         .icon(bitmapDescriptorFromVector(getContext(), R.drawable.baseline_person_24)));
@@ -417,11 +416,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                     User user = response.body();
                     String userName = user.getName();
 
-                    // Update the marker title with the user's name
+                    // attatch users name to markerr
                     getActivity().runOnUiThread(() -> {
                         Marker marker = userMarkersMap.get(userId);
                         if (marker != null) {
-                            marker.setTitle(userName); // Set the title to display the user's name
+                            marker.setTitle(userName);
                         }
                     });
                 } else {
