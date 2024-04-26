@@ -2,6 +2,7 @@ package hb403.geoexplore.datatype.marker;
 
 import hb403.geoexplore.datatype.EntityBase;
 import hb403.geoexplore.datatype.MarkerTag;
+import hb403.geoexplore.util.GeometryUtil;
 
 import java.util.*;
 
@@ -69,7 +70,7 @@ public abstract class MarkerBase extends EntityBase {
 
 	/** Synchronize the stored table location and IO lat/long values (copies from the IO variables */
 	public void enforceLocationIO() {
-		this.location = new Point(new Coordinate(this.io_latitude, this.io_longitude), new PrecisionModel(), 0);
+		this.location = GeometryUtil.makePoint(new Coordinate(this.io_latitude, this.io_longitude));
 	}
 	/** Synchronize the stored table location and IO lat/long values (copies from the table entry) */
 	public void enforceLocationTable() {
@@ -77,6 +78,32 @@ public abstract class MarkerBase extends EntityBase {
 			this.io_latitude = this.location.getX();
 			this.io_longitude = this.location.getY();
 		}
+	}
+
+	public double rawDotWith(double lat, double lon) {
+		return GeometryUtil.arcdotGlobal(this.io_latitude, this.io_longitude, lat, lon);
+	}
+
+	public double distanceTo(double lat, double lon) {
+		return GeometryUtil.arcdistanceGlobal(this.io_latitude, this.io_longitude, lat, lon);
+	}
+
+
+	public static void sortByProximityAsc(List<? extends MarkerBase> markers, double lat, double lon, boolean enforce_from_table) {
+
+		markers.sort(
+			(MarkerBase a, MarkerBase b)->{
+				if(enforce_from_table) {
+					a.enforceLocationTable();
+					b.enforceLocationTable();
+				}
+				final double
+					da = a.rawDotWith(lat, lon),
+					db = b.rawDotWith(lat, lon);
+				return da < db ? 1 : (da > db ? -1 : 0);	// inverted since we want closest to be first
+			}
+		);
+
 	}
 
 

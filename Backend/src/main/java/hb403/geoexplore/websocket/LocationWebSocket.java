@@ -89,10 +89,15 @@ public class LocationWebSocket extends WebSocketBase {
 			LocationWebSocket.users_repo.save(u);
 			final Long src_id = u.getId();
 			final LocationSharing share_level = emergency ? LocationSharing.EMERGENCY : u.getLocation_privacy();	// json param overrides static config
-			final String out_message = String.format("{ \"user_id\": %d, \"latitude\":%f, \"longitude\":%f, \"emergency\":%b }", src_id, lat, lon, share_level == LocationSharing.EMERGENCY);
-			final StringBuilder b = new StringBuilder(this.formatMessage("Successfully sent message to user ids: {\n}"));
+			final String
+				out_message_f = String.format(
+					"{ \"user_id\": %d, \"latitude\":%f, \"longitude\":%f, \"emergency\":%%b, \"group_id\":%%d }",
+					src_id, lat, lon
+				);
+			final StringBuilder b = new StringBuilder(this.formatMessage("Successfully sent message to user ids: {\n"));
 			switch(share_level) {
 				case EMERGENCY: {
+					final String out_message = String.format(out_message_f, true, -1);
 					// broadcast to any connected admins
 					final List<User> admins = LocationWebSocket.users_repo.findSubsetAdminUsers(user_id_sessions.keySet());
 					for(final User a : admins) {
@@ -108,32 +113,34 @@ public class LocationWebSocket extends WebSocketBase {
 				}
 				case GROUP: {
 					// broadcast to all users that are in groups that the user is in and have sharing enabled
-					final Set<Long> unique_output_ids = new HashSet<>();
+					final Map<Long, Long> unique_output_ids = new HashMap<>();
 					for(final UserGroup g : u.getGroups()) {
 						Boolean share = g.getShare_locations();
 						if(share != null && share) {
 							for(final User _u : g.getMembers()) {
 								final Long _id = _u.getId();
 								if(user_id_sessions.containsKey(_id)) {
-									unique_output_ids.add(_id);
+									unique_output_ids.put(_id, g.getId());	// in the case that the source user is in two or more groups with another user, this will not be "completely correct" but rather refer to the last searched group id
 								}
 							}
 						}
 					}
-					for(final Long _id : unique_output_ids) {
-						if(_id == src_id) continue;
-						try {
-							this.broadcastHandleDuplicates(session, _id, user_id_sessions.get(_id), out_message, b, false);
-						} catch(Exception e) {
-
+					unique_output_ids.forEach(
+						(Long uid, Long gid)->{
+							if(uid == src_id) return;
+							try {
+								this.broadcastHandleDuplicates(session, uid, user_id_sessions.get(uid), String.format(out_message_f, false, gid), b, false);
+							} catch(Exception e) {
+	
+							}
 						}
-					}
+					);
 					System.out.println(b.append("}"));
 					break;
 				}
 				case PUBLIC: {
 					// broadcast to all connected sessions
-					super.broadcastAll(out_message, session, false);
+					super.broadcastAll(String.format(out_message_f, false, -1), session, false);
 					break;
 				}
 				case DISABLED:
