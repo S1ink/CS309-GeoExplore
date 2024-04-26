@@ -1,4 +1,4 @@
-package hb403.geoexplore.comments;
+package hb403.geoexplore.websocket;
 
 
 import org.springframework.context.annotation.Bean;

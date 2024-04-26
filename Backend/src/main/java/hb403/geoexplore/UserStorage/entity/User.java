@@ -1,17 +1,22 @@
 package hb403.geoexplore.UserStorage.entity;
 
-import hb403.geoexplore.UserStorage.repository.ReportedUserRepository;
+import hb403.geoexplore.UserStorage.LocationSharing;
 import hb403.geoexplore.UserStorage.repository.UserRepository;
 import hb403.geoexplore.comments.Entity.CommentEntity;
+import hb403.geoexplore.util.GeometryUtil;
+
+import org.locationtech.jts.geom.*;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
+import com.bedatadriven.jackson.datatype.jts.serialization.GeometryDeserializer;
+import com.bedatadriven.jackson.datatype.jts.serialization.GeometrySerializer;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 @Entity
@@ -19,29 +24,45 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Getter
 @Setter
 public class User {
-    /*
-    Input for creating user {
 
-        "name": "Ethan",
-        "emailId": "emessmer@iastate.edu",
-        "password": "password"
-
-    }
-     */
     @Basic
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)     // probably use UUID after we are done testing
     @Column(name = "user_id")
     private Long id;
+
     private String name;
+
     @Column(name = "email_id")
     private String emailId;
+
     //String[] adminList = {"emessmer@iastate.edu","aditin@iastate.edu" ,"samr888@iastate.edu","yharb@iastate.edu"};
     private String password;
+
     @JsonIgnore
     private String encryptedPassword;
-    
+
+    // @JsonIgnore
     private boolean isAdmin;
+
+    @Enumerated(value = EnumType.STRING)
+    private LocationSharing location_privacy = LocationSharing.DISABLED;
+
+    @Lob
+	@JsonSerialize(using = GeometrySerializer.class)
+	@JsonDeserialize(using = GeometryDeserializer.class)
+	@JsonIgnore
+	@Column()
+	protected Point location;			// lat/long as stored in the tables -- not serialized to json (@JsonIgnore)
+
+	@Transient
+	protected Double io_latitude = 0.0;		// lat as serialized/deserialized -- not stored in the tables (@Transient)
+	@Transient
+	protected Double io_longitude = 0.0;		// long as serialize/deserialized -- not stored in the tables (@Transient)
+
+    @Temporal(value = TemporalType.TIMESTAMP)
+    @Column()
+    protected Date last_location_update;
 
     /*@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "posts")
     @JsonIgnore
@@ -63,6 +84,12 @@ public class User {
     @JsonIgnore
     @OneToOne(mappedBy = "reportedUser", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE })
     private ReportedUser user;
+
+    /*@Getter
+    @Setter
+    @JsonIgnore
+    @OneToOne(mappedBy = "user", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE })
+    private Image image;*/
 
     public User(Long id, String name, String emailId, String password) {
         this.id = id;
@@ -150,6 +177,20 @@ public class User {
     }
 
 
+    /** Synchronize the stored table location and IO lat/long values (copies from the IO variables */
+	public void enforceLocationIO() {
+		this.location = GeometryUtil.makePoint(new Coordinate(this.io_latitude, this.io_longitude));
+        this.last_location_update = new Date();     // could be wrong? eh who cares
+	}
+	/** Synchronize the stored table location and IO lat/long values (copies from the table entry) */
+	public void enforceLocationTable() {
+		if(this.location != null && this.location_privacy != LocationSharing.DISABLED) {
+			this.io_latitude = this.location.getX();
+			this.io_longitude = this.location.getY();
+		}
+	}
+
+
     @Override
     public String toString(){
         return "Name: " + this.name +
@@ -157,4 +198,6 @@ public class User {
                 "\nPassword: " + this.encryptedPassword +
                 "\nSuccessfully created";
     }
+
+
 }

@@ -2,7 +2,7 @@ package hb403.geoexplore.datatype.marker.repository;
 
 import hb403.geoexplore.datatype.marker.EventMarker;
 
-import java.util.List;
+import java.util.*;
 
 import org.locationtech.jts.geom.Geometry;
 
@@ -19,7 +19,10 @@ public interface EventRepository extends JpaRepository<EventMarker, Long> {
 	void deleteById(int id);
 
 	@Query(value = "SELECT m from EventMarker m WHERE within(m.location, :bounds) = true")
-	public List<EventMarker> findWithin(@Param("bounds") Geometry bounds);
+	public Set<EventMarker> findSetWithin(@Param("bounds") Geometry bounds);
+
+	@Query(value = "SELECT m from EventMarker m WHERE within(m.location, :bounds) = true")
+	public List<EventMarker> findListWithin(@Param("bounds") Geometry bounds);
 
 
 }

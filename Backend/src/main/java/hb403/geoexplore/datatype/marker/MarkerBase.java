@@ -1,7 +1,8 @@
 package hb403.geoexplore.datatype.marker;
 
-import hb403.geoexplore.UserStorage.entity.User;
+import hb403.geoexplore.datatype.EntityBase;
 import hb403.geoexplore.datatype.MarkerTag;
+import hb403.geoexplore.util.GeometryUtil;
 
 import java.util.*;
 
@@ -21,17 +22,12 @@ import lombok.*;
 @MappedSuperclass
 @Getter
 @Setter
-public abstract class MarkerBase {
+public abstract class MarkerBase extends EntityBase {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "marker_id")
 	protected Long id = -1L;
-
-	@Column()
-	protected String title;
-	@Column()
-	protected String description;
 
 	@Lob
 	@JsonSerialize(using = GeometrySerializer.class)
@@ -44,20 +40,6 @@ public abstract class MarkerBase {
 	protected Double io_latitude = 0.0;		// lat as serialized/deserialized -- not stored in the tables (@Transient)
 	@Transient
 	protected Double io_longitude = 0.0;		// long as serialize/deserialized -- not stored in the tables (@Transient)
-
-	@ManyToOne(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.MERGE })	// caused an error - might have to implement per-entity
-	@JoinColumn(name = "creator_user_id", referencedColumnName = "user_id")
-	protected User creator;		// jsonignore (just send id?)
-
-	@Temporal(value = TemporalType.TIMESTAMP)
-	@Column()
-	protected Date time_created = new Date();	// default ts of whenever constructed
-	@Temporal(value = TemporalType.TIMESTAMP)
-	@Column()
-	protected Date time_updated = new Date();
-
-	@Column()
-	protected String meta;
 
 	@ManyToMany(
 		fetch = FetchType.EAGER,
@@ -88,7 +70,7 @@ public abstract class MarkerBase {
 
 	/** Synchronize the stored table location and IO lat/long values (copies from the IO variables */
 	public void enforceLocationIO() {
-		this.location = new Point(new Coordinate(this.io_latitude, this.io_longitude), new PrecisionModel(), 0);
+		this.location = GeometryUtil.makePoint(new Coordinate(this.io_latitude, this.io_longitude));
 	}
 	/** Synchronize the stored table location and IO lat/long values (copies from the table entry) */
 	public void enforceLocationTable() {
@@ -98,14 +80,31 @@ public abstract class MarkerBase {
 		}
 	}
 
-	public void applyNewTimestamp() {
-		this.time_created = new Date();
-		this.applyUpdatedTimestamp();
-	}
-	public void applyUpdatedTimestamp() {
-		this.time_updated = new Date();
+	public double rawDotWith(double lat, double lon) {
+		return GeometryUtil.arcdotGlobal(this.io_latitude, this.io_longitude, lat, lon);
 	}
 
+	public double distanceTo(double lat, double lon) {
+		return GeometryUtil.arcdistanceGlobal(this.io_latitude, this.io_longitude, lat, lon);
+	}
+
+
+	public static void sortByProximityAsc(List<? extends MarkerBase> markers, double lat, double lon, boolean enforce_from_table) {
+
+		markers.sort(
+			(MarkerBase a, MarkerBase b)->{
+				if(enforce_from_table) {
+					a.enforceLocationTable();
+					b.enforceLocationTable();
+				}
+				final double
+					da = a.rawDotWith(lat, lon),
+					db = b.rawDotWith(lat, lon);
+				return da < db ? 1 : (da > db ? -1 : 0);	// inverted since we want closest to be first
+			}
+		);
+
+	}
 
 
 }

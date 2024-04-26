@@ -26,6 +26,8 @@ public class UserGroup {
 
 	private String title;
 
+	private Boolean share_locations = false;
+
 	@ManyToMany(
 		fetch = FetchType.EAGER,
 		cascade = { CascadeType.PERSIST, CascadeType.MERGE }
@@ -59,11 +61,23 @@ public class UserGroup {
 	@Setter
 	@ManyToMany(mappedBy = "pertainsGroup", fetch = FetchType.EAGER)
 	private Set<ObservationMarker> observations = new HashSet<>();
+
 	public void addToObservations(ObservationMarker observation_to_add){
 		observations.add(observation_to_add);
 	}
 
 	public UserGroup() {}
+
+
+	public Set<Long> getMemberIds() {
+		final Set<Long> uids = new HashSet<>();
+		this.members.forEach(
+			(User u)->{
+				uids.add(u.getId());
+			}
+		);
+		return uids;
+	}
 
 
 }
