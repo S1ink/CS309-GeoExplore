@@ -6,18 +6,22 @@ import hb403.geoexplore.comments.CommentRepo.CommentRepository;
 import hb403.geoexplore.comments.Entity.CommentEntity;
 import hb403.geoexplore.datatype.MarkerTag;
 import hb403.geoexplore.datatype.marker.EventMarker;
+import hb403.geoexplore.datatype.marker.MarkerBase;
 import hb403.geoexplore.datatype.marker.ObservationMarker;
 import hb403.geoexplore.datatype.marker.ReportMarker;
 import hb403.geoexplore.datatype.marker.repository.MarkerTagRepository;
 import hb403.geoexplore.datatype.marker.repository.ReportRepository;
 import hb403.geoexplore.datatype.request.Location;
+import hb403.geoexplore.datatype.request.LocationProximity;
 import hb403.geoexplore.datatype.request.LocationRange;
+import hb403.geoexplore.datatype.request.Range;
 import hb403.geoexplore.util.GeometryUtil;
 
 import java.util.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 
+import org.locationtech.jts.geom.Polygon;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -119,13 +123,13 @@ public class ReportController {
 	@GetMapping(path = "geomap/reports/within/poly")
 	public @ResponseBody Set<ReportMarker> getReportsWithinPoly(@RequestBody String wkt_bounds_geom) {	// takes in 'well known text' for the bounding geometry --> may define special json formats for predefined bounds later
 		try {
-			final Set<ReportMarker> bounded = this.reports_repo.findWithin( GeometryUtil.getGeometry(wkt_bounds_geom) );
+			final Set<ReportMarker> bounded = this.reports_repo.findSetWithin( GeometryUtil.getGeometry(wkt_bounds_geom) );
 			for(ReportMarker r : bounded) {
 				r.enforceLocationTable();
 			}
 			return bounded;
 		} catch(Exception e) {
-			System.out.println("ReportMarker.getReportsWithinPoly(): Encountered exception! -- " + e.getMessage());
+			System.out.println("ReportController.getReportsWithinPoly(): Encountered exception! -- " + e.getMessage());
 			// continue >>> (return null)
 		}
 		return null;
@@ -133,31 +137,105 @@ public class ReportController {
 
 	/**  */
 	@Operation(summary = "Get the set of reports whose locations are bounded by the provided location window")
-	@GetMapping(path = "geomap/reports/within/rect")
-	public @ResponseBody Set<ReportMarker> getReportsWithinRect(@RequestBody LocationRange range) {	// takes in 'well known text' for the bounding geometry --> may define special json formats for predefined bounds later
+	@PostMapping(path = "geomap/reports/within/rect")
+	public @ResponseBody Set<ReportMarker> getReportsWithinRect(@RequestBody Range range) {	// takes in 'well known text' for the bounding geometry --> may define special json formats for predefined bounds later
 		if(range == null || range.isInvalid()) return null;
 		try {
-			final Set<ReportMarker> bounded = this.reports_repo.findWithin( range.getRect() );
+			final Set<ReportMarker> bounded = this.reports_repo.findSetWithin( range.getRect() );
 			for(ReportMarker r : bounded) {
 				r.enforceLocationTable();
 			}
 			return bounded;
 		} catch(Exception e) {
-			System.out.println("ReportMarker.getReportsWithinRect(): Encountered exception! -- " + e.getMessage());
+			System.out.println("ReportController.getReportsWithinRect(): Encountered exception! -- " + e.getMessage());
 			// continue >>> (return null)
+		}
+		return null;
+	}
+
+	@Operation(summary = "Get the set of reports whose locations are bounded by the provided location window, sorted by distance from the provided location")
+	@PostMapping(path = "geomap/reports/within/rect/sorted")
+	public @ResponseBody List<ReportMarker> getProxSortedReportsWithinRect(@RequestBody LocationRange range) {
+		if(range == null || range.isInvalid()) return null;
+		try {
+			final List<ReportMarker> bounded = this.reports_repo.findListWithin( range.getRect() );
+			MarkerBase.sortByProximityAsc(bounded, range.src_latitude, range.src_longitude, true);
+			return bounded;
+		} catch(Exception e) {
+			System.out.println("ReportController.getProxSortedReportsWithinRect(): Encountered exception! -- " + e.getMessage());
+			// continue >>> (return null)
+		}
+		return null;
+	}
+
+	@Operation(summary = "Get all the reports within the specified proximity (from the specified source) -- results are sorted according to ascending proximity")
+	@PostMapping(path = "geomap/reports/within/proximity")
+	public @ResponseBody List<ReportMarker> getReportsWithinProximitySorted(@RequestBody LocationProximity range) {
+		if(range == null || range.isInvalid()) return null;
+		try {
+
+			System.out.printf(
+				"[REPORTS PROXIMITY SEARCH]: Recieved range object: {\n\tlat: %f,\n\tlon: %f,\n\trange: %f\n}\n",
+				range.latitude,
+				range.longitude,
+				range.range
+			);
+
+			final Polygon[] search_bounds = range.getMinMaxSearchBounds();
+
+			System.out.printf(
+				"[REPORTS PROXIMITY SEARCH]: Computed search bounds (x%d):\n",
+				search_bounds.length
+			);
+			for(Polygon p : search_bounds) {
+				System.out.printf(
+					"{\n\tWKT: %s\n}\n",
+					p.toString()
+				);
+			}
+
+			List<ReportMarker> bounded = null;
+			for(Polygon p : search_bounds) {
+				if(bounded == null) bounded = this.reports_repo.findListWithin(p);
+				else bounded.addAll( this.reports_repo.findListWithin(p) );
+			}
+
+			System.out.printf(
+				"[REPORTS PROXIMITY SEARCH]: Conducted database bounds search - recieved %d results\n",
+				bounded.size()
+			);
+
+			if(bounded == null) return null;	// make java shut up about not being initialized blah blah blah
+			MarkerBase.sortByProximityAsc(bounded, range.latitude, range.longitude, true);
+			
+			int
+				lower = 0,
+				upper = bounded.size();
+			for(int i = (upper + lower) / 2; lower < upper && i >= 0 && i < bounded.size(); i = (upper + lower) / 2) {	// binary search
+				double dist = bounded.get(i).distanceTo(range.latitude, range.longitude);
+				if(dist <= range.range) {
+					lower = i + 1;
+				} else {
+					upper = i;
+				}
+			}
+			return bounded.subList(0, lower);
+
+		} catch(Exception e) {
+
 		}
 		return null;
 	}
 
 	/** */
 	@Operation(summary = "Get the distance to a report from a specified location (IN MILES)")
-	@GetMapping(path = "geomap/reports/{id}/distance")
+	@PostMapping(path = "geomap/reports/{id}/distance")
 	public @ResponseBody Double getDistanceToMarkerById(@PathVariable Long id, @RequestBody Location src) {
 		if(id != null && src != null && src.isValid()) {
 			final ReportMarker m = this.getReportById(id);
 			if(m != null) {
 				m.enforceLocationTable();
-				return GeometryUtil.EARTH_RADIUS_MILES * GeometryUtil.arcangleDegInRad(src.longitude, src.latitude, m.getIo_longitude(), m.getIo_latitude());	// longitude is theta, latitude is phi
+				return GeometryUtil.arcdistanceGlobal(src.latitude, src.longitude, m.getIo_latitude(), m.getIo_longitude());
 			}
 		}
 		return null;

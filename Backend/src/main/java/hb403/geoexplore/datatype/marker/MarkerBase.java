@@ -81,11 +81,15 @@ public abstract class MarkerBase extends EntityBase {
 	}
 
 	public double rawDotWith(double lat, double lon) {
-		return GeometryUtil.arcdot(this.io_longitude, this.io_latitude, lon, lat);
+		return GeometryUtil.arcdotGlobal(this.io_latitude, this.io_longitude, lat, lon);
+	}
+
+	public double distanceTo(double lat, double lon) {
+		return GeometryUtil.arcdistanceGlobal(this.io_latitude, this.io_longitude, lat, lon);
 	}
 
 
-	public static void sortByProximityAsc(List<MarkerBase> markers, double lat, double lon, boolean enforce_from_table) {
+	public static void sortByProximityAsc(List<? extends MarkerBase> markers, double lat, double lon, boolean enforce_from_table) {
 
 		markers.sort(
 			(MarkerBase a, MarkerBase b)->{

@@ -61,6 +61,35 @@ public final class GeometryUtil {
 			}
 		);
 	}
+	public static Polygon makeLatLonRectFromRad(double theta1, double theta2, double phi1, double phi2) {
+		return makeRectangle(
+			phiToLatInDeg(phi1),
+			thetaToLonInDeg(theta1),
+			phiToLatInDeg(phi2),
+			thetaToLonInDeg(theta2)
+		);
+	}
+
+
+	public static double latToPhiInDeg(double lat_deg) {
+		return 90.0 - lat_deg;
+	}
+	public static double latToPhiInRad(double lat_deg) {
+		return Math.toRadians(latToPhiInDeg(lat_deg));
+	}
+	public static double lonToThetaInDeg(double lon_deg) {
+		return lon_deg;
+	}
+	public static double lonToThetaInRad(double lon_deg) {
+		return Math.toRadians(lonToThetaInDeg(lon_deg));
+	}
+
+	public static double thetaToLonInDeg(double theta_rad) {
+		return Math.toDegrees(theta_rad);
+	}
+	public static double phiToLatInDeg(double phi_rad) {
+		return 90.0 - Math.toDegrees(phi_rad);
+	}
 
 
 	/** Compute the dot product of the unit vectors formed using the provided locations in spherical coordinates -- units are radians */
@@ -100,6 +129,19 @@ public final class GeometryUtil {
 	}
 	public static double arcangleDegInDeg(double t1, double p1, double t2, double p2) {
 		return Math.toDegrees(arcangleDegInRad(t1, p1, t2, p2));
+	}
+
+	public static double arcdotGlobal(double lat1, double lon1, double lat2, double lon2) {
+		return arcdot(
+			lonToThetaInRad(lon1),
+			latToPhiInRad(lat1),
+			lonToThetaInRad(lon2),
+			latToPhiInRad(lat2)
+		);
+	}
+	/** IN MILES!!! */
+	public static double arcdistanceGlobal(double lat1, double lon1, double lat2, double lon2) {
+		return EARTH_RADIUS_MILES * Math.acos(arcdotGlobal(lat1, lon1, lat2, lon2));
 	}
 
 

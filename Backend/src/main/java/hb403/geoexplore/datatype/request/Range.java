@@ -7,11 +7,9 @@ import org.locationtech.jts.geom.Polygon;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 
-public class LocationRange {
+public class Range {
 	
 	public Double
-		src_latitude,
-		src_longitude,
 		min_latitude,
 		min_longitude,
 		max_latitude,
@@ -21,8 +19,6 @@ public class LocationRange {
 	@JsonIgnore
 	public boolean isValid() {
 		return (
-			this.src_latitude != null &&
-			this.src_longitude != null &&
 			this.min_latitude != null &&
 			this.min_longitude != null &&
 			this.max_latitude != null &&
@@ -32,8 +28,6 @@ public class LocationRange {
 	@JsonIgnore
 	public boolean isInvalid() {
 		return (
-			this.src_latitude == null ||
-			this.src_longitude == null ||
 			this.min_latitude == null ||
 			this.min_longitude == null ||
 			this.max_latitude == null ||
@@ -50,5 +44,6 @@ public class LocationRange {
 			this.max_longitude
 		);
 	}
+
 
 }

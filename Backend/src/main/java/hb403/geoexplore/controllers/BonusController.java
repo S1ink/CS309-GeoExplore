@@ -3,6 +3,7 @@ package hb403.geoexplore.controllers;
 import hb403.geoexplore.datatype.marker.*;
 import hb403.geoexplore.datatype.marker.repository.*;
 import hb403.geoexplore.util.GeometryUtil;
+import io.swagger.v3.oas.annotations.Operation;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -37,6 +38,7 @@ public class BonusController {
 		return null;
 	}
 
+	@Operation(summary = "Get the arc-distance between any two markers. Marker typenames are internally converted to uppercase, therefore casing does not matter (select from { \"alert\", \"event\", \"observation\", \"report\"}).")
 	@GetMapping(path = "geomap/{markerT1}/{id1}/distanceto/{markerT2}/{id2}")
 	public @ResponseBody Double getMarkerArcDistance(
 		@PathVariable String markerT1,
@@ -52,11 +54,11 @@ public class BonusController {
 			if(m1 != null && m2 != null) {
 				m1.enforceLocationTable();
 				m2.enforceLocationTable();
-				return GeometryUtil.EARTH_RADIUS_MILES * GeometryUtil.arcangleDegInRad(
-					m1.getIo_longitude(),
+				return GeometryUtil.arcdistanceGlobal(
 					m1.getIo_latitude(),
-					m2.getIo_longitude(),
-					m2.getIo_latitude()
+					m1.getIo_longitude(),
+					m2.getIo_latitude(),
+					m2.getIo_longitude()
 				);
 			}
 		} catch(Exception e) {

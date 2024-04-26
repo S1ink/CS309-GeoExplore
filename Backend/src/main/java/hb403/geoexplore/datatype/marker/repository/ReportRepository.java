@@ -2,7 +2,7 @@ package hb403.geoexplore.datatype.marker.repository;
 
 import hb403.geoexplore.datatype.marker.ReportMarker;
 
-import java.util.Set;
+import java.util.*;
 
 import org.locationtech.jts.geom.Geometry;
 
@@ -19,7 +19,10 @@ public interface ReportRepository extends JpaRepository<ReportMarker, Long> {
 	void deleteById(int id);
 
 	@Query(value = "SELECT m from ReportMarker m WHERE within(m.location, :bounds) = true")
-	public Set<ReportMarker> findWithin(@Param("bounds") Geometry bounds);
+	public Set<ReportMarker> findSetWithin(@Param("bounds") Geometry bounds);
+
+	@Query(value = "SELECT m from ReportMarker m WHERE within(m.location, :bounds) = true")
+	public List<ReportMarker> findListWithin(@Param("bounds") Geometry bounds);
 
 
 }
