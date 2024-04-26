@@ -109,7 +109,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     private LocationCallback locationCallback;
     private WebSocketListener alertWebSocketListener;
     private WebSocketListener locationWebSocketListener;
-    private List<Marker> userMarkers = new ArrayList<>();
     private Map<Integer, Marker> userMarkersMap = new HashMap<>();
 
     public MapsFragment() {
