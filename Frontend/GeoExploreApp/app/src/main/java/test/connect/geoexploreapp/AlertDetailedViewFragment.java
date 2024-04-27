@@ -94,6 +94,7 @@ public class AlertDetailedViewFragment extends Fragment {
             public void onResponse(Call<Void> call, Response<Void> response) {
                 if(response.isSuccessful()){
                     Toast.makeText(getActivity(), "Alert deleted", Toast.LENGTH_SHORT).show();
+                    getParentFragmentManager().popBackStack();
                 } else{
                     Toast.makeText(getActivity(), "Failed to delete alert", Toast.LENGTH_SHORT).show();
                 }

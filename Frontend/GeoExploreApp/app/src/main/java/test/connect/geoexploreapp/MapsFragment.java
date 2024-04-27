@@ -1017,8 +1017,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                 Toast.makeText(getActivity(), "Error deleting report", Toast.LENGTH_SHORT).show();
             }
         });
-
     }
+
     private void displayAllObservations() {
         ObservationApi observationApi = ApiClientFactory.GetObservationApi();
 

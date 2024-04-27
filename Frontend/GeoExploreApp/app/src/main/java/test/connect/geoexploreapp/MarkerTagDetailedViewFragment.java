@@ -6,6 +6,7 @@ import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 
 import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,6 +31,7 @@ public class MarkerTagDetailedViewFragment extends Fragment {
 
     private static final String ARG_MARKER_TAG = "marker_tag";
     private MarkerTag markerTag;
+    private TextView nameTextView;
 
 
     public MarkerTagDetailedViewFragment() {
@@ -67,7 +69,7 @@ public class MarkerTagDetailedViewFragment extends Fragment {
 
 
         TextView idTextView = view.findViewById(R.id.idTextView);
-        TextView nameTextView = view.findViewById(R.id.nameTextView);
+        nameTextView = view.findViewById(R.id.nameTextView);
 
 
         if (markerTag != null) {
@@ -125,6 +127,7 @@ public class MarkerTagDetailedViewFragment extends Fragment {
                     public void onResponse(Call<Void> call, Response<Void> response) {
                         if (response.isSuccessful()) {
                             Toast.makeText(getActivity(), "Tag deleted", Toast.LENGTH_SHORT).show();
+                            getParentFragmentManager().popBackStack();
                         } else {
                             Toast.makeText(getActivity(), "Failed to delete tag", Toast.LENGTH_SHORT).show();
                         }
@@ -142,6 +145,7 @@ public class MarkerTagDetailedViewFragment extends Fragment {
     }
 
     private void updateTagByID(String newName) {
+        Log.d("MarkerTag", "" + markerTag.getId());
         String idString = "" + markerTag.getId();
 
         if (!idString.isEmpty() && !newName.isEmpty()) {
@@ -156,6 +160,7 @@ public class MarkerTagDetailedViewFragment extends Fragment {
                     public void onResponse(Call<MarkerTag> call, Response<MarkerTag> response) {
                         if (response.isSuccessful()) {
                             Toast.makeText(getActivity(), "Tag Updated", Toast.LENGTH_SHORT).show();
+                            nameTextView.setText(String.format("Name: %s", newName));
                         } else {
                             Toast.makeText(getActivity(), "Failed to update tag", Toast.LENGTH_SHORT).show();
                         }
