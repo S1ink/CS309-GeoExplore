@@ -1,17 +1,17 @@
 package hb403.geoexplore.controllers;
 
-import hb403.geoexplore.datatype.LocationRange;
 import hb403.geoexplore.datatype.MarkerTag;
-import hb403.geoexplore.datatype.marker.AlertMarker;
-import hb403.geoexplore.datatype.marker.EventMarker;
+import hb403.geoexplore.datatype.marker.*;
 import hb403.geoexplore.datatype.marker.repository.AlertRepository;
 import hb403.geoexplore.datatype.marker.repository.MarkerTagRepository;
+import hb403.geoexplore.datatype.request.*;
 import hb403.geoexplore.util.GeometryUtil;
 
 import java.util.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 
+import org.locationtech.jts.geom.Polygon;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,7 +30,9 @@ public class AlertController {
 	public @ResponseBody AlertMarker getAlertById(@PathVariable Long id) {
 		if(id != null) {
 			try {
-				return this.alert_repo.findById(id).get();
+				final AlertMarker a = this.alert_repo.findById(id).get();
+				a.enforceLocationTable();
+				return a;
 			} catch(Exception e) {
 
 			}
@@ -40,7 +42,11 @@ public class AlertController {
 	@Operation(summary = "Get all alerts in the database")
 	@GetMapping(path = "geomap/alerts")
 	public @ResponseBody List<AlertMarker> getAllAlerts() {
-		return this.alert_repo.findAll();
+		final List<AlertMarker> alerts = this.alert_repo.findAll();
+		for(AlertMarker a : alerts) {
+			a.enforceLocationTable();
+		}
+		return alerts;
 	}
 
 	@Operation(summary = "Update an alert already in the database by its id")
@@ -79,14 +85,14 @@ public class AlertController {
 	@GetMapping(path = "geomap/alerts/within/poly")
 	public @ResponseBody Set<AlertMarker> getAlertsWithinPoly(@RequestBody String wkt_bounds_geom) {	// takes in 'well known text' for the bounding geometry --> may define special json formats for predefined bounds later
 		try {
-			final Set<AlertMarker> bounded = this.alert_repo.findWithin( GeometryUtil.getGeometry(wkt_bounds_geom) );
+			final Set<AlertMarker> bounded = this.alert_repo.findSetWithin( GeometryUtil.getGeometry(wkt_bounds_geom) );
 			// System.out.println("Recieved " + bounded.size() + " bounded events");
 			for(AlertMarker e : bounded) {
 				e.enforceLocationTable();
 			}
 			return bounded;
 		} catch(Exception e) {
-			System.out.println("AlertMarker.getEventsWithinPoly(): Encountered exception! -- " + e.getMessage());
+			System.out.println("AlertController.getAlertsWithinPoly(): Encountered exception! -- " + e.getMessage());
 			// continue >>> (return null)
 		}
 		return null;
@@ -94,18 +100,106 @@ public class AlertController {
 
 	/**  */
 	@Operation(summary = "Get the set of alerts whose locations are bounded by the provided location window")
-	@GetMapping(path = "geomap/alerts/within/rect")
-	public @ResponseBody Set<AlertMarker> getAlertsWithinRect(@RequestBody LocationRange range) {
+	@PostMapping(path = "geomap/alerts/within/rect")	// it has to be a POST mapping so we can recieve JSON request objects :(
+	public @ResponseBody Set<AlertMarker> getAlertsWithinRect(@RequestBody Range range) {
 		if(range == null || range.isInvalid()) return null;
 		try {
-			final Set<AlertMarker> bounded = this.alert_repo.findWithin( range.getRect() );
+			final Set<AlertMarker> bounded = this.alert_repo.findSetWithin( range.getRect() );
 			for(AlertMarker e : bounded) {
 				e.enforceLocationTable();
 			}
 			return bounded;
 		} catch(Exception e) {
-			System.out.println("AlertMarker.getEventsWithinRect(): Encountered exception! -- " + e.getMessage());
+			System.out.println("AlertController.getAlertsWithinRect(): Encountered exception! -- " + e.getMessage());
 			// continue >>> (return null)
+		}
+		return null;
+	}
+
+	@Operation(summary = "Get the set of alerts whose locations are bounded by the provided location window, sorted by distance from the provided location")
+	@PostMapping(path = "geomap/alerts/within/rect/sorted")
+	public @ResponseBody List<AlertMarker> getProxSortedAlertsWithinRect(@RequestBody LocationRange range) {
+		if(range == null || range.isInvalid()) return null;
+		try {
+			final List<AlertMarker> bounded = this.alert_repo.findListWithin( range.getRect() );
+			MarkerBase.sortByProximityAsc(bounded, range.src_latitude, range.src_longitude, true);
+			return bounded;
+		} catch(Exception e) {
+			System.out.println("AlertController.getProxSortedAlertsWithinRect(): Encountered exception! -- " + e.getMessage());
+			// continue >>> (return null)
+		}
+		return null;
+	}
+
+	@Operation(summary = "Get all the alerts within the specified proximity (from the specified source) -- results are sorted according to ascending proximity")
+	@PostMapping(path = "geomap/alerts/within/proximity")
+	public @ResponseBody List<AlertMarker> getAlertsWithinProximitySorted(@RequestBody LocationProximity range) {
+		if(range == null || range.isInvalid()) return null;
+		try {
+
+			System.out.printf(
+				"[ALERTS PROXIMITY SEARCH]: Recieved range object: {\n\tlat: %f,\n\tlon: %f,\n\trange: %f\n}\n",
+				range.latitude,
+				range.longitude,
+				range.range
+			);
+
+			final Polygon[] search_bounds = range.getMinMaxSearchBounds();
+
+			System.out.printf(
+				"[ALERTS PROXIMITY SEARCH]: Computed search bounds (x%d):\n",
+				search_bounds.length
+			);
+			for(Polygon p : search_bounds) {
+				System.out.printf(
+					"{\n\tWKT: %s\n}\n",
+					p.toString()
+				);
+			}
+
+			List<AlertMarker> bounded = null;
+			for(Polygon p : search_bounds) {
+				if(bounded == null) bounded = this.alert_repo.findListWithin(p);
+				else bounded.addAll( this.alert_repo.findListWithin(p) );
+			}
+
+			System.out.printf(
+				"[ALERTS PROXIMITY SEARCH]: Conducted database bounds search - recieved %d results\n",
+				bounded.size()
+			);
+
+			if(bounded == null) return null;	// make java shut up about not being initialized blah blah blah
+			MarkerBase.sortByProximityAsc(bounded, range.latitude, range.longitude, true);
+			
+			int
+				lower = 0,
+				upper = bounded.size();
+			for(int i = (upper + lower) / 2; lower < upper && i >= 0 && i < bounded.size(); i = (upper + lower) / 2) {	// binary search
+				double dist = bounded.get(i).distanceTo(range.latitude, range.longitude);
+				if(dist <= range.range) {
+					lower = i + 1;
+				} else {
+					upper = i;
+				}
+			}
+			return bounded.subList(0, lower);
+
+		} catch(Exception e) {
+
+		}
+		return null;
+	}
+
+	/** */
+	@Operation(summary = "Get the distance to an alert from a specified location (IN MILES)")
+	@PostMapping(path = "geomap/alerts/{id}/distance")
+	public @ResponseBody Double getDistanceToMarkerById(@PathVariable Long id, @RequestBody Location src) {
+		if(id != null && src != null && src.isValid()) {
+			final AlertMarker m = this.getAlertById(id);
+			if(m != null) {
+				m.enforceLocationTable();
+				return GeometryUtil.arcdistanceGlobal(src.latitude, src.longitude, m.getIo_latitude(), m.getIo_longitude());
+			}
 		}
 		return null;
 	}

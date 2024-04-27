@@ -80,5 +80,31 @@ public abstract class MarkerBase extends EntityBase {
 		}
 	}
 
+	public double rawDotWith(double lat, double lon) {
+		return GeometryUtil.arcdotGlobal(this.io_latitude, this.io_longitude, lat, lon);
+	}
+
+	public double distanceTo(double lat, double lon) {
+		return GeometryUtil.arcdistanceGlobal(this.io_latitude, this.io_longitude, lat, lon);
+	}
+
+
+	public static void sortByProximityAsc(List<? extends MarkerBase> markers, double lat, double lon, boolean enforce_from_table) {
+
+		markers.sort(
+			(MarkerBase a, MarkerBase b)->{
+				if(enforce_from_table) {
+					a.enforceLocationTable();
+					b.enforceLocationTable();
+				}
+				final double
+					da = a.rawDotWith(lat, lon),
+					db = b.rawDotWith(lat, lon);
+				return da < db ? 1 : (da > db ? -1 : 0);	// inverted since we want closest to be first
+			}
+		);
+
+	}
+
 
 }
