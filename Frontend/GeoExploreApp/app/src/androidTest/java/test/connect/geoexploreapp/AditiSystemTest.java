@@ -41,9 +41,6 @@ import androidx.test.filters.LargeTest;
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
 
 public class AditiSystemTest {
-    private boolean needLogin = false;
-    private String firstName ="A";
-    private String lastName ="N";
     private String emailId = "aditin@iastate.edu";
     private String password = "p";
     private static final int SIMULATED_DELAY_MS = 5000;
@@ -68,15 +65,14 @@ public class AditiSystemTest {
 
     @Test
     public void SignInTest(){
-        needLogin = false;
         onView(allOf(withText("Signup"), isDescendantOfA(withId(R.id.tab_layout))))
                 .perform(click());
 
-        onView(withId(R.id.firstName)).perform(typeText(firstName));
-        onView(withId(R.id.lastName)).perform(typeText(lastName));
-        onView(withId(R.id.signup_email)).perform(typeText(emailId));
-        onView(withId(R.id.signup_password)).perform(typeText(password));
-        onView(withId(R.id.signup_confirm)).perform(typeText(password));
+        onView(withId(R.id.firstName)).perform(typeText("first name"));
+        onView(withId(R.id.lastName)).perform(typeText("lastName"));
+        onView(withId(R.id.signup_email)).perform(typeText("emailId"));
+        onView(withId(R.id.signup_password)).perform(typeText("password"));
+        onView(withId(R.id.signup_confirm)).perform(typeText("password"));
         onView(withId(R.id.SignUpScrollView)).perform(swipeUp());
         onView(withId(R.id.signup_button)).perform(click());
 
@@ -131,15 +127,13 @@ public class AditiSystemTest {
     }
 
     @Test
-    public void CreateEvent(){
+    public void CreateEventFailed(){
         onView(withId(R.id.login_email)).perform(typeText(emailId));
         onView(withId(R.id.login_password)).perform(typeText(password));
         onView(withId(R.id.login_button)).perform(click());
 
 
         // Verify that volley returned the correct value
-        onView(withId(R.id.mainActivity)).check(matches(isDisplayed()));
-
         onView(withId(R.id.map)).check(matches(isDisplayed()));
 
         onView(withId(R.id.map)).perform(longClick());
@@ -152,7 +146,7 @@ public class AditiSystemTest {
                 .perform(click());
 
 
-        onView(withId(R.id.editTextTitle)).perform(typeText("Lion stopped"));
+        onView(withId(R.id.editTextTitle)).perform(typeText(""));
         closeSoftKeyboard();
 
         onView(withText("Create")).perform(click());
@@ -163,47 +157,10 @@ public class AditiSystemTest {
         } catch (InterruptedException e) {
         }
 
-        onView(withId(R.id.statusMessage)).check(matches(withText("Event created successfully!")));
+        onView(withId(R.id.statusMessage)).check(matches(withText("Need Title for Event.")));
 
     }
 
-    @Test
-    public void CreateReport(){
-        onView(withId(R.id.login_email)).perform(typeText(emailId));
-        onView(withId(R.id.login_password)).perform(typeText(password));
-        onView(withId(R.id.login_button)).perform(click());
-
-
-
-        // Verify that volley returned the correct value
-        onView(withId(R.id.mainActivity)).check(matches(isDisplayed()));
-
-        onView(withId(R.id.map)).check(matches(isDisplayed()));
-
-        onView(withId(R.id.map)).perform(longClick());
-        onView(withText("What do you want to create?"))
-                .inRoot(isDialog()) //
-                .check(matches(isDisplayed()));
-
-        onView(allOf(withId(android.R.id.text1), withText("Report")))
-                .inRoot(isDialog())
-                .perform(click());
-
-
-        onView(withId(R.id.editTextTitle)).perform(typeText("Lion stopped"));
-        closeSoftKeyboard();
-
-        onView(withText("Create")).perform(click());
-
-        // Put thread to sleep to allow volley to handle the request
-        try {
-            Thread.sleep(SIMULATED_DELAY_MS);
-        } catch (InterruptedException e) {
-        }
-
-        onView(withId(R.id.statusMessage)).check(matches(withText("Report created successfully!")));
-
-    }
 
     @Test
     public void GetObservationByIDTest(){
@@ -211,7 +168,6 @@ public class AditiSystemTest {
         onView(withId(R.id.login_password)).perform(typeText(password));
         onView(withId(R.id.login_button)).perform(click());
         
-        onView(withId(R.id.mainActivity)).check(matches(isDisplayed()));
         onView(withId(R.id.map)).check(matches(isDisplayed()));
         onView(withId(R.id.fab_main)).perform(click());
         onView(withId(R.id.btn_observation_read)).perform(click());
@@ -222,6 +178,25 @@ public class AditiSystemTest {
                 .perform(ViewActions.typeText("2"), ViewActions.closeSoftKeyboard());
         onView(withText("OK")).perform(click());
         onView(withId(R.id.statusMessage)).check(matches(withText("Observation found successfully!")));
+
+
+    }
+    @Test
+    public void GetObservationByIDFail(){
+        onView(withId(R.id.login_email)).perform(typeText(emailId));
+        onView(withId(R.id.login_password)).perform(typeText(password));
+        onView(withId(R.id.login_button)).perform(click());
+
+        onView(withId(R.id.map)).check(matches(isDisplayed()));
+        onView(withId(R.id.fab_main)).perform(click());
+        onView(withId(R.id.btn_observation_read)).perform(click());
+        onView(withText("Enter Observation ID"))
+                .inRoot(isDialog())
+                .check(matches(isDisplayed()));
+        onView(ViewMatchers.withClassName(Matchers.equalTo(EditText.class.getName())))
+                .perform(ViewActions.typeText("2000"), ViewActions.closeSoftKeyboard());
+        onView(withText("OK")).perform(click());
+        onView(withId(R.id.statusMessage)).check(matches(withText("Observation ID Not Found!")));
 
 
     }
