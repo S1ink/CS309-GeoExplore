@@ -43,7 +43,7 @@ import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
 public class AditiSystemTest {
     private String emailId = "aditin@iastate.edu";
     private String password = "p";
-    private static final int SIMULATED_DELAY_MS = 5000;
+    private static final int SIMULATED_DELAY_MS = 1000;
 
     @Rule
     public ActivityScenarioRule<LoginSignUpActivity> activityRule = new ActivityScenarioRule<>(LoginSignUpActivity.class);
@@ -68,9 +68,9 @@ public class AditiSystemTest {
         onView(allOf(withText("Signup"), isDescendantOfA(withId(R.id.tab_layout))))
                 .perform(click());
 
-        onView(withId(R.id.firstName)).perform(typeText("first name"));
-        onView(withId(R.id.lastName)).perform(typeText("lastName"));
-        onView(withId(R.id.signup_email)).perform(typeText("emailId"));
+        onView(withId(R.id.firstName)).perform(typeText("first name1"));
+        onView(withId(R.id.lastName)).perform(typeText("lastName1"));
+        onView(withId(R.id.signup_email)).perform(typeText("emailId1"));
         onView(withId(R.id.signup_password)).perform(typeText("password"));
         onView(withId(R.id.signup_confirm)).perform(typeText("password"));
         onView(withId(R.id.SignUpScrollView)).perform(swipeUp());
@@ -110,9 +110,9 @@ public class AditiSystemTest {
                 .perform(click());
 
 
-        onView(withId(R.id.editTextTitle)).perform(typeText("Lion stopped"));
+        onView(withId(R.id.editTextTitle)).perform(typeText("Lion stopped again"));
         closeSoftKeyboard();
-        onView(withId(R.id.editTextDescription)).perform(typeText("Saw a lion. Be careful.1"));
+        onView(withId(R.id.editTextDescription)).perform(typeText("Saw a lion. Be careful.33"));
         closeSoftKeyboard();
         onView(withText("Create")).perform(click());
 
@@ -167,7 +167,10 @@ public class AditiSystemTest {
         onView(withId(R.id.login_email)).perform(typeText(emailId));
         onView(withId(R.id.login_password)).perform(typeText(password));
         onView(withId(R.id.login_button)).perform(click());
-        
+        try {
+            Thread.sleep(SIMULATED_DELAY_MS);
+        } catch (InterruptedException e) {
+        }
         onView(withId(R.id.map)).check(matches(isDisplayed()));
         onView(withId(R.id.fab_main)).perform(click());
         onView(withId(R.id.btn_observation_read)).perform(click());
@@ -177,6 +180,10 @@ public class AditiSystemTest {
         onView(ViewMatchers.withClassName(Matchers.equalTo(EditText.class.getName())))
                 .perform(ViewActions.typeText("2"), ViewActions.closeSoftKeyboard());
         onView(withText("OK")).perform(click());
+        try {
+            Thread.sleep(SIMULATED_DELAY_MS);
+        } catch (InterruptedException e) {
+        }
         onView(withId(R.id.statusMessage)).check(matches(withText("Observation found successfully!")));
 
 
@@ -186,7 +193,10 @@ public class AditiSystemTest {
         onView(withId(R.id.login_email)).perform(typeText(emailId));
         onView(withId(R.id.login_password)).perform(typeText(password));
         onView(withId(R.id.login_button)).perform(click());
-
+        try {
+            Thread.sleep(SIMULATED_DELAY_MS);
+        } catch (InterruptedException e) {
+        }
         onView(withId(R.id.map)).check(matches(isDisplayed()));
         onView(withId(R.id.fab_main)).perform(click());
         onView(withId(R.id.btn_observation_read)).perform(click());
@@ -196,6 +206,10 @@ public class AditiSystemTest {
         onView(ViewMatchers.withClassName(Matchers.equalTo(EditText.class.getName())))
                 .perform(ViewActions.typeText("2000"), ViewActions.closeSoftKeyboard());
         onView(withText("OK")).perform(click());
+        try {
+            Thread.sleep(SIMULATED_DELAY_MS);
+        } catch (InterruptedException e) {
+        }
         onView(withId(R.id.statusMessage)).check(matches(withText("Observation ID Not Found!")));
 
 
