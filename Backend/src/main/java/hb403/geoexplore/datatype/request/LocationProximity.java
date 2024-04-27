@@ -50,26 +50,28 @@ public class LocationProximity {
 		final boolean
 			min_phi_wrap = min_phi < 0,
 			max_phi_wrap = max_phi > Math.PI,
-			min_theta_wrap = min_theta < 0,
-			max_theta_wrap = max_theta > PI2;
+			min_theta_wrap = min_theta < -Math.PI,
+			max_theta_wrap = max_theta > Math.PI;	// longitude goes from -180 to 180 and we don't remap it to a positive range so these are the bounds
 
 		if(min_phi_wrap || max_phi_wrap) {	// range extends beyond poles --> search through all 360 degrees of theta is needed (since MySQL is dumb)
 			min_theta = 0;
 			max_theta = PI2;
 			if(min_phi_wrap) min_phi = 0;
 			if(max_phi_wrap) max_phi = Math.PI;		// negate wrap-around for 2D search
-		}/* else if(min_theta_wrap) {	// bounds cross theta=0=2pi boundry --> need 2 search boxes
+		} else if(min_theta_wrap && max_theta_wrap) {	// just clamp each so we search the entire range
+			min_theta = -Math.PI;
+			max_theta = Math.PI;
+		}else if(min_theta_wrap) {	// bounds cross theta=0=2pi boundry --> need 2 search boxes
 			return new Polygon[]{
-				GeometryUtil.makeLatLonRectFromRad(min_theta + PI2, PI2, min_phi, max_phi),		// normalize to be in positive range
-				GeometryUtil.makeLatLonRectFromRad(0, max_theta, min_phi, max_phi)
+				GeometryUtil.makeLatLonRectFromRad(min_theta + PI2, Math.PI, min_phi, max_phi),
+				GeometryUtil.makeLatLonRectFromRad(-Math.PI, max_theta, min_phi, max_phi)
 			};
 		} else if(max_theta_wrap) {
 			return new Polygon[]{
-				GeometryUtil.makeLatLonRectFromRad(0, max_theta - PI2, min_phi, max_phi),	// normalize to be at max 2pi
-				GeometryUtil.makeLatLonRectFromRad(min_theta, PI2, min_phi, max_phi)
+				GeometryUtil.makeLatLonRectFromRad(-Math.PI, max_theta - PI2, min_phi, max_phi),
+				GeometryUtil.makeLatLonRectFromRad(min_theta, Math.PI, min_phi, max_phi)
 			};
-		} */
-		// ^ this did not work :|
+		}
 
 		return new Polygon[]{
 			GeometryUtil.makeLatLonRectFromRad(min_theta, max_theta, min_phi, max_phi)
