@@ -1,8 +1,10 @@
 package test.connect.geoexploreapp;
 
+
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
@@ -10,6 +12,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
 
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -30,6 +33,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import com.google.android.gms.location.Priority;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -38,10 +42,13 @@ import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 
 import org.java_websocket.handshake.ServerHandshake;
@@ -50,8 +57,17 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+
+import android.location.Location;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -62,17 +78,21 @@ import test.connect.geoexploreapp.api.MarkerTagApi;
 import test.connect.geoexploreapp.api.ObservationApi;
 import test.connect.geoexploreapp.api.ReportMarkerApi;
 import test.connect.geoexploreapp.api.SlimCallback;
+import test.connect.geoexploreapp.api.UserApi;
 import test.connect.geoexploreapp.model.AlertMarker;
 import test.connect.geoexploreapp.model.EventMarker;
 import test.connect.geoexploreapp.model.MarkerTag;
 import test.connect.geoexploreapp.model.Observation;
 import test.connect.geoexploreapp.model.ReportMarker;
 import test.connect.geoexploreapp.model.User;
+import test.connect.geoexploreapp.websocket.AlertWebSocketManager;
+import test.connect.geoexploreapp.websocket.LocationWebSocketManager;
 import test.connect.geoexploreapp.websocket.WebSocketListener;
-import test.connect.geoexploreapp.websocket.WebSocketManager;
+import android.Manifest;
 
-public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSocketListener {
+public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
+    public static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
     private GoogleMap mMap;
     private boolean isUpdateReportMode = false;
     private boolean isUpdateEventMode = false;
@@ -86,6 +106,12 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
     private TextView eventUpdateTextView;
     private TextView observationUpdateTextView;
     private User loggedInUser;
+    private FusedLocationProviderClient fusedLocationProviderClient;
+    private LocationRequest locationRequest;
+    private LocationCallback locationCallback;
+    private WebSocketListener alertWebSocketListener;
+    private WebSocketListener locationWebSocketListener;
+    private Map<Integer, Marker> userMarkersMap = new HashMap<>();
 
     public MapsFragment() {
 
@@ -97,7 +123,103 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
 
         View view = inflater.inflate(R.layout.fragment_maps, container, false);
 
-        WebSocketManager.getInstance().setWebSocketListener(this);
+        alertWebSocketListener = new WebSocketListener() {
+            @Override
+            public void onWebSocketOpen(ServerHandshake handshakedata) {
+                Log.d("AlertWebSocket", "Connected");
+            }
+
+            @Override
+            public void onWebSocketMessage(String message) {
+                if (message.contains("io_latitude")) {
+                    AlertMarker alertMarker = new Gson().fromJson(message, AlertMarker.class);
+                    showEmergencyNotification(alertMarker.getTitle(), alertMarker.getDescription(),
+                            alertMarker.getIo_latitude(), alertMarker.getIo_longitude());
+                }
+            }
+
+            @Override
+            public void onWebSocketClose(int code, String reason, boolean remote) {
+                Log.d("AlertWebSocket", "Closed: " + reason);
+            }
+
+            @Override
+            public void onWebSocketError(Exception ex) {
+                Log.e("AlertWebSocket", "Error", ex);
+            }
+        };
+
+        locationWebSocketListener = new WebSocketListener() {
+            @Override
+            public void onWebSocketOpen(ServerHandshake handshakedata) {
+                Log.d("LocationWebSocket", "Connected");
+            }
+
+            @Override
+            public void onWebSocketMessage(String message) {
+                if (message.contains("latitude") && message.contains("emergency")) {
+                    try {
+                        JsonObject locationJson = JsonParser.parseString(message).getAsJsonObject();
+                        int user_id = locationJson.get("user_id").getAsInt();
+                        double latitude = locationJson.get("latitude").getAsDouble();
+                        double longitude = locationJson.get("longitude").getAsDouble();
+
+                        displayUserOnMap(user_id,latitude,longitude);
+
+                        Log.d("LocationWebSocket", "Latitude: " + latitude + ", Longitude: " + longitude);
+                    } catch (JsonSyntaxException e) {
+                        Log.e("LocationWebSocket", "Error parsing location data", e);
+                    }
+                }
+            }
+
+            @Override
+            public void onWebSocketClose(int code, String reason, boolean remote) {
+                Log.d("LocationWebSocket", "Closed: " + reason);
+            }
+
+            @Override
+            public void onWebSocketError(Exception ex) {
+                Log.e("LocationWebSocket", "Error", ex);
+            }
+        };
+
+        AlertWebSocketManager.getInstance().setWebSocketListener(alertWebSocketListener);
+        LocationWebSocketManager.getInstance().setWebSocketListener(locationWebSocketListener);
+
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireActivity());
+
+
+
+
+        locationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10000)  // 10 seconds
+                .setMinUpdateIntervalMillis(150000)
+                .build();
+
+
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult != null) {
+                    for (Location location : locationResult.getLocations()) {
+                        double latitude = location.getLatitude();
+                        double longitude = location.getLongitude();
+
+                        // websocket send here
+                        JsonObject locationData = new JsonObject();
+                        locationData.addProperty("latitude", latitude);
+                        locationData.addProperty("longitude", longitude);
+
+                        Gson gson = new Gson();
+                        String jsonMessage = gson.toJson(locationData);
+
+                        LocationWebSocketManager.getInstance().sendMessage(jsonMessage);
+
+                        Log.d("MapsFragment", "Latitude: " + latitude + ", Longitude: " + longitude);
+                    }
+                }
+            }
+        };
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map);
@@ -106,7 +228,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
             mapFragment.getMapAsync(this);
         }
 
-        // check if admin needs location
         SharedViewModel viewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
 
         viewModel.getCreateEmergencyNotification().observe(getViewLifecycleOwner(), isCreateEmergency -> {
@@ -116,7 +237,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
         viewModel.getLoggedInUser().observe(getViewLifecycleOwner(), loggedInUser -> {
             this.loggedInUser = loggedInUser;
             if (loggedInUser != null && !isUserSet){
-                Log.d("TEST", "Web socket connection");
 
                 isUserSet = true;
             }else {
@@ -137,34 +257,54 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
             }
         });
 
+        startLocationUpdates();
+
         return view;
     }
 
-    @Override
-    public void onWebSocketMessage(String message){
-        Log.d("WebSocket", "Received message: " + message);
-        if(message.contains("io_latitude")){
-            try {
-                AlertMarker alertMarker = new Gson().fromJson(message, AlertMarker.class);
 
-                showEmergencyNotification(alertMarker.getTitle(), alertMarker.getDescription(),
-                        alertMarker.getIo_latitude(), alertMarker.getIo_longitude());
-            } catch (JsonSyntaxException e) {
-                e.printStackTrace();
+    private void startLocationUpdates() {
+        // check permissions
+        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+
+            // start sending location if permission granted
+            try {
+                fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null);
+            } catch (SecurityException e) {
+                Log.e("MapsFragment", "issue with permissions", e);
             }
+        } else {
+            // request perms if not granted
+            ActivityCompat.requestPermissions(
+                    requireActivity(),
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                    LOCATION_PERMISSION_REQUEST_CODE
+            );
         }
     }
 
-    @Override
-    public void onWebSocketClose(int code, String reason, boolean remote){
-
+    private void stopLocationUpdates() {
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback);  // stop the updates
     }
 
     @Override
-    public void onWebSocketOpen(ServerHandshake handshakedata) {}
+    public void onResume() {
+        super.onResume();
+        startLocationUpdates();  // resume the locatyion updates
+    }
 
     @Override
-    public void onWebSocketError(Exception ex) {}
+    public void onPause() {
+        super.onPause();
+        stopLocationUpdates();  // stop the location updates
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        stopLocationUpdates();  // stops location when user exits
+    }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -247,6 +387,54 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
                 .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_crisis_alert_24)));
 
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(emergencyLocation, 14));
+    }
+
+    public void displayUserOnMap(int userId, double latitude, double longitude) {
+        LatLng userLocation = new LatLng(latitude, longitude);
+
+        getActivity().runOnUiThread(() -> {
+            Marker existingMarker = userMarkersMap.get(userId);
+
+            if (existingMarker != null) {
+                // update the position
+                existingMarker.setPosition(userLocation);
+            } else {
+                // create new user marker if new
+                Marker newMarker = mMap.addMarker(new MarkerOptions()
+                        .position(userLocation)
+                        .icon(bitmapDescriptorFromVector(getContext(), R.drawable.baseline_person_24)));
+
+                userMarkersMap.put(userId, newMarker);
+            }
+        });
+
+        UserApi userApi = ApiClientFactory.GetUserApi();
+
+        Call<User> call = userApi.getUser((long) userId);
+        call.enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    User user = response.body();
+                    String userName = user.getName();
+
+                    // attatch users name to markerr
+                    getActivity().runOnUiThread(() -> {
+                        Marker marker = userMarkersMap.get(userId);
+                        if (marker != null) {
+                            marker.setTitle(userName);
+                        }
+                    });
+                } else {
+                    Log.e("MapsFragment", "Failed to get user details: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                Log.e("MapsFragment", "Error fetching user details", t);
+            }
+        });
     }
 
 

@@ -19,7 +19,7 @@ import com.google.gson.Gson;
 
 import test.connect.geoexploreapp.model.AlertMarker;
 import test.connect.geoexploreapp.model.User;
-import test.connect.geoexploreapp.websocket.WebSocketManager;
+import test.connect.geoexploreapp.websocket.AlertWebSocketManager;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -144,7 +144,7 @@ public class EmergencySendFragment extends Fragment {
             Gson gson = new Gson();
             String jsonMessage = gson.toJson(alertMarker);
 
-            WebSocketManager.getInstance().sendMessage(jsonMessage);
+            AlertWebSocketManager.getInstance().sendMessage(jsonMessage);
 
         });
         return view;

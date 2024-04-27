@@ -8,6 +8,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.text.InputType;
 import android.util.Log;
@@ -17,12 +18,17 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import test.connect.geoexploreapp.api.ApiClientFactory;
+import test.connect.geoexploreapp.api.ReportMarkerApi;
+import test.connect.geoexploreapp.api.UserApi;
 import test.connect.geoexploreapp.api.UserGroupApi;
+import test.connect.geoexploreapp.model.LocationPrivacy;
+import test.connect.geoexploreapp.model.User;
 import test.connect.geoexploreapp.model.UserGroup;
 
 /**
@@ -32,12 +38,9 @@ import test.connect.geoexploreapp.model.UserGroup;
  */
 public class SettingsFragment extends Fragment {
 
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    private String mParam1;
-    private String mParam2;
+    private User user;
+    private boolean isUserSet;
+    private UserApi userApi;
 
     public SettingsFragment() {
         // Required empty public constructor
@@ -64,8 +67,6 @@ public class SettingsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
         }
     }
 
@@ -78,6 +79,18 @@ public class SettingsFragment extends Fragment {
 
         boolean isAdmin = false;
 
+        SharedViewModel viewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
+
+        viewModel.getLoggedInUser().observe(getViewLifecycleOwner(), loggedInUser -> {
+            user = loggedInUser;
+            if (loggedInUser != null && !isUserSet){
+                Log.d("4/23","User: "+ user);
+                isUserSet = true;
+            }else {
+                Log.e("WebSocket", "Logged in user is null. Cannot establish WebSocket connection.");
+            }
+        });
+
         if(args != null){
             isAdmin = args.getBoolean("IsAdmin",false);
             Log.d("SettingsActivity", "isAdmin: " + isAdmin);
@@ -86,6 +99,7 @@ public class SettingsFragment extends Fragment {
             FrameLayout btnMarkerTagManagement = view.findViewById(R.id.markerTagMngmtBtn);
             FrameLayout btnCreateUserGroup = view.findViewById(R.id.createUserGroupButton);
 
+            FrameLayout btnEditLocationPreference = view.findViewById(R.id.locationPreferenceButton);
             FrameLayout btnSignOut = view.findViewById(R.id.signOut);
             FrameLayout btnReportedUsers = view.findViewById(R.id.reportedUsers);
 
@@ -142,6 +156,14 @@ public class SettingsFragment extends Fragment {
                 btnCreateUserGroup.setVisibility(View.GONE);
                 btnReportedUsers.setVisibility(View.GONE);
             }
+
+            btnEditLocationPreference.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // update user with location preference
+                    createLocationPreferenceDialog();
+                }
+            });
 
             btnSignOut.setOnClickListener(new View.OnClickListener(){
                 @Override
@@ -204,6 +226,75 @@ public class SettingsFragment extends Fragment {
             @Override
             public void onFailure(Call<UserGroup> call, Throwable t) {
                 Log.e("addUserGroup", "Error creating group", t);
+            }
+        });
+    }
+
+    private void createLocationPreferenceDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Select Location Privacy");
+
+        String[] options = {"Disabled", "Public", "Group", "Emergency"};
+
+        // users current privacy
+        int defaultSelection = getIndexForLocationPrivacy(user.getLocation_privacy());
+
+        builder.setSingleChoiceItems(options, defaultSelection, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int selected) {
+                if (selected == defaultSelection) {
+
+                    dialog.dismiss();
+                    return;
+                }
+                LocationPrivacy selectedPrivacy = LocationPrivacy.values()[selected];
+                updateUserLocationPrivacy(selectedPrivacy);  // update user with new privacy
+                dialog.dismiss();
+            }
+        });
+
+        builder.setNegativeButton("Cancel", null);
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+
+    private int getIndexForLocationPrivacy(LocationPrivacy privacy) {
+        switch (privacy) {
+            case DISABLED:
+                return 0;
+            case PUBLIC:
+                return 1;
+            case GROUP:
+                return 2;
+            case EMERGENCY:
+                return 3;
+            default:
+                return 0;  // user default is disabled
+        }
+    }
+
+    private void updateUserLocationPrivacy(LocationPrivacy newPrivacy) {
+        user.setLocation_privacy(newPrivacy);
+        UserApi userApi = ApiClientFactory.GetUserApi();
+
+
+        Call<User> call = userApi.updateUser(user.getId(), user);
+        call.enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(getContext(), "Location privacy updated.", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), "Failed to update location privacy.", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                Toast.makeText(getContext(), "Error updating location privacy.", Toast.LENGTH_SHORT).show();
+                Log.e("MyFragment", "Error updating location privacy", t);
             }
         });
     }

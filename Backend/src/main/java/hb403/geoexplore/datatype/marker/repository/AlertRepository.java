@@ -2,7 +2,7 @@ package hb403.geoexplore.datatype.marker.repository;
 
 import hb403.geoexplore.datatype.marker.AlertMarker;
 
-import java.util.Set;
+import java.util.*;
 
 import org.locationtech.jts.geom.Geometry;
 
@@ -15,7 +15,10 @@ import org.springframework.stereotype.*;
 public interface AlertRepository extends JpaRepository<AlertMarker, Long> {
 
 	@Query(value = "SELECT m from AlertMarker m WHERE within(m.location, :bounds) = true")
-	public Set<AlertMarker> findWithin(@Param("bounds") Geometry bounds);
+	public Set<AlertMarker> findSetWithin(@Param("bounds") Geometry bounds);
+
+	@Query(value = "SELECT m from AlertMarker m WHERE within(m.location, :bounds) = true")
+	public List<AlertMarker> findListWithin(@Param("bounds") Geometry bounds);
 
 
 }
