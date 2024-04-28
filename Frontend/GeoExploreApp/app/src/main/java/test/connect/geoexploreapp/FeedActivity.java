@@ -28,6 +28,7 @@ import retrofit2.Response;
 import test.connect.geoexploreapp.api.ApiClientFactory;
 import test.connect.geoexploreapp.api.CommentApi;
 import test.connect.geoexploreapp.api.EventMarkerApi;
+import test.connect.geoexploreapp.api.ImageApi;
 import test.connect.geoexploreapp.api.ObservationApi;
 import test.connect.geoexploreapp.api.ReportMarkerApi;
 import test.connect.geoexploreapp.api.SlimCallback;
@@ -35,6 +36,7 @@ import test.connect.geoexploreapp.api.UserApi;
 import test.connect.geoexploreapp.model.Comment;
 import test.connect.geoexploreapp.model.EventMarker;
 import test.connect.geoexploreapp.model.FeedItem;
+import test.connect.geoexploreapp.model.Image;
 import test.connect.geoexploreapp.model.Observation;
 import test.connect.geoexploreapp.model.ReportMarker;
 import test.connect.geoexploreapp.model.User;
@@ -45,6 +47,7 @@ public class FeedActivity extends Fragment {
     private ImageButton viewAllCommentsButton;
     private ImageButton searchComment;
     private List<FeedItem> allItems = new ArrayList<>();
+    private List<Image> allImages = new ArrayList<>();
     private FeedAdapter adapter;
     private static User user;
     private List<Comment> allComments = new ArrayList<>();
@@ -81,6 +84,7 @@ public class FeedActivity extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         getFeedItems();
+        fetchAllImages();
         viewAllCommentsButton=view.findViewById(R.id.viewAllComments);
         searchComment=view.findViewById(R.id.searchComment);
         if (getArguments() != null) {
@@ -108,7 +112,7 @@ public class FeedActivity extends Fragment {
 
          recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-         adapter = new FeedAdapter(allItems, user, getActivity());
+         adapter = new FeedAdapter(allItems,allImages, user, getActivity());
          recyclerView.setAdapter(adapter);
 
 
@@ -250,10 +254,35 @@ public class FeedActivity extends Fragment {
         });
     }
 
+    private void fetchAllImages() {
+        Log.e("fetchAllImages", "fetching images: " );
+
+        ImageApi imageApi = ApiClientFactory.GetImageApi();
+        imageApi.listImageEntities().enqueue(new Callback<List<Image>>() {
+            @Override
+            public void onResponse(Call<List<Image>> call, Response<List<Image>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.e("fetchAllImages", "fetching images: Successful" );
+
+                    allImages.clear();
+                    allImages.addAll(response.body());
+                } else {
+                    Log.e("fetchAllImages", "Failed to fetch images: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Image>> call, Throwable t) {
+                Log.e("fetchAllImages", "API call failed: " + t.getMessage());
+
+            }
+        });
+    }
+
     private void getFeedItems() {
         allItems.clear();
-        fetchReports();
-        fetchEvents();
+//        fetchReports();
+//        fetchEvents();
         fetchObservations();
     }
 

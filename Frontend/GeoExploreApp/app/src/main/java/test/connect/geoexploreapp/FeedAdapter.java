@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,6 +23,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
@@ -40,6 +42,7 @@ import test.connect.geoexploreapp.api.SlimCallback;
 import test.connect.geoexploreapp.model.Comment;
 import test.connect.geoexploreapp.model.EventMarker;
 import test.connect.geoexploreapp.model.FeedItem;
+import test.connect.geoexploreapp.model.Image;
 import test.connect.geoexploreapp.model.Observation;
 import test.connect.geoexploreapp.model.ReportMarker;
 import test.connect.geoexploreapp.model.User;
@@ -48,6 +51,7 @@ import test.connect.geoexploreapp.websocket.WebSocketManager;
 
 public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder> implements WebSocketListener, CommentActionListener{
     private List<FeedItem> items;
+    private List<Image> allImages;
     private EditText commentEditText;
     private Button sendCommentButton;
     private Button cancelCommentButton;
@@ -55,10 +59,11 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     private  FeedItem feedItem;
     private Context context;
 
-    public FeedAdapter(List<FeedItem> items, User user, Context context) {
+    public FeedAdapter(List<FeedItem> items, List<Image> allImages, User user, Context context) {
         this.items = items;
         this.user=user;
         this.context = context;
+        this.allImages = allImages;
         WebSocketManager.getInstance().setWebSocketListener(this);
 
     }
@@ -74,6 +79,21 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     @Override
     public void onBindViewHolder(@NonNull FeedViewHolder holder, @SuppressLint("RecyclerView") int position) {
        feedItem = items.get(position);
+       if(feedItem.getType().equals("Observation")){
+           for(int i = 0; i< allImages.size(); i++){
+               if (allImages.get(i).getObservation().getId()==feedItem.getPostID()){
+                   Image imgToShow = allImages.get(i);
+                   holder.obsImage.setVisibility(View.VISIBLE);
+Log.d("help", "help");
+
+                   Glide.with(holder.itemView.getContext())
+                           .load(imgToShow.getFilePath())
+                           .into(holder.obsImage);
+                   break;
+               }
+           }
+
+       }
 
         if (feedItem.getDescription() == null || feedItem.getDescription().isEmpty()) {
             holder.description.setVisibility(View.GONE);
@@ -88,7 +108,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         getLocation(holder, feedItem.getIo_latitude(),  feedItem.getIo_longitude());
 
         holder.commentsRecyclerView.setLayoutManager(new LinearLayoutManager(holder.itemView.getContext()));
-
         List<Comment> commentsForThisItem = feedItem.getComments();
         CommentAdapter commentAdapter = new CommentAdapter(commentsForThisItem, user, this, true);
         holder.commentsRecyclerView.setAdapter(commentAdapter);
@@ -377,6 +396,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         public RecyclerView commentsRecyclerView;
         TextView title, description, type, date, location;
         ImageButton commentButton;
+        ImageView obsImage;
 
         FeedViewHolder(View itemView) {
             super(itemView);
@@ -387,6 +407,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
             location = itemView.findViewById(R.id.itemLocation);
             commentButton = itemView.findViewById(R.id.commentButton);
             commentsRecyclerView = itemView.findViewById(R.id.commentsRecyclerView);
+            obsImage = itemView.findViewById(R.id.itemImage);
         }
     }
 }
