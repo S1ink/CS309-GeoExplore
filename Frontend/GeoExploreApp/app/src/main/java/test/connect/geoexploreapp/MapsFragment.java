@@ -1,10 +1,10 @@
 package test.connect.geoexploreapp;
 
-import android.app.Activity;
+import static org.json.JSONObject.NULL;
+
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
@@ -51,6 +51,7 @@ import com.google.gson.JsonSyntaxException;
 
 import org.java_websocket.handshake.ServerHandshake;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -58,6 +59,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -94,6 +99,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
     private TextView eventUpdateTextView;
     private TextView observationUpdateTextView;
     private User loggedInUser;
+    private Uri selectedUri;
+    private Button uploadImageObservation;
 
     public MapsFragment() {
 
@@ -105,6 +112,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
         super.onCreate(savedInstanceState);
         mFilePickerLauncher = registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
             if (uri != null) {
+                selectedUri = uri;
+                uploadImageObservation.setText("Image selected: "+ uri.getLastPathSegment());
                 handleFileUri(uri);
             }
         });
@@ -113,7 +122,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
     private void handleFileUri(Object uri) {
         Log.d("File URI", "Selected File URI: " + uri.toString());
         //uplod picture
-        Image img = new Image();
+   //     Image img = new Image();
 //        img.setFilePath((String) uri);
 //        img.setObservation();
 //        ImageApi imageApi = ApiClientFactory.GetImageApi();
@@ -315,17 +324,13 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
         EditText editTextTitle = view.findViewById(R.id.editTextTitle);
         EditText editTextDescription = view.findViewById(R.id.editTextDescription);
         EditText editTextMarkerTag = view.findViewById(R.id.editTextMarkerTag);
-        Button uploadImageObservation = view.findViewById(R.id.uploadImage);
 
         if ("Report".equals(type)) {
             editTextDescription.setVisibility(View.GONE);
-            uploadImageObservation.setVisibility(View.GONE);
         } else if ("Event".equals(type)) {
             editTextDescription.setVisibility(View.GONE);
-            uploadImageObservation.setVisibility(View.GONE);
         } else {
             editTextDescription.setVisibility(View.VISIBLE);
-            uploadImageObservation.setVisibility(View.VISIBLE);
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -366,8 +371,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
                             }
                         });
 
-        uploadImageObservation.setOnClickListener(v -> openFileExplorer());
-
 
         AlertDialog dialog = builder.create();
         dialog.show();
@@ -394,11 +397,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
     }
 
     private void showBottomSheetDialog() {
-
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(getActivity());
         bottomSheetDialog.setContentView(R.layout.bottom_sheet_menu);
-
-
 
         Button btnReportRead = bottomSheetDialog.findViewById(R.id.btn_report_read);
         Button btnReportUpdate = bottomSheetDialog.findViewById(R.id.btn_report_update);
@@ -796,18 +796,105 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
                             .title(obs.getId() + " " + obs.getTitle())
                             .icon(bitmapDescriptorFromVector(getContext(), R.drawable.baseline_photo_camera_24)));
                     showStatus("Observation created successfully!");
+                    UploadImagePrompt(obs);
                 } else {
-                   Log.d("save obs fail", "failed " + response.errorBody());
+                    Log.d("save obs fail", "failed " + response.errorBody());
                 }
+
 
             }
 
             @Override
             public void onFailure(Call<Observation> call, Throwable t) {
-                Toast.makeText(getContext(),"Error: " + t.getMessage(),Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Error: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
+    }
 
+    private void UploadImagePrompt(Observation obs) {
+        Log.d("OBS ID", String.valueOf(obs.getPostID()));
+            LayoutInflater inflater = getActivity().getLayoutInflater();
+            View view = inflater.inflate(R.layout.activity_image, null);
+
+             uploadImageObservation = view.findViewById(R.id.uploadImage);
+            uploadImageObservation.setOnClickListener(v -> openFileExplorer());
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setView(view)
+                    .setTitle("Observation created! Do you want to add an image?")
+                    .setPositiveButton("Upload", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            if(selectedUri!=NULL) {
+
+                                UploadImage(selectedUri, obs);
+                            }else{
+                                Toast.makeText(getActivity(), "No Uri Selected", Toast.LENGTH_SHORT).show();
+
+                            }
+
+
+                        }
+                    })
+                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.cancel();
+                        }
+                    });
+
+
+
+            AlertDialog dialog = builder.create();
+            dialog.show();
+
+
+    }
+
+    private void UploadImage(Uri fileUri, Observation imgForObs) {
+        String filePath = FileUtils.createCopyFromUri(getContext(), fileUri);
+
+        if (filePath == null) {
+            Log.e("UploadImage", "Failed to get file path from URI");
+            return;
+        }
+
+        File file = new File(filePath);
+        Log.d("UploadImage", "Starting upload for file: " + filePath);
+
+        // Check if file is too large
+        long fileSizeInMB = file.length() / (1024 * 1024);
+        Log.e("UploadImage", "File size (" + fileSizeInMB + "MB)");
+
+        if (fileSizeInMB > 1) {
+            Log.e("UploadImage", "File size (" + fileSizeInMB + "MB) exceeds the maximum limit.");
+            return;
+        }
+
+        RequestBody requestFile = RequestBody.create(MediaType.parse("image/jpeg"), file);
+        MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getName(), requestFile);
+
+        ImageApi imageApi = ApiClientFactory.GetImageApi();
+        imageApi.observationFileUpload(body, imgForObs.getPostID()).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    Log.d("UploadImage", "Success: " + response.body());
+                } else {
+                    Log.e("UploadImage", "Upload failed with response code: " + response.code());
+                    try {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "No error body";
+                        Log.e("UploadImage", "Upload failed with error: " + errorBody);
+                    } catch (IOException e) {
+                        Log.e("UploadImage", "Error reading error body", e);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.e("UploadImage", "Upload failed", t);
+            }
+        });
     }
 
     private void showStatus(String s) {
