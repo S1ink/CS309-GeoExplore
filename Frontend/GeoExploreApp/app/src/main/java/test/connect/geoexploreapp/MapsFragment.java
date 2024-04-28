@@ -593,7 +593,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                 .setPositiveButton("Show on map", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        displayEmergencyOnMap(latitude, longitude, title);
+                        displayEmergencyOnMap(latitude, longitude, title, message);
                     }
                 })
                 .setNegativeButton("Dismiss", null)
@@ -608,13 +608,14 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         });
     }
 
-    public void displayEmergencyOnMap(double latitude, double longitude, String emergencyTitle){
+    public void displayEmergencyOnMap(double latitude, double longitude, String emergencyTitle, String emergencyMessage){
 
         LatLng emergencyLocation = new LatLng(latitude, longitude);
 
         mMap.addMarker(new MarkerOptions()
                 .position(emergencyLocation)
                 .title(emergencyTitle)
+                .snippet(emergencyMessage)
                 .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_crisis_alert_24)));
 
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(emergencyLocation, 14));
