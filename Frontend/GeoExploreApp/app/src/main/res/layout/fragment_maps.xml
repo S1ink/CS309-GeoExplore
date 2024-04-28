@@ -97,7 +97,7 @@
 
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_main"
+        android:id="@+id/MarkerOperationsFab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -110,6 +110,19 @@
         app:backgroundTint="#FFFFFF"
         app:layout_anchor="@id/map"
         app:layout_anchorGravity="bottom|end" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/MarkerProximityFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="16dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:src="@drawable/baseline_my_location_24"
+        app:backgroundTint="#FFFFFF" />
 
 
 </RelativeLayout>

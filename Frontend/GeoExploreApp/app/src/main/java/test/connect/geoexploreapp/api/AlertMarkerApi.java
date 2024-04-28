@@ -1,12 +1,16 @@
 package test.connect.geoexploreapp.api;
 
 import java.util.List;
+import java.util.Set;
 
 import retrofit2.Call;
+import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
+import retrofit2.http.POST;
 import retrofit2.http.Path;
 import test.connect.geoexploreapp.model.AlertMarker;
+import test.connect.geoexploreapp.model.LocationProximity;
 
 public interface AlertMarkerApi {
 
@@ -21,4 +25,10 @@ public interface AlertMarkerApi {
     // cru[D]l - Delete an alert in the database by it's id
     @DELETE("geomap/alerts/{id}")
     Call<Void> deleteAlertById(@Path("id") Long id);
+
+    @GET("geomap/alerts/within/poly")
+    Call<Set<AlertMarker>> getAlertsWithinPoly(@Body String wkt_bounds_geom);
+
+    @POST("geomap/alerts/within/proximity")
+    Call<List<AlertMarker>> getAlertsWithinProximitySorted(@Body LocationProximity range);
 }

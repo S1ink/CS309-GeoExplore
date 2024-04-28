@@ -9,7 +9,9 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
+import test.connect.geoexploreapp.model.AlertMarker;
 import test.connect.geoexploreapp.model.EventMarker;
+import test.connect.geoexploreapp.model.LocationProximity;
 import test.connect.geoexploreapp.model.ReportMarker;
 
 public interface EventMarkerApi {
@@ -36,4 +38,8 @@ public interface EventMarkerApi {
     // crud[L] - Get a list of all the events in the database
     @GET("geomap/events")
     Call<List<EventMarker>> GetAllEventMarker();
+
+
+    @POST("geomap/events/within/proximity")
+    Call<List<EventMarker>> getEventsWithinProximitySorted(@Body LocationProximity range);
 }

@@ -9,6 +9,8 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
+import test.connect.geoexploreapp.model.EventMarker;
+import test.connect.geoexploreapp.model.LocationProximity;
 import test.connect.geoexploreapp.model.Observation;
 
 public interface ObservationApi {
@@ -30,5 +32,8 @@ public interface ObservationApi {
 
     @GET("geomap/observations")
     Call<List<Observation>> getAllObs();
+
+    @POST("geomap/observations/within/proximity")
+    Call<List<Observation>> getObservationsWithinProximitySorted(@Body LocationProximity range);
 
 }
