@@ -358,6 +358,13 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         LatLng ames = new LatLng(42.026224,-93.646256);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ames,14));
 
+        mMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
+            @Override
+            public void onCameraIdle() {
+                fetchMarkersWithinScreenBounds(true,true,true,true);
+            }
+        });
+
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng latLng) {
@@ -421,6 +428,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         EventMarkerApi eventMarkerApi = ApiClientFactory.getEventMarkerApi();
         ObservationApi observationApi = ApiClientFactory.GetObservationApi();
         ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
+        mMap.clear();
 
 
         LatLngBounds currentScreenBounds = mMap.getProjection().getVisibleRegion().latLngBounds;
