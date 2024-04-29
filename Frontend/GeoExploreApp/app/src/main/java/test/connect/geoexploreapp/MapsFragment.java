@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
@@ -48,6 +49,7 @@ import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -342,6 +344,16 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
         UiSettings uiSettings = mMap.getUiSettings();
         uiSettings.setZoomControlsEnabled(true);
+
+        try {
+            boolean success = mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.map_style_json));
+            if (!success) {
+                Log.e("MapsFragment", "Style parsing failed.");
+            }
+        } catch (Resources.NotFoundException e) {
+            Log.e("MapsFragment", "Can't find style. Error: ", e);
+        }
+
 
         LatLng ames = new LatLng(42.026224,-93.646256);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ames,14));
@@ -786,7 +798,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                 // create new user marker if new
                 Marker newMarker = mMap.addMarker(new MarkerOptions()
                         .position(userLocation)
-                        .icon(bitmapDescriptorFromVector(getContext(), R.drawable.baseline_person_24)));
+                        .icon(bitmapDescriptorFromVector(getContext(), R.drawable.baseline_purple_person_24)));
 
                 userMarkersMap.put(userId, newMarker);
             }
