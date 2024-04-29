@@ -79,18 +79,28 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     @Override
     public void onBindViewHolder(@NonNull FeedViewHolder holder, @SuppressLint("RecyclerView") int position) {
        feedItem = items.get(position);
+        holder.obsImage.setVisibility(View.GONE);
+        holder.deleteImage.setVisibility(View.GONE);
+        holder.updateImage.setVisibility(View.GONE);
        if(feedItem.getType().equals("Observation")){
            for(int i = 0; i< allImages.size(); i++){
                if (allImages.get(i).getObservation().getId()==feedItem.getPostID()){
                    Image imgToShow = allImages.get(i);
                    holder.obsImage.setVisibility(View.VISIBLE);
-Log.d("help", "help");
+                   if(allImages.get(i).getObservation().getCreator().getId()==user.getId()){//image owened by user
+                       holder.deleteImage.setVisibility(View.VISIBLE);
+                       holder.updateImage.setVisibility(View.VISIBLE);
+                   }
+
+
+                   Log.d("help", "help");
 
                    Glide.with(holder.itemView.getContext())
                            .load(imgToShow.getFilePath())
                            .into(holder.obsImage);
                    break;
                }
+
            }
 
        }
@@ -395,7 +405,7 @@ Log.d("help", "help");
     static class FeedViewHolder extends RecyclerView.ViewHolder {
         public RecyclerView commentsRecyclerView;
         TextView title, description, type, date, location;
-        ImageButton commentButton;
+        ImageButton commentButton, updateImage, deleteImage;
         ImageView obsImage;
 
         FeedViewHolder(View itemView) {
@@ -408,6 +418,9 @@ Log.d("help", "help");
             commentButton = itemView.findViewById(R.id.commentButton);
             commentsRecyclerView = itemView.findViewById(R.id.commentsRecyclerView);
             obsImage = itemView.findViewById(R.id.itemImage);
+            updateImage = itemView.findViewById(R.id.imageUpdate);
+            deleteImage = itemView.findViewById(R.id.imageDelete);
+
         }
     }
 }

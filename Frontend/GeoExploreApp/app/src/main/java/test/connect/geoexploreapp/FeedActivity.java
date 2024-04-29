@@ -281,8 +281,8 @@ public class FeedActivity extends Fragment {
 
     private void getFeedItems() {
         allItems.clear();
-//        fetchReports();
-//        fetchEvents();
+        fetchReports();
+        fetchEvents();
         fetchObservations();
     }
 
