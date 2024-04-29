@@ -26,10 +26,12 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -278,6 +280,13 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
             }
         });
 
+        searchDistanceMarkerFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                markerDistanceSearchPopup();
+            }
+        });
+
         startLocationUpdates();
 
         return view;
@@ -377,6 +386,24 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     }
 
 
+    private void markerDistanceSearchPopup() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Select a Marker");
+
+        ListView listView = new ListView(getContext());
+
+        builder.setView(listView);
+        AlertDialog dialog = builder.create();
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+            }
+        });
+
+        dialog.show();
+    }
     private void fetchMarkersWithinScreenBounds(boolean showAlerts, boolean showEvents, boolean showObservations, boolean showReports){
         AlertMarkerApi alertApi = ApiClientFactory.getAlertMarkerApi();
         EventMarkerApi eventMarkerApi = ApiClientFactory.getEventMarkerApi();
