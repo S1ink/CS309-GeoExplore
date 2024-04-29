@@ -112,6 +112,19 @@
         app:layout_anchorGravity="bottom|end" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/searchDistanceMarkerFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_above="@id/MarkerProximityFab"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="16dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:src="@drawable/baseline_search_24"
+        app:backgroundTint="#FFFFFF" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/MarkerProximityFab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

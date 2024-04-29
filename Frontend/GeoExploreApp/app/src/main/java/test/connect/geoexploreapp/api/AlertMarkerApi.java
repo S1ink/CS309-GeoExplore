@@ -1,6 +1,5 @@
 package test.connect.geoexploreapp.api;
 
-import android.util.Range;
 
 import java.util.List;
 import java.util.Set;
@@ -16,6 +15,7 @@ import test.connect.geoexploreapp.model.EventMarker;
 import test.connect.geoexploreapp.model.Location;
 import test.connect.geoexploreapp.model.LocationProximity;
 import test.connect.geoexploreapp.model.LocationRange;
+import test.connect.geoexploreapp.model.Range;
 
 public interface AlertMarkerApi {
 

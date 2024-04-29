@@ -30,6 +30,8 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,6 +45,7 @@ import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -62,6 +65,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import android.location.Location;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -86,6 +90,7 @@ import test.connect.geoexploreapp.model.EventMarker;
 import test.connect.geoexploreapp.model.LocationProximity;
 import test.connect.geoexploreapp.model.MarkerTag;
 import test.connect.geoexploreapp.model.Observation;
+import test.connect.geoexploreapp.model.Range;
 import test.connect.geoexploreapp.model.ReportMarker;
 import test.connect.geoexploreapp.model.User;
 import test.connect.geoexploreapp.websocket.AlertWebSocketManager;
@@ -370,6 +375,102 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
     }
 
+
+    private void fetchMarkersWithinScreenBounds(boolean showAlerts, boolean showEvents, boolean showObservations, boolean showReports){
+        AlertMarkerApi alertApi = ApiClientFactory.getAlertMarkerApi();
+        EventMarkerApi eventMarkerApi = ApiClientFactory.getEventMarkerApi();
+        ObservationApi observationApi = ApiClientFactory.GetObservationApi();
+        ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
+
+
+        LatLngBounds currentScreenBounds = mMap.getProjection().getVisibleRegion().latLngBounds;
+        Log.d("4/29", "Im inside screen bouynds" + currentScreenBounds);
+
+        Range range = new Range();
+        range.setMin_latitude(currentScreenBounds.southwest.latitude);
+        range.setMin_longitude(currentScreenBounds.southwest.longitude);
+        range.setMax_latitude(currentScreenBounds.northeast.latitude);
+        range.setMax_longitude(currentScreenBounds.northeast.longitude);
+
+        if(showAlerts){
+            alertApi.getAlertsWithinRect(range).enqueue(new Callback<Set<AlertMarker>>() {
+                @Override
+                public void onResponse(Call<Set<AlertMarker>> call, Response<Set<AlertMarker>> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        Set<AlertMarker> alertSet = response.body();
+                        Log.d("4/29", "Alerts has a body response" + alertSet);
+                        List<AlertMarker> alertList = new ArrayList<>(alertSet);
+                        displayAlertsOnMap(alertList);
+                    }else{
+                        Toast.makeText(getContext(), "Failed to fetch alerts", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                @Override
+                public void onFailure(Call<Set<AlertMarker>> call, Throwable t) {
+                    Toast.makeText(getContext(), "Failed to fetch alerts", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        if(showEvents){
+            eventMarkerApi.getEventsWithinRect(range).enqueue(new Callback<Set<EventMarker>>() {
+                @Override
+                public void onResponse(Call<Set<EventMarker>> call, Response<Set<EventMarker>> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        Set<EventMarker> eventSet = response.body();
+                        List<EventMarker> eventList = new ArrayList<>(eventSet);
+                        displayEventsOnMap(eventList);
+                    }else{
+                        Toast.makeText(getContext(), "Failed to fetch events", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                @Override
+                public void onFailure(Call<Set<EventMarker>> call, Throwable t) {
+                    Toast.makeText(getContext(), "Failed to fetch events", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+
+        if(showObservations){
+            observationApi.getObservationsWithinRect(range).enqueue(new Callback<Set<Observation>>() {
+                @Override
+                public void onResponse(Call<Set<Observation>> call, Response<Set<Observation>> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        Set<Observation> observationSet = response.body();
+                        List<Observation> observationList = new ArrayList<>(observationSet);
+                        displayObservationsOnMap(observationList);
+                    }else{
+                        Toast.makeText(getContext(), "Failed to fetch observations", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                @Override
+                public void onFailure(Call<Set<Observation>> call, Throwable t) {
+                    Toast.makeText(getContext(), "Failed to fetch observations", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        if(showReports){
+            reportMarkerApi.getReportsWithinRect(range).enqueue(new Callback<Set<ReportMarker>>() {
+                @Override
+                public void onResponse(Call<Set<ReportMarker>> call, Response<Set<ReportMarker>> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        Set<ReportMarker> reportSet = response.body();
+                        List<ReportMarker> reportList = new ArrayList<>(reportSet);
+                        displayReportsOnMap(reportList);
+                    }else{
+                        Toast.makeText(getContext(), "Failed to fetch reports", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                @Override
+                public void onFailure(Call<Set<ReportMarker>> call, Throwable t) {
+                    Toast.makeText(getContext(), "Failed to fetch reports", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
     private void fetchMarkersWithinProximity(double latitude, double longitude, double range, boolean showAlerts, boolean showEvents, boolean showObservations, boolean showReports) {
         AlertMarkerApi alertApi = ApiClientFactory.getAlertMarkerApi();
         EventMarkerApi eventMarkerApi = ApiClientFactory.getEventMarkerApi();
@@ -519,7 +620,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     }
 
 
-
     private void proximityMarkerPopup() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Show markers near me");
@@ -553,20 +653,39 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         rangeInput.setHint("Enter range (0.5 - 10 miles)");
         layout.addView(rangeInput);
 
+        RadioGroup searchModeGroup = new RadioGroup(getContext());
+        searchModeGroup.setOrientation(LinearLayout.HORIZONTAL); // Optional: Set orientation
+
+        RadioButton useRange = new RadioButton(getContext());
+        useRange.setText("Use Range");
+        useRange.setId(View.generateViewId()); // Ensure it has a unique ID
+        useRange.setChecked(true); // Default selection
+
+        RadioButton useScreenBounds = new RadioButton(getContext());
+        useScreenBounds.setText("Use Screen Bounds");
+        useScreenBounds.setId(View.generateViewId()); // Ensure it has a unique ID
+
+        searchModeGroup.addView(useRange);
+        searchModeGroup.addView(useScreenBounds);
+        layout.addView(searchModeGroup);
+
         builder.setView(layout);
 
         builder.setPositiveButton("Show", (dialog, which) -> {
+            boolean useRangeSelected = useRange.isChecked();
             String inputText = rangeInput.getText().toString();
             float range = 0.5f;
 
-            try {
-                range = Float.parseFloat(inputText);
-                if (range < 0.5f || range > 10f) {
-                    throw new NumberFormatException("Range out of bounds");
+            if (useRangeSelected) {
+                try {
+                    range = Float.parseFloat(inputText);
+                    if (range < 0.5f || range > 10f) {
+                        throw new NumberFormatException("Range out of bounds");
+                    }
+                } catch (NumberFormatException ex) {
+                    Toast.makeText(getContext(), "Please enter a valid range between 0.5 and 10 miles", Toast.LENGTH_SHORT).show();
+                    return;
                 }
-            } catch (NumberFormatException ex) {
-                Toast.makeText(getContext(), "Please enter a valid range between 0.5 and 5 miles", Toast.LENGTH_SHORT).show();
-                return;
             }
 
             boolean showAlerts = alertsCheckBox.isChecked();
@@ -574,8 +693,13 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
             boolean showObservations = observationsCheckBox.isChecked();
             boolean showReports = reportsCheckBox.isChecked();
 
-            // show all marrkers from the users current gps position
-            fetchMarkersWithinProximity(usersCurrentLatitude, usersCurrentLongitude, range,showAlerts,showEvents,showObservations,showReports);
+            if(useRangeSelected){
+                // show all marrkers from the users current gps position
+                fetchMarkersWithinProximity(usersCurrentLatitude, usersCurrentLongitude, range,showAlerts,showEvents,showObservations,showReports);
+            } else{
+                fetchMarkersWithinScreenBounds(showAlerts,showEvents,showObservations,showReports);
+            }
+
         });
 
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
