@@ -1,6 +1,9 @@
 package test.connect.geoexploreapp.api;
 
+import android.util.Range;
+
 import java.util.List;
+import java.util.Set;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -9,8 +12,11 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
+import test.connect.geoexploreapp.model.AlertMarker;
 import test.connect.geoexploreapp.model.EventMarker;
+import test.connect.geoexploreapp.model.Location;
 import test.connect.geoexploreapp.model.LocationProximity;
+import test.connect.geoexploreapp.model.LocationRange;
 import test.connect.geoexploreapp.model.Observation;
 
 public interface ObservationApi {
@@ -35,5 +41,16 @@ public interface ObservationApi {
 
     @POST("geomap/observations/within/proximity")
     Call<List<Observation>> getObservationsWithinProximitySorted(@Body LocationProximity range);
+
+    @POST("geomap/observations/within/rect")
+    Call<Set<Observation>> getObservationsWithinRect(@Body Range range);
+
+    @POST("geomap/observations/within/rect/sorted")
+    Call<List<Observation>> getProxSortedObservationsWithinRect(@Body LocationRange range);
+
+    @POST("geomap/observations/{id}/distance")
+    Call<Double> getDistanceToObservationById(@Path("id") Long id, @Body Location src);
+
+
 
 }

@@ -1,6 +1,9 @@
 package test.connect.geoexploreapp.api;
 
+import android.util.Range;
+
 import java.util.List;
+import java.util.Set;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -11,7 +14,9 @@ import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import test.connect.geoexploreapp.model.AlertMarker;
 import test.connect.geoexploreapp.model.EventMarker;
+import test.connect.geoexploreapp.model.Location;
 import test.connect.geoexploreapp.model.LocationProximity;
+import test.connect.geoexploreapp.model.LocationRange;
 import test.connect.geoexploreapp.model.ReportMarker;
 
 public interface EventMarkerApi {
@@ -42,4 +47,13 @@ public interface EventMarkerApi {
 
     @POST("geomap/events/within/proximity")
     Call<List<EventMarker>> getEventsWithinProximitySorted(@Body LocationProximity range);
+
+    @POST("geomap/events/within/rect")
+    Call<Set<EventMarker>> getEventsWithinRect(@Body Range range);
+
+    @POST("geomap/events/within/rect/sorted")
+    Call<List<EventMarker>> getProxSortedEventsWithinRect(@Body LocationRange range);
+
+    @POST("geomap/events/{id}/distance")
+    Call<Double> getDistanceToEventById(@Path("id") Long id, @Body Location src);
 }
