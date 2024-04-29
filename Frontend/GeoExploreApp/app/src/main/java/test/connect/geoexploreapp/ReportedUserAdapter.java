@@ -15,7 +15,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import test.connect.geoexploreapp.api.ApiClientFactory;
+import test.connect.geoexploreapp.api.UserApi;
 import test.connect.geoexploreapp.model.ReportedUser;
+import test.connect.geoexploreapp.model.User;
 
 public class ReportedUserAdapter extends RecyclerView.Adapter<ReportedUserAdapter.ReportedUsersViewHolder> {
     private List<ReportedUser> allReportedUsers;
@@ -39,7 +45,7 @@ public class ReportedUserAdapter extends RecyclerView.Adapter<ReportedUserAdapte
     public void onBindViewHolder(@NonNull ReportedUsersViewHolder holder, int position) {
         ReportedUser reportedUser = allReportedUsers.get(position);
         Log.d("getting report for user", "getting user for" + reportedUser.getReportedUserId());
-
+        getUserById(holder,reportedUser.getReportedUserId());
 //        if (reportedUser.getReportedUser() != null) {
 //            holder.reportedUserName.setText("Reported User: " + reportedUser.getReportedUser().getName());
 //            holder.reportedUserEmailId.setText("Email: " + reportedUser.getReportedUser().getEmailId());
@@ -66,7 +72,9 @@ public class ReportedUserAdapter extends RecyclerView.Adapter<ReportedUserAdapte
         if(reportedUser.getInappropriateContent()!=null&&reportedUser.getInappropriateContent()){
             holder.report.append("Inappropriate Content, ");
         }
-
+        if (holder.report.length() > 0) {
+            holder.report.setTextSize(holder.report.length() - 2);
+        }
 
 //
 //        // holder.commentUser.setText(commentUser.getName());
@@ -112,6 +120,32 @@ public class ReportedUserAdapter extends RecyclerView.Adapter<ReportedUserAdapte
 
     }
 
+    private void getUserById(@NonNull ReportedUsersViewHolder holder, Long userId) {
+        UserApi userApi = ApiClientFactory.GetUserApi();
+        userApi.getUser(userId).enqueue(new Callback<User>(){
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                if(response.isSuccessful()){
+                    User user = response.body();
+                    holder.reportedUserName.setText("Reported User: " + user.getName());
+                holder.reportedUserEmailId.setText("Email: " + user.getEmailId());
+
+                    Log.d("getting a user",  "got  user");
+                } else{
+                    holder.reportedUserName.setText("Anonymous");
+                    holder.reportedUserEmailId.setText("Anonymous");
+
+
+                    Log.d("getting a user",  "Failed to get user");
+                }
+            }
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                Log.d("getting a user",  "Failed");
+            }
+        });
+
+    }
     @Override
     public int getItemCount() {
         return allReportedUsers.size();
