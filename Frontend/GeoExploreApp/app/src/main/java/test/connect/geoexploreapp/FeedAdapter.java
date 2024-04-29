@@ -111,26 +111,28 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
 
        if(feedItem.getType().equals("Observation")){
            for(int i = 0; i< allImages.size(); i++){
-               if (allImages.get(i).getObservation().getId()==feedItem.getPostID()){
-                   Image imgToShow = allImages.get(i);
-                   holder.obsImage.setVisibility(View.VISIBLE);
-                   Glide.with(holder.itemView.getContext())
-                           .load(imgToShow.getFilePath())
-                           .into(holder.obsImage);
-                   if(allImages.get(i).getObservation().getCreator().getId()==user.getId()){//image owened by user
-                       holder.deleteImage.setVisibility(View.VISIBLE);
-                       holder.updateImage.setVisibility(View.VISIBLE);
+               if(allImages.get(i).getObservation()!=null){
+                   if (allImages.get(i).getObservation().getId()==feedItem.getPostID()){
+                       Image imgToShow = allImages.get(i);
+                       holder.obsImage.setVisibility(View.VISIBLE);
+                       Glide.with(holder.itemView.getContext())
+                               .load(imgToShow.getFilePath())
+                               .into(holder.obsImage);
+                       if(allImages.get(i).getObservation().getCreator().getId()==user.getId()){//image owened by user
+                           holder.deleteImage.setVisibility(View.VISIBLE);
+                           holder.updateImage.setVisibility(View.VISIBLE);
 
-                       holder.deleteImage.setOnClickListener(v -> {
-                           deleteImagePrompt(v, imgToShow, position);
-                       });
+                           holder.deleteImage.setOnClickListener(v -> {
+                               deleteImagePrompt(v, imgToShow, position);
+                           });
+                       }
+
+
+                       Log.d("help", "help");
+
+
+                       break;
                    }
-
-
-                   Log.d("help", "help");
-
-
-                   break;
                }
 
            }
@@ -163,9 +165,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         holder.updateImage.setOnClickListener(v -> {
             upateImagePrompt(v);
         });
-
-
-
 
     }
 
