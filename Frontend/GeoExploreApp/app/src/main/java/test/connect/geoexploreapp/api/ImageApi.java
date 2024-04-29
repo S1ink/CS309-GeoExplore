@@ -31,7 +31,7 @@ public interface ImageApi {
 
 
     @DELETE("image/{id}")
-    Call<String> deleteImage(@Path("id") Long id);
+    Call<ResponseBody> deleteImage(@Path("id") Long id);
 
     @GET("images/list")
     Call<List<Image>> listImageEntities();

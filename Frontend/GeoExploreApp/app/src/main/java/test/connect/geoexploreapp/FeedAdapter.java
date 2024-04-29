@@ -1,13 +1,21 @@
 package test.connect.geoexploreapp;
 
 import static android.app.PendingIntent.getActivity;
+import static androidx.activity.result.ActivityResultCallerKt.registerForActivityResult;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+
+import static androidx.activity.result.ActivityResultCallerKt.registerForActivityResult;
+import static org.json.JSONObject.NULL;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.location.Address;
 import android.location.Geocoder;
+import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +27,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -33,11 +43,13 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import test.connect.geoexploreapp.api.ApiClientFactory;
 import test.connect.geoexploreapp.api.CommentApi;
+import test.connect.geoexploreapp.api.ImageApi;
 import test.connect.geoexploreapp.api.SlimCallback;
 import test.connect.geoexploreapp.model.Comment;
 import test.connect.geoexploreapp.model.EventMarker;
@@ -53,17 +65,20 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     private List<FeedItem> items;
     private List<Image> allImages;
     private EditText commentEditText;
-    private Button sendCommentButton;
-    private Button cancelCommentButton;
+    private Button cancelCommentButton, uploadImageObservation, sendCommentButton;
     private User user;
     private  FeedItem feedItem;
     private Context context;
+    private Uri selectedUri;
+    private ActivityResultLauncher<String> mFilePickerLauncher;
+
 
     public FeedAdapter(List<FeedItem> items, List<Image> allImages, User user, Context context) {
         this.items = items;
         this.user=user;
         this.context = context;
         this.allImages = allImages;
+      //  this.mFilePickerLauncher = filePickerLauncher;
         WebSocketManager.getInstance().setWebSocketListener(this);
 
     }
@@ -72,32 +87,49 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     @Override
     public FeedViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.feed_item, parent, false);
-
+//        mFilePickerLauncher = registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
+//            if (uri != null) {
+//                selectedUri = uri;
+//                uploadImageObservation.setText("Image selected: "+ uri.getLastPathSegment());
+//                Log.d("File URI", "Selected File URI: " + uri.toString());
+//
+//            }
+//        });
         return new FeedViewHolder(view);
     }
+
+
+
 
     @Override
     public void onBindViewHolder(@NonNull FeedViewHolder holder, @SuppressLint("RecyclerView") int position) {
        feedItem = items.get(position);
+
         holder.obsImage.setVisibility(View.GONE);
         holder.deleteImage.setVisibility(View.GONE);
         holder.updateImage.setVisibility(View.GONE);
+
        if(feedItem.getType().equals("Observation")){
            for(int i = 0; i< allImages.size(); i++){
                if (allImages.get(i).getObservation().getId()==feedItem.getPostID()){
                    Image imgToShow = allImages.get(i);
                    holder.obsImage.setVisibility(View.VISIBLE);
+                   Glide.with(holder.itemView.getContext())
+                           .load(imgToShow.getFilePath())
+                           .into(holder.obsImage);
                    if(allImages.get(i).getObservation().getCreator().getId()==user.getId()){//image owened by user
                        holder.deleteImage.setVisibility(View.VISIBLE);
                        holder.updateImage.setVisibility(View.VISIBLE);
+
+                       holder.deleteImage.setOnClickListener(v -> {
+                           deleteImagePrompt(v, imgToShow, position);
+                       });
                    }
 
 
                    Log.d("help", "help");
 
-                   Glide.with(holder.itemView.getContext())
-                           .load(imgToShow.getFilePath())
-                           .into(holder.obsImage);
+
                    break;
                }
 
@@ -128,14 +160,103 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
                 Log.d("item check", String.valueOf(position));
             }
         });
+        holder.updateImage.setOnClickListener(v -> {
+            upateImagePrompt(v);
+        });
+
+
+
+
     }
+
+    private void deleteImagePrompt(View v, Image imageToDelete, int adapterPosition) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Confirm Delete");
+        builder.setMessage("Are you sure you want to delete this image?");
+        builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                deleteImage(imageToDelete.getId(), adapterPosition);
+            }
+        });
+        builder.setNegativeButton("Cancel", null);
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void deleteImage(Long id, int adapterPosition) {
+        ImageApi imageApi = ApiClientFactory.GetImageApi(); //
+        imageApi.deleteImage(id).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(context, "Image deleted successfully", Toast.LENGTH_SHORT).show();
+                    allImages.removeIf(img -> img.getId().equals(id));
+                    notifyItemRemoved(adapterPosition);
+                    Log.d("FeedAdapter", "Image deletion succeeded for ID: " + id);
+                } else {
+                    Toast.makeText(context, "Failed to delete image", Toast.LENGTH_SHORT).show();
+                    Log.d("FeedAdapter", "Image deletion failed with HTTP status code: " + response.code());
+                    try {
+                        Log.d("FeedAdapter", "Failed response body: " + response.errorBody().string());
+                    } catch (IOException e) {
+                        Log.e("FeedAdapter", "Error parsing error body", e);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Toast.makeText(context, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.e("FeedAdapter", "Image deletion failed", t);
+            }
+        });
+    }
+
+    private void upateImagePrompt(View v) {
+//        LayoutInflater inflater = getActivity().getLayoutInflater();
+//        View view = inflater.inflate(R.layout.activity_image, null);
+//
+//        uploadImageObservation = view.findViewById(R.id.uploadImage);
+//        //uploadImageObservation.setOnClickListener(v -> openFileExplorer());
+//        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+//        builder.setView(view)
+//                .setTitle("Observation created! Do you want to add an image?")
+//                .setPositiveButton("Upload", new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        if(selectedUri!=NULL) {
+//
+//                            UploadImage(selectedUri, obs);
+//                        }else{
+//                            Toast.makeText(getActivity(), "No Uri Selected", Toast.LENGTH_SHORT).show();
+//
+//                        }
+//
+//
+//                    }
+//                })
+//                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        dialog.cancel();
+//                    }
+//                });
+//
+//
+//
+//        AlertDialog dialog = builder.create();
+//        dialog.show();
+    }
+
+
     private void getLocation(FeedViewHolder holder, double ioLatitude, double ioLongitude) {
         Geocoder geocoder = new Geocoder(context, Locale.getDefault());
         try {
             List<Address> addresses = geocoder.getFromLocation(ioLatitude, ioLongitude, 1);
             if (addresses != null && !addresses.isEmpty()) {
                 Address address = addresses.get(0);
-                String addressText = address.getAddressLine(0); // You might adjust this based on what parts of the address you need
+                String addressText = address.getAddressLine(0);
                 holder.location.setText("Address: " + addressText);
             } else {
                 holder.location.setText("Address not found");
