@@ -263,6 +263,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
         FloatingActionButton markerOpFab = view.findViewById(R.id.MarkerOperationsFab);
         FloatingActionButton proximityMarkerFab = view.findViewById(R.id.MarkerProximityFab);
+        FloatingActionButton searchDistanceMarkerFab = view.findViewById(R.id.searchDistanceMarkerFab);
         markerOpFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -654,16 +655,16 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         layout.addView(rangeInput);
 
         RadioGroup searchModeGroup = new RadioGroup(getContext());
-        searchModeGroup.setOrientation(LinearLayout.HORIZONTAL); // Optional: Set orientation
+        searchModeGroup.setOrientation(LinearLayout.HORIZONTAL);
 
         RadioButton useRange = new RadioButton(getContext());
         useRange.setText("Use Range");
-        useRange.setId(View.generateViewId()); // Ensure it has a unique ID
-        useRange.setChecked(true); // Default selection
+        useRange.setId(View.generateViewId());
+        useRange.setChecked(true);
 
         RadioButton useScreenBounds = new RadioButton(getContext());
         useScreenBounds.setText("Use Screen Bounds");
-        useScreenBounds.setId(View.generateViewId()); // Ensure it has a unique ID
+        useScreenBounds.setId(View.generateViewId());
 
         searchModeGroup.addView(useRange);
         searchModeGroup.addView(useScreenBounds);
