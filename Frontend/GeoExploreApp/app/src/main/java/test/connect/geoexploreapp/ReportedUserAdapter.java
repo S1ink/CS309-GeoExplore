@@ -40,13 +40,13 @@ public class ReportedUserAdapter extends RecyclerView.Adapter<ReportedUserAdapte
         ReportedUser reportedUser = allReportedUsers.get(position);
         Log.d("getting report for user", "getting user for" + reportedUser.getReportedUserId());
 
-        if (reportedUser.getReportedUser() != null) {
-            holder.reportedUserName.setText("Reported User: " + reportedUser.getReportedUser().getName());
-            holder.reportedUserEmailId.setText("Email: " + reportedUser.getReportedUser().getEmailId());
-        } else {
-            holder.reportedUserName.setText("Reported User: Unknown");
-            holder.reportedUserEmailId.setText("Email: Unknown");
-        }
+//        if (reportedUser.getReportedUser() != null) {
+//            holder.reportedUserName.setText("Reported User: " + reportedUser.getReportedUser().getName());
+//            holder.reportedUserEmailId.setText("Email: " + reportedUser.getReportedUser().getEmailId());
+//        } else {
+//            holder.reportedUserName.setText("Reported User: Unknown");
+//            holder.reportedUserEmailId.setText("Email: Unknown");
+//        }
 
         holder.report.setText("Reported for: ");
 

@@ -122,6 +122,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 ReportedUser reportedUser = new ReportedUser();
+
                 reportedUser.setReportedUserId(comment.getUserId());
                 reportedUser.setHarassment(harassmentCheck.isChecked());
                 reportedUser.setSpamming(spammingCheck.isChecked());
