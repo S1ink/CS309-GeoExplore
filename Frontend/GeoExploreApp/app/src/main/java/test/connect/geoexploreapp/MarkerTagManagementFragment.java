@@ -164,7 +164,6 @@ public class MarkerTagManagementFragment extends Fragment {
                     if (response.isSuccessful()) {
                         MarkerTag createdTag = response.body();
                         String successMessage = "Tag created successfully with ID: " + createdTag.getId();
-                        tagInfoTextView.setText(successMessage);
                         Toast.makeText(getActivity(), successMessage, Toast.LENGTH_SHORT).show();
                         getAllTags();
                     } else {

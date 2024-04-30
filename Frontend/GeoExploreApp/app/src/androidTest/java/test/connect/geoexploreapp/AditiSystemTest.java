@@ -1,8 +1,6 @@
 package test.connect.geoexploreapp;
 
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.is;
-import static android.service.autofill.Validators.not;
 import static androidx.test.espresso.Espresso.closeSoftKeyboard;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
@@ -11,34 +9,24 @@ import static androidx.test.espresso.action.ViewActions.swipeUp;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.RootMatchers.isDialog;
-import static androidx.test.espresso.matcher.RootMatchers.withDecorView;
 import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
-import static androidx.test.espresso.matcher.ViewMatchers.withInputType;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
-import static com.google.android.material.internal.ContextUtils.getActivity;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.AllOf.allOf;
 
-import android.app.Activity;
 import android.widget.EditText;
 
 import org.hamcrest.Matchers;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 
-import androidx.test.core.app.ActivityScenario;
-import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.action.ViewActions;
 import androidx.test.espresso.matcher.ViewMatchers;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
-import androidx.test.filters.LargeTest;
-import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
 
 public class AditiSystemTest {
     private boolean needLogin = false;
@@ -213,7 +201,7 @@ public class AditiSystemTest {
         
         onView(withId(R.id.mainActivity)).check(matches(isDisplayed()));
         onView(withId(R.id.map)).check(matches(isDisplayed()));
-        onView(withId(R.id.fab_main)).perform(click());
+        onView(withId(R.id.MarkerOperationsFab)).perform(click());
         onView(withId(R.id.btn_observation_read)).perform(click());
         onView(withText("Enter Observation ID"))
                 .inRoot(isDialog())

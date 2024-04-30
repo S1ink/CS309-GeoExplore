@@ -1,6 +1,7 @@
 package test.connect.geoexploreapp.api;
 
 import java.util.List;
+import java.util.Set;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -9,6 +10,10 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
+import test.connect.geoexploreapp.model.distanceLocation;
+import test.connect.geoexploreapp.model.LocationProximity;
+import test.connect.geoexploreapp.model.LocationRange;
+import test.connect.geoexploreapp.model.Range;
 import test.connect.geoexploreapp.model.ReportMarker;
 
 public interface ReportMarkerApi {
@@ -35,4 +40,16 @@ public interface ReportMarkerApi {
     // crud[L] - Get a list of all the reports in the database
     @GET("geomap/reports")
     Call<List<ReportMarker>> GetAllReportMarker();
+
+    @POST("geomap/reports/within/proximity")
+    Call<List<ReportMarker>> getReportsWithinProximitySorted(@Body LocationProximity range);
+
+    @POST("geomap/reports/within/rect")
+    Call<Set<ReportMarker>> getReportsWithinRect(@Body Range range);
+
+    @POST("geomap/reports/within/rect/sorted")
+    Call<List<ReportMarker>> getProxSortedReportsWithinRect(@Body LocationRange range);
+
+    @POST("geomap/reports/{id}/distance")
+    Call<Double> getDistanceToReportById(@Path("id") Long id, @Body distanceLocation src);
 }
