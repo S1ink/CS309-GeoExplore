@@ -3,6 +3,8 @@ package test.connect.geoexploreapp;
 import static org.json.JSONObject.NULL;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -18,6 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -95,6 +98,7 @@ public class ProfileFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
         if (getArguments() != null) {
+            fetchAndSetProfileImage();
             user = (User) getArguments().getSerializable("UserObject");
 
             Log.d("ProfileActivity", "isAdmin: " + user.getIsAdmin());
@@ -168,7 +172,27 @@ public class ProfileFragment extends Fragment {
         });
     }
 
+    private void fetchAndSetProfileImage() {
+        ImageApi imageApi = ApiClientFactory.GetImageApi();
+        imageApi.getImageByUserId(user.getId()).enqueue(new Callback<byte[]>() {
+            @Override
+            public void onResponse(Call<byte[]> call, Response<byte[]> response) {
+                if (response.isSuccessful()) {
+                    byte[] imageData = response.body();
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
+                    ImageView profileImage = getView().findViewById(R.id.profileImage);
+                    profileImage.setImageBitmap(bitmap);
+                } else {
+                    Log.e("ProfileFragment", "Failed to load image");
+                }
+            }
 
+            @Override
+            public void onFailure(Call<byte[]> call, Throwable t) {
+                Log.e("ProfileFragment", "Error fetching image", t);
+            }
+        });
+    }
     private void openFileExplorer() {
         mFilePickerLauncher.launch("image/*");
     }
