@@ -3,6 +3,7 @@ package hb403.geoexplore.UserStorage.entity;
 import hb403.geoexplore.UserStorage.LocationSharing;
 import hb403.geoexplore.UserStorage.repository.UserRepository;
 import hb403.geoexplore.comments.Entity.CommentEntity;
+import hb403.geoexplore.datatype.Image;
 import hb403.geoexplore.util.GeometryUtil;
 
 import org.locationtech.jts.geom.*;
@@ -27,7 +28,7 @@ public class User {
 
     public enum Role {
         USER        ("USER"),
-        MODERATOR   ("MODERATOR"),
+        BANNED   ("BANNED"),
         ADMIN       ("ADMIN");
 
         public String value;
@@ -193,6 +194,12 @@ public class User {
         if(isAdmin) this.role = Role.ADMIN;
     }
 
+    @JsonIgnore
+    public void ban(){
+        this.role = Role.BANNED;
+    }
+
+
 
     /** Synchronize the stored table location and IO lat/long values (copies from the IO variables */
 	public void enforceLocationIO() {
@@ -206,6 +213,12 @@ public class User {
 			this.io_longitude = this.location.getY();
 		}
 	}
+
+    @Getter
+    @Setter
+    @JsonIgnore
+    @OneToOne(mappedBy = "user", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE })
+    private Image image;
 
 
     @Override
