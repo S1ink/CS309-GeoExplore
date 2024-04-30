@@ -114,21 +114,12 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
             if (uri != null) {
                 selectedUri = uri;
                 uploadImageObservation.setText("Image selected: "+ uri.getLastPathSegment());
-                handleFileUri(uri);
+                Log.d("File URI", "Selected File URI: " + uri.toString());
+
             }
         });
     }
 
-    private void handleFileUri(Object uri) {
-        Log.d("File URI", "Selected File URI: " + uri.toString());
-        //uplod picture
-   //     Image img = new Image();
-//        img.setFilePath((String) uri);
-//        img.setObservation();
-//        ImageApi imageApi = ApiClientFactory.GetImageApi();
-//        imageApi.observationFileUpload()
-
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

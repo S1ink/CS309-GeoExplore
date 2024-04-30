@@ -29,6 +29,7 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent">
 
+
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
                         android:layout_height="360dp"
@@ -200,6 +201,38 @@
                                 android:textAlignment="viewEnd"
                                 android:textColor="#5B5B5B"
                                 android:textSize="16sp" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="10dp"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/uploadImageProfileDisplay"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Upload Profile Picture:"
+                                android:textColor="@color/blue"
+                                android:textSize="18sp" />
+
+                            <Button
+                                android:id="@+id/uploadImageProfile"
+                                android:textSize="12sp"
+                                android:layout_width="wrap_content"
+                                android:layout_height="30dp"
+                                android:layout_gravity="end"
+                                android:background="@drawable/edittext_bkg"
+                                android:padding="8dp"
+                                android:layout_marginTop="10dp"
+                                android:textColor="#5B5B5B"
+
+                                android:text="Upload Image"
+                                 />
+
+
                         </LinearLayout>
 
 

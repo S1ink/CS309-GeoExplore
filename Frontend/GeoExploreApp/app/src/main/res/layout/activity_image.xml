@@ -12,6 +12,7 @@
         android:layout_gravity="center"
         android:background="@drawable/edittext_bkg"
         android:padding="8dp"
+        android:layout_marginTop="10dp"
         android:text="Upload Image"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

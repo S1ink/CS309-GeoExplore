@@ -131,12 +131,12 @@ public class ReportedUserAdapter extends RecyclerView.Adapter<ReportedUserAdapte
                     allReportedUsers.remove(pos);
                     notifyItemRemoved(pos);
                     notifyItemRangeChanged(pos, allReportedUsers.size());
-                    Toast.makeText(context, "Report and User deleted successfully", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, " User banned successfully", Toast.LENGTH_SHORT).show();
 
                 } else {
                     try {
                         String errorBody = response.errorBody() != null ? response.errorBody().string() : "Unknown error";
-                        Toast.makeText(context, "Failed to delete report: " + errorBody, Toast.LENGTH_LONG).show();
+                        Toast.makeText(context, "Failed to ban user: " + errorBody, Toast.LENGTH_LONG).show();
                     } catch (IOException e) {
                         Toast.makeText(context, "Error parsing error body", Toast.LENGTH_LONG).show();
                     }
