@@ -33,7 +33,7 @@ public class ImageController {
 
 
     //FOR ACTUAL IMAGE FILE STORING
-    //for local testing in backend String directory = "C:\\Users\\Ethan\\OneDrive\\Documents\\Se-309\\hb4_3\\hb4_3\\Backend\\images\\"
+    //for local testing in backend String directory = "C:/Users/Ethan/OneDrive/Documents/Se-309/hb4_3/hb4_3/Backend/images/"
     //On server String directory = "/hb403/images/";
     private static final String directory = "/hb403/images/";
 
@@ -180,19 +180,20 @@ public class ImageController {
     }
 
 
-    @PutMapping("/image/{id}")
-    public String imageUpdate(@RequestParam("image") MultipartFile imageFile, @PathVariable long id) { //this one is complicated for image file management
+    @PutMapping("observation/image/{post_id}")
+    public String imageUpdate(@RequestParam("image") MultipartFile imageFile, @PathVariable long post_id) { //this one is complicated for image file management
         try {
-            if (imageFile == null || id == 0) {
+            if (imageFile == null || post_id == 0) {
                 System.out.println("[PUT] imageFile is null or id is invalid");
             } else {
-                imageRepository.findById(id).isPresent();
+                observationRepository.findById(post_id).isPresent();
+                ObservationMarker tempObs = observationRepository.findById(post_id).get();
                 AtomicBoolean isRepeat = new AtomicBoolean(false);
                 File destinationFile = new File(directory + Objects.requireNonNull(imageFile.getOriginalFilename()));
                 System.out.println(destinationFile);
                 Image image;
 
-                image = imageRepository.findById(id).get();
+                image = imageRepository.findById(tempObs.getImage().getId()).get();
                 findRepeat(image);
                 isRepeat.set(false);
 
@@ -213,16 +214,12 @@ public class ImageController {
                 }*/
                 image.setFilePath(destinationFile.getAbsolutePath());
                 System.out.println(isRepeat.get());//expected false
-                if(image.getImageType().equals(Image.Type.OBSERVATION)) {
-                    ObservationMarker tempObs = image.getObservation();
+
+
                     tempObs.setImage(image);
                     observationRepository.save(tempObs);
-                }
-                else if (image.getImageType().equals(Image.Type.PROFILE)){
-                    User  tempUser = image.getUser();
-                    tempUser.setImage(image);
-                    userRepository.save(tempUser);
-                }
+
+
                 imageRepository.save(image);
                 return "File uploaded successfully: " + destinationFile.getAbsolutePath();
             }
@@ -232,7 +229,53 @@ public class ImageController {
         }
         return null;
     }
+    @PutMapping("user/image/{user_id}")
+    public String imageUpdateUser(@RequestParam("image") MultipartFile imageFile, @PathVariable long user_id) { //this one is complicated for image file management
+        try {
+            if (imageFile == null || user_id == 0) {
+                System.out.println("[PUT] imageFile is null or id is invalid");
+            } else {
+                userRepository.findById(user_id).isPresent();
+                User tempUser = userRepository.findById(user_id).get();
+                AtomicBoolean isRepeat = new AtomicBoolean(false);
+                File destinationFile = new File(directory + Objects.requireNonNull(imageFile.getOriginalFilename()));
+                System.out.println(destinationFile);
+                Image image;
 
+                image = imageRepository.findById(tempUser.getImage().getId()).get();
+                findRepeat(image);
+                isRepeat.set(false);
+
+                /*sort.forEach(imageInRepo -> { // checks if the new image is
+                    if (imageInRepo.getFilePath().equals(destinationFile.getAbsolutePath())) {
+                        System.out.println(image.getFilePath());
+                        System.out.println(imageInRepo.getFilePath());
+                        isRepeat.set(true);
+                    }
+                });*/
+                if (!directory.contains(imageFile.toString())) { //checks just the file itself
+                    imageFile.transferTo(destinationFile);  // save file to disk only if image is not a repeat
+
+                }
+                System.out.println(isRepeat.get());
+                /*if (!isRepeat.get()) {
+                    imageFile.transferTo(destinationFile);  // save file to disk only if image is not a repeat
+                }*/
+                image.setFilePath(destinationFile.getAbsolutePath());
+                System.out.println(isRepeat.get());//expected false
+
+                tempUser.setImage(image);
+                userRepository.save(tempUser);
+
+                imageRepository.save(image);
+                return "File uploaded successfully: " + destinationFile.getAbsolutePath();
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+            return e.toString();
+        }
+        return null;
+    }
 
     @Operation(summary = "Deletes the image using the image ID")
     @DeleteMapping("/image/{Id}")
