@@ -39,8 +39,8 @@ public class Range {
 		if(this.isInvalid()) return null;
 		return GeometryUtil.makeRectangle(
 			this.min_latitude,
-			this.max_latitude,
 			this.min_longitude,
+			this.max_latitude,
 			this.max_longitude
 		);
 	}

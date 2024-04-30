@@ -141,7 +141,22 @@ public class ReportController {
 	public @ResponseBody Set<ReportMarker> getReportsWithinRect(@RequestBody Range range) {	// takes in 'well known text' for the bounding geometry --> may define special json formats for predefined bounds later
 		if(range == null || range.isInvalid()) return null;
 		try {
-			final Set<ReportMarker> bounded = this.reports_repo.findSetWithin( range.getRect() );
+
+			final Polygon rect = range.getRect();
+			final Set<ReportMarker> bounded = this.reports_repo.findSetWithin( rect );
+
+			System.out.printf(
+				"[REPORTS RECT SEARCH]: Recieved bounds object: {\n\tmin lat: %f,\n\tmin lon: %f,\n\tmax lat: %f,\n\tmax lat: %f\n}\n" +
+				"[REPORTS RECT SEARCH]: Recieved %d query results.\n" +
+				"[REPORTS RECT SEARCH]: Computed search bounds:\n{\n\tWKT: %s\n}\n",
+				range.min_latitude,
+				range.min_longitude,
+				range.max_latitude,
+				range.max_longitude,
+				bounded.size(),
+				rect.toString()
+			);
+
 			for(ReportMarker r : bounded) {
 				r.enforceLocationTable();
 			}
@@ -158,9 +173,27 @@ public class ReportController {
 	public @ResponseBody List<ReportMarker> getProxSortedReportsWithinRect(@RequestBody LocationRange range) {
 		if(range == null || range.isInvalid()) return null;
 		try {
-			final List<ReportMarker> bounded = this.reports_repo.findListWithin( range.getRect() );
+			
+			final Polygon rect = range.getRect();
+			final List<ReportMarker> bounded = this.reports_repo.findListWithin( rect );
+
+			System.out.printf(
+				"[REPORTS RECT SORTED SEARCH]: Recieved bounds object: {\n\tmin lat: %f,\n\tmin lon: %f,\n\tmax lat: %f,\n\tmax lat: %f,\n\tsrc lat: %f,\n\tsrc lat: %f\n}\n" +
+				"[REPORTS RECT SORTED SEARCH]: Recieved %d query results.\n" +
+				"[REPORTS RECT SORTED SEARCH]: Computed search bounds:\n{\n\tWKT: %s\n}\n",
+				range.min_latitude,
+				range.min_longitude,
+				range.max_latitude,
+				range.max_longitude,
+				range.src_latitude,
+				range.src_longitude,
+				bounded.size(),
+				rect.toString()
+			);
+
 			MarkerBase.sortByProximityAsc(bounded, range.src_latitude, range.src_longitude, true);
 			return bounded;
+
 		} catch(Exception e) {
 			System.out.println("ReportController.getProxSortedReportsWithinRect(): Encountered exception! -- " + e.getMessage());
 			// continue >>> (return null)
