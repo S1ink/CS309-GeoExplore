@@ -267,7 +267,7 @@ public class ObservationController {
 
     /** */
 	@Operation(summary = "Get the distance to an observation from a specified location (IN MILES)")
-	@PostMapping(path = "geomap/observation/{id}/distance")
+	@PostMapping(path = "geomap/observations/{id}/distance")
 	public @ResponseBody Double getDistanceToMarkerById(@PathVariable Long id, @RequestBody Location src) {
 		if(id != null && src != null && src.isValid()) {
 			final ObservationMarker m = this.getObs(id);
