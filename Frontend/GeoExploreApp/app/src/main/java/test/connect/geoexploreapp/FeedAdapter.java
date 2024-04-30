@@ -78,7 +78,10 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         this.items = items;
         this.user=user;
         this.context = context;
+        this.allImages = allImages;
+        this.mFilePickerLauncher = mFilePickerLauncher;
         CommentWebSocketManager.getInstance().setWebSocketListener(this);
+
 
     }
 

@@ -17,6 +17,7 @@ import android.os.Bundle;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -101,6 +102,7 @@ import test.connect.geoexploreapp.api.UserApi;
 import test.connect.geoexploreapp.model.AlertMarker;
 import test.connect.geoexploreapp.model.EventMarker;
 import test.connect.geoexploreapp.model.Image;
+import test.connect.geoexploreapp.model.LocationProximity;
 import test.connect.geoexploreapp.model.MarkerTag;
 import test.connect.geoexploreapp.model.Observation;
 import test.connect.geoexploreapp.model.Range;
@@ -136,6 +138,13 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     private WebSocketListener alertWebSocketListener;
     private WebSocketListener locationWebSocketListener;
     private Map<Integer, Marker> userMarkersMap = new HashMap<>();
+    private ActivityResultLauncher<String> mFilePickerLauncher;
+
+    private Uri selectedUri;
+    private static User user;
+    private Button uploadImageObservation;
+    private static Bundle args;
+
 
     public MapsFragment() {
 
@@ -1011,8 +1020,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
     }
 
-
-
     private List<String> parseMarkerTags(String input) {
         List<String> markerTags = new ArrayList<>();
         if (input != null && !input.isEmpty()) {
@@ -1545,12 +1552,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     private void displayObservationByID(Long id) {
         ObservationApi observationApi = ApiClientFactory.GetObservationApi();
 
-        observationApi.getObs(id).enqueue(new Callback<Observation>() {
-            @Override
-            public void onResponse(Call<Observation> call, Response<Observation> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    Observation obj = response.body();
-                    LatLng position = new LatLng(obj.getIo_latitude(), obj.getIo_longitude());
+        observationApi.getObs(id).enqueue(new SlimCallback<>(obj -> {
+            if (obj != null) {
+                LatLng position = new LatLng(obj.getIo_latitude(), obj.getIo_longitude());
 
                 mMap.clear();
                 mMap.addMarker(new MarkerOptions()
@@ -1561,14 +1565,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 10));
                 showStatus("Observation found successfully!");
             }
-
-            @Override
-            public void onFailure(Call<Observation> call, Throwable t) {
-                showStatus("Failed to retrieve data: " + t.getMessage());
-                showStatus("Observation ID Not Found!");
-            }
-        });
+        }, "getObservationByID"));
     }
+
     private void updateExistingObservationByID(Long id, String newTitle, LatLng latLng, String newDescription) {
         ObservationApi observationApi = ApiClientFactory.GetObservationApi();
 
