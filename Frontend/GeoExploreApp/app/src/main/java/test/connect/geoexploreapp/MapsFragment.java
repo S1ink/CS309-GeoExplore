@@ -874,7 +874,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
         MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getName(), requestFile);
 
         ImageApi imageApi = ApiClientFactory.GetImageApi();
-        imageApi.observationFileUpload(body, imgForObs.getPostID()).enqueue(new Callback<ResponseBody>() {
+        imageApi.observationFileUpload(body, imgForObs.getPostID(), "OBSERVATION").enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {

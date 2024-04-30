@@ -12,13 +12,15 @@ import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 import test.connect.geoexploreapp.model.Comment;
 import test.connect.geoexploreapp.model.Image;
 
 public interface ImageApi {
+    //    @Operation(summary = "Upload an image to an observation or image profile")
     @Multipart
-    @POST("observation/image/{postId}")
-    Call<ResponseBody> observationFileUpload(@Part MultipartBody.Part image, @Path("postId") Long postId);
+    @POST("image/{Id}")
+    Call<ResponseBody> observationFileUpload(@Part MultipartBody.Part image, @Path("Id") Long Id, @Query("type") String imageType);
 //    @Operation(summary = "gets image from repository using observation id")
     @GET("image/{id}")
     Call<ResponseBody> getImageById(@Path("id") Long id);
