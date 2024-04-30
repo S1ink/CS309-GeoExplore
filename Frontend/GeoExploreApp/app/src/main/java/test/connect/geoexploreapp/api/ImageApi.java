@@ -28,7 +28,7 @@ public interface ImageApi {
     @GET("observation/image/{post_id}")
     Call<ResponseBody> getImageByPostId(@Path("post_id") Long post_id);
     @GET("user/image/{user_id}")
-    Call<byte[]> getImageByUserId(@Path("user_id") Long user_id);
+    Call<ResponseBody> getImageByUserId(@Path("user_id") Long user_id);
 
     @Multipart
     @PUT("observation/image/{id}")
