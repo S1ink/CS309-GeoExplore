@@ -229,6 +229,15 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         AlertDialog dialog = builder.create();
         dialog.show();
     }
+    public interface OnShowAllImagesListener {
+        void onShowAllImages(List<Image> images);
+    }
+
+    OnShowAllImagesListener listener;
+
+    public void setOnShowAllImagesListener(OnShowAllImagesListener listener) {
+        this.listener = listener;
+    }
 
     private void UpdateImage(Uri selectedUri, Image imgToShow, int position) {
 

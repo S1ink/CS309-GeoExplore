@@ -47,10 +47,10 @@ import test.connect.geoexploreapp.model.Observation;
 import test.connect.geoexploreapp.model.ReportMarker;
 import test.connect.geoexploreapp.model.User;
 
-public class FeedActivity extends Fragment{
+public class FeedActivity extends Fragment implements FeedAdapter.OnShowAllImagesListener{
     private RecyclerView recyclerView;
     private TextView noItemsDisplay;
-    private ImageButton viewAllCommentsButton;
+    private ImageButton viewAllCommentsButton, viewAllImagesButton;
     private ImageButton searchComment, searchImage;
     private List<FeedItem> allItems = new ArrayList<>();
     private List<Image> allImages = new ArrayList<>();
@@ -92,6 +92,7 @@ public class FeedActivity extends Fragment{
         getFeedItems();
         fetchAllImages();
         viewAllCommentsButton=view.findViewById(R.id.viewAllComments);
+        viewAllImagesButton =view.findViewById(R.id.viewAllImagesButton);
         searchComment=view.findViewById(R.id.searchComment);
         searchImage = view.findViewById(R.id.searchImage);
         if (getArguments() != null) {
@@ -105,6 +106,11 @@ public class FeedActivity extends Fragment{
             viewAllCommentsButton.setOnClickListener(v -> {
                 fetchAllComments();
             });
+            viewAllImagesButton.setOnClickListener(v -> {
+                if (adapter.listener != null) {
+                    adapter.listener.onShowAllImages(allImages);
+                }
+            });
             searchComment.setOnClickListener(v -> {
                 searchCommentPrompt();
             });
@@ -115,7 +121,7 @@ public class FeedActivity extends Fragment{
             viewAllCommentsButton.setVisibility(View.GONE);
             searchComment.setVisibility(View.GONE);
             searchImage.setVisibility(View.GONE);
-
+            viewAllImagesButton.setVisibility(View.GONE);
         }
 
          noItemsDisplay = view.findViewById(R.id.noItems);
@@ -130,7 +136,9 @@ public class FeedActivity extends Fragment{
             }
         });
          adapter = new FeedAdapter(allItems,allImages, user, getActivity(), mGetContent);
-         recyclerView.setAdapter(adapter);
+        adapter.setOnShowAllImagesListener(this);
+
+        recyclerView.setAdapter(adapter);
 
 
 
@@ -511,5 +519,26 @@ public class FeedActivity extends Fragment{
             noItemsDisplay.setVisibility(View.GONE);
         }
     }
+
+    @Override
+    public void onShowAllImages(List<Image> images) {
+        displayAllImagesDialog(images);
+    }
+
+    private void displayAllImagesDialog(List<Image> images) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        View view = getLayoutInflater().inflate(R.layout.layout_for_all_images, null);
+        RecyclerView recyclerView = view.findViewById(R.id.imagesRecyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        ImageAdapter imageAdapter = new ImageAdapter(getContext(), images);
+        recyclerView.setAdapter(imageAdapter);
+
+        builder.setView(view)
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss());
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
 
 }
