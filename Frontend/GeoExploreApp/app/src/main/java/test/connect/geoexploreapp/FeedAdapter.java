@@ -335,6 +335,10 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     private void showComments(Context context, int itemIndex) {
         Gson gson = new Gson();
         FeedItem item = items.get(itemIndex);
+        if (user.getRole() == User.Role.BANNED) {
+            Toast.makeText(context, "You are banned from commenting.", Toast.LENGTH_LONG).show();
+            return;
+        }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         LayoutInflater inflater = LayoutInflater.from(context);
