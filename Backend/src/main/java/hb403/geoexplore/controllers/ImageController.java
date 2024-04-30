@@ -142,7 +142,7 @@ public class ImageController {
                 return Files.readAllBytes(imageFile.toPath());
             } catch (Exception e) {
                 e.printStackTrace();
-                throw e;
+                return null;
             }
         } else {
             System.out.println("[GET] Id is null");
@@ -162,7 +162,7 @@ public class ImageController {
                 return Files.readAllBytes(imageFile.toPath());
             } catch (Exception e) {
                 e.printStackTrace();
-                throw e;
+                return null;
             }
         } else {
             System.out.println("[GET] Id is null");
