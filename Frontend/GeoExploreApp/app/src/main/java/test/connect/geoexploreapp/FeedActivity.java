@@ -124,6 +124,8 @@ public class FeedActivity extends Fragment{
          recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         ActivityResultLauncher<String> mGetContent = registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
             if (uri != null) {
+                adapter.setSelectedUri(uri);  // Update the adapter with the new URI
+
                 Log.d("File URI", "Selected File URI: " + uri.toString());
             }
         });
@@ -213,7 +215,7 @@ public class FeedActivity extends Fragment{
         try {
             Bitmap bmp = BitmapFactory.decodeStream(body.byteStream());
             View view = LayoutInflater.from(getContext()).inflate(R.layout.show_image,null);
-            ImageView imageView = new ImageView(getContext());  // Create a new ImageView each time
+            ImageView imageView = new ImageView(getContext());
             imageView.setImageBitmap(bmp);
             TextView descriptionView = view.findViewById(R.id.image_description);
             imageView.setImageBitmap(bmp);
@@ -410,7 +412,7 @@ public class FeedActivity extends Fragment{
                     allImages.clear();
                     allImages.addAll(response.body());
                     if (adapter != null) {
-                        adapter.notifyDataSetChanged();  // Notify any observers of the data change.
+                        adapter.notifyDataSetChanged();
                     }
                 } else {
                     Log.e("fetchAllImages", "Failed to fetch images: " + response.code() + " - " + response.message());

@@ -30,8 +30,9 @@ public interface ImageApi {
     @GET("user/image/{user_id}")
     Call<byte[]> getImageByUserId(@Path("user_id") Long user_id);
 
+    @Multipart
     @PUT("observation/image/{id}")
-    Call<String> imageUpdate( @Part MultipartBody.Part image,@Path("id") Long id);
+    Call<ResponseBody> imageUpdate( @Part MultipartBody.Part image,@Path("id") Long id);
 
 
     @DELETE("image/{id}")
