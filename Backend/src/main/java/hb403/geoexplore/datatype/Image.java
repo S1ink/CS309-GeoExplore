@@ -10,6 +10,15 @@ import lombok.Setter;
 @Table(name = "Observation_images")
 public class Image {
 
+
+    public enum Type {
+        PROFILE        ("PROFILE"),
+        OBSERVATION   ("OBSERVATION");
+
+        public String value;
+        private Type(String v) { this.value = v; }
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "image_id")
@@ -28,10 +37,15 @@ public class Image {
     @JoinColumn(name = "marker_id")
     private ObservationMarker observation;
 
-    /*@Getter
+    @Getter
     @Setter
     @OneToOne
     @JoinColumn(name = "user_id")
-    private User user;*/
+    private User user;
+
+    @Getter
+    @Setter
+    @Enumerated(value = EnumType.STRING)
+    private Image.Type imageType;
 
 }
