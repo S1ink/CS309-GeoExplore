@@ -59,8 +59,8 @@ import test.connect.geoexploreapp.model.Image;
 import test.connect.geoexploreapp.model.Observation;
 import test.connect.geoexploreapp.model.ReportMarker;
 import test.connect.geoexploreapp.model.User;
+import test.connect.geoexploreapp.websocket.CommentWebSocketManager;
 import test.connect.geoexploreapp.websocket.WebSocketListener;
-import test.connect.geoexploreapp.websocket.WebSocketManager;
 
 public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder> implements WebSocketListener, CommentActionListener{
     private List<FeedItem> items;
@@ -78,9 +78,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         this.items = items;
         this.user=user;
         this.context = context;
-        this.allImages = allImages;
-        this.mFilePickerLauncher = mFilePickerLauncher;
-        WebSocketManager.getInstance().setWebSocketListener(this);
+        CommentWebSocketManager.getInstance().setWebSocketListener(this);
 
     }
 
@@ -365,7 +363,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
                         String sendCommentJson = gson.toJson(sendComment);
                         Log.d("WebSocket", "Message sent testing: " + sendCommentJson);
 
-                        WebSocketManager.getInstance().sendMessage(sendCommentJson);
+                        CommentWebSocketManager.getInstance().sendMessage(sendCommentJson);
                         Log.d("WebSocket", "Message sent: " + sendCommentJson);
                         fetchComments(itemIndex, item, item.getType());
 //                      item.getComments().add(sendComment);

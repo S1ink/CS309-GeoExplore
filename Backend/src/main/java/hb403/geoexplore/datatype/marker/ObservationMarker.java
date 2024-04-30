@@ -9,6 +9,7 @@ import java.util.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import hb403.geoexplore.datatype.Image;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -52,10 +53,16 @@ public class ObservationMarker extends MarkerBase {
 	@JsonIgnore
 	@ManyToMany
 	@JoinTable(
-			name = "Observations->Group",
+			name = "Observations_Group",
 			joinColumns = @JoinColumn(name = "marker_id"),
 			inverseJoinColumns = @JoinColumn(name = "group_id"))
 	private Set<UserGroup> pertainsGroup = new HashSet<>();
+
+	@Getter
+	@Setter
+	@JsonIgnore
+	@OneToOne(mappedBy = "observation", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE })
+	private Image image;
 
 	public void addToPertainsGroup(UserGroup group_to_add){
 		pertainsGroup.add(group_to_add);

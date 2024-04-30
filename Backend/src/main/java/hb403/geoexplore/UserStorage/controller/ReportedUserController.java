@@ -114,8 +114,11 @@ public class ReportedUserController {
         }
         try {
             ReportedUser temp = reportedUserRepository.findById(updated.getId()).get();
+            User tempUser = temp.getReportedUser();
+            tempUser.setUser(temp);
             updated.setReportedUser(temp.getReportedUser());
             updated.setNumReports(temp.getNumReports());
+            userRepository.save(tempUser);
             reportedUserRepository.save(updated);
         }
         catch (Exception e){
@@ -145,9 +148,18 @@ public class ReportedUserController {
     public @ResponseBody String deleteUser(@PathVariable Long id){
         try{
             User temp = userRepository.findById(reportedUserRepository.findById(id).get().getReportedUserId()).get();
-            reportedUserRepository.deleteById(id);
+
             if (userRepository.findById(temp.getId()).isPresent()){
-                userRepository.delete(temp);
+                System.out.println("User exists and was found");
+                System.out.println(temp.getRole());
+                User user_to_ban = userRepository.findById(temp.getId()).get();
+                user_to_ban.ban();
+                System.out.println(user_to_ban.getRole());
+                userRepository.save(user_to_ban);
+                System.out.println(user_to_ban.getRole());
+                ReportedUser tempReport = reportedUserRepository.findById(id).get();
+                tempReport.setReportedUser(null);
+                reportedUserRepository.deleteById(id);
             }
         }catch (Exception e){
             throw e;

@@ -11,12 +11,8 @@ public class User  implements Serializable {
     private boolean isAdmin;
     private double io_latitude;
     private double io_longitude;
-    private Role role;
     private String last_location_update;
-    public enum Role {
-        USER, ADMIN, BANNED;
-    }
-    //private LocationPrivacy location_privacy;
+    private LocationPrivacy location_privacy;
 
     public User() {
     }
@@ -76,6 +72,14 @@ public class User  implements Serializable {
         this.io_latitude = io_latitude;
     }
 
+    public double getIo_latitude() {
+        return io_latitude;
+    }
+
+    public void setIo_latitude(double io_latitude) {
+        this.io_latitude = io_latitude;
+    }
+
     public double getIo_longitude() {
         return io_longitude;
     }
@@ -92,8 +96,21 @@ public class User  implements Serializable {
         this.last_location_update = last_location_update;
     }
 
+    public LocationPrivacy getLocation_privacy() {
+        return location_privacy;  // Getter for location privacy
+    }
 
+    public void setLocation_privacy(LocationPrivacy location_privacy) {
+        this.location_privacy = location_privacy;  // Setter for location privacy
+    }
 
-
+    @Override
+    public String toString() {
+        return "{ name: " + this.name +
+                "\nemailId: " + this.emailId +
+                "\nPassword: " + this.password +
+                "\nisAdmin: " + this.getIsAdmin() +
+                "\nLocation Privacy: " + this.location_privacy + " }";
+    }
 
 }

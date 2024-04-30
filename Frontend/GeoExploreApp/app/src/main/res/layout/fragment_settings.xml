@@ -123,9 +123,8 @@
         android:layout_gravity="center_horizontal"
         android:orientation="horizontal">
 
-
         <FrameLayout
-            android:id="@+id/signOut"
+            android:id="@+id/locationPreferenceButton"
             android:layout_width="80dp"
             android:layout_height="80dp"
             android:layout_margin="20dp"
@@ -133,18 +132,18 @@
             android:gravity="center">
 
             <ImageView
-                android:id="@+id/signOutIcon"
+                android:id="@+id/locationIcon"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_gravity="center"
-                android:src="@drawable/baseline_logout_24" />
+                android:src="@drawable/baseline_edit_location_24" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|center_horizontal"
                 android:layout_marginBottom="8dp"
-                android:text="Sign Out"
+                android:text="Location"
                 android:textSize="14sp" />
         </FrameLayout>
 
@@ -169,8 +168,32 @@
                 android:layout_gravity="bottom|center_horizontal"
                 android:layout_marginBottom="8dp"
                 android:text="Reported Users"
-
                 android:textSize="14sp" />
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/signOut"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_margin="20dp"
+            android:background="@drawable/cube_button_background"
+            android:gravity="center">
+
+            <ImageView
+                android:id="@+id/signOutIcon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:src="@drawable/baseline_logout_24" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center_horizontal"
+                android:layout_marginBottom="8dp"
+                android:text="Sign Out"
+                android:textSize="14sp" />
+
         </FrameLayout>
 
     </LinearLayout>

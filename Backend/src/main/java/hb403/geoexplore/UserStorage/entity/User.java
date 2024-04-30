@@ -3,6 +3,8 @@ package hb403.geoexplore.UserStorage.entity;
 import hb403.geoexplore.UserStorage.LocationSharing;
 import hb403.geoexplore.UserStorage.repository.UserRepository;
 import hb403.geoexplore.comments.Entity.CommentEntity;
+import hb403.geoexplore.datatype.Image;
+import hb403.geoexplore.util.GeometryUtil;
 
 import org.locationtech.jts.geom.*;
 import jakarta.persistence.*;
@@ -24,6 +26,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Setter
 public class User {
 
+    public enum Role {
+        USER        ("USER"),
+        BANNED   ("BANNED"),
+        ADMIN       ("ADMIN");
+
+        public String value;
+        private Role(String v) { this.value = v; }
+    }
+
+
     @Basic
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)     // probably use UUID after we are done testing
@@ -42,7 +54,10 @@ public class User {
     private String encryptedPassword;
 
     // @JsonIgnore
-    private boolean isAdmin;
+    // private boolean isAdmin;
+
+    @Enumerated(value = EnumType.STRING)
+    private Role role = Role.USER;
 
     @Enumerated(value = EnumType.STRING)
     private LocationSharing location_privacy = LocationSharing.DISABLED;
@@ -67,7 +82,7 @@ public class User {
     @JsonIgnore
     private Set<CommentEntity> comments = new HashSet<>();*/
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "members")
+    @ManyToMany(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.MERGE }, mappedBy = "members")
     @JsonIgnore
     private Set<UserGroup> groups = new HashSet<>();
 
@@ -83,6 +98,12 @@ public class User {
     @JsonIgnore
     @OneToOne(mappedBy = "reportedUser", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE })
     private ReportedUser user;
+
+    /*@Getter
+    @Setter
+    @JsonIgnore
+    @OneToOne(mappedBy = "user", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE })
+    private Image image;*/
 
     public User(Long id, String name, String emailId, String password) {
         this.id = id;
@@ -149,8 +170,10 @@ public class User {
     }
 
 
+    @JsonIgnore
     public boolean getIsAdmin(){
-        return isAdmin;
+        // return isAdmin;
+        return this.role == Role.ADMIN;
     }
 
     public void checkIfAdmin(){
@@ -160,19 +183,27 @@ public class User {
         adminList.add("aditin@iastate.edu");
         adminList.add("yharb@iastate.edu");
         //for (String s : adminList) {
-            if (adminList.contains(emailId)) {
-                this.setIsAdmin(true);
-            }
+        if (adminList.contains(emailId)) {
+            this.setIsAdmin(true);
+        }
 
     }
-    public void setIsAdmin(boolean isAdmin){
-        this.isAdmin = isAdmin;
+    @JsonIgnore
+    public void setIsAdmin(boolean isAdmin){    // not technically implemented correctly but the method is only used above so its fine
+        // this.isAdmin = isAdmin;
+        if(isAdmin) this.role = Role.ADMIN;
     }
+
+    @JsonIgnore
+    public void ban(){
+        this.role = Role.BANNED;
+    }
+
 
 
     /** Synchronize the stored table location and IO lat/long values (copies from the IO variables */
 	public void enforceLocationIO() {
-		this.location = new Point(new Coordinate(this.io_latitude, this.io_longitude), new PrecisionModel(), 0);
+		this.location = GeometryUtil.makePoint(new Coordinate(this.io_latitude, this.io_longitude));
         this.last_location_update = new Date();     // could be wrong? eh who cares
 	}
 	/** Synchronize the stored table location and IO lat/long values (copies from the table entry) */
@@ -182,6 +213,12 @@ public class User {
 			this.io_longitude = this.location.getY();
 		}
 	}
+
+    @Getter
+    @Setter
+    @JsonIgnore
+    @OneToOne(mappedBy = "user", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE })
+    private Image image;
 
 
     @Override
