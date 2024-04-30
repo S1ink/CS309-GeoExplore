@@ -1,6 +1,8 @@
 package test.connect.geoexploreapp;
 
 import android.app.AlertDialog;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
@@ -9,9 +11,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -22,12 +27,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import test.connect.geoexploreapp.api.ApiClientFactory;
 import test.connect.geoexploreapp.api.CommentApi;
 import test.connect.geoexploreapp.api.EventMarkerApi;
+import test.connect.geoexploreapp.api.ImageApi;
 import test.connect.geoexploreapp.api.ObservationApi;
 import test.connect.geoexploreapp.api.ReportMarkerApi;
 import test.connect.geoexploreapp.api.SlimCallback;
@@ -35,16 +42,18 @@ import test.connect.geoexploreapp.api.UserApi;
 import test.connect.geoexploreapp.model.Comment;
 import test.connect.geoexploreapp.model.EventMarker;
 import test.connect.geoexploreapp.model.FeedItem;
+import test.connect.geoexploreapp.model.Image;
 import test.connect.geoexploreapp.model.Observation;
 import test.connect.geoexploreapp.model.ReportMarker;
 import test.connect.geoexploreapp.model.User;
 
-public class FeedActivity extends Fragment {
+public class FeedActivity extends Fragment{
     private RecyclerView recyclerView;
     private TextView noItemsDisplay;
     private ImageButton viewAllCommentsButton;
-    private ImageButton searchComment;
+    private ImageButton searchComment, searchImage;
     private List<FeedItem> allItems = new ArrayList<>();
+    private List<Image> allImages = new ArrayList<>();
     private FeedAdapter adapter;
     private static User user;
     private List<Comment> allComments = new ArrayList<>();
@@ -81,40 +90,181 @@ public class FeedActivity extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         getFeedItems();
+        fetchAllImages();
         viewAllCommentsButton=view.findViewById(R.id.viewAllComments);
         searchComment=view.findViewById(R.id.searchComment);
+        searchImage = view.findViewById(R.id.searchImage);
         if (getArguments() != null) {
             user = (User) getArguments().getSerializable("UserObject");
         }
 
-        if(user.getIsAdmin()){
+        if(user.getRole()== User.Role.ADMIN){
             viewAllCommentsButton.setVisibility(View.VISIBLE);
             searchComment.setVisibility(View.VISIBLE);
-
+            searchImage.setVisibility(View.VISIBLE);
             viewAllCommentsButton.setOnClickListener(v -> {
                 fetchAllComments();
-                //showAllCommentsPopup();
             });
             searchComment.setOnClickListener(v -> {
                 searchCommentPrompt();
             });
+            searchImage.setOnClickListener(v->{
+                searchImagePrompt();
+            });
         }else{
             viewAllCommentsButton.setVisibility(View.GONE);
             searchComment.setVisibility(View.GONE);
+            searchImage.setVisibility(View.GONE);
+
         }
 
          noItemsDisplay = view.findViewById(R.id.noItems);
          recyclerView = view.findViewById(R.id.recyclerViewFeed);
 
          recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        ActivityResultLauncher<String> mGetContent = registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
+            if (uri != null) {
+                adapter.setSelectedUri(uri);  // Update the adapter with the new URI
 
-         adapter = new FeedAdapter(allItems, user, getActivity());
+                Log.d("File URI", "Selected File URI: " + uri.toString());
+            }
+        });
+         adapter = new FeedAdapter(allItems,allImages, user, getActivity(), mGetContent);
          recyclerView.setAdapter(adapter);
 
 
 
 //        getFeedItems();
     }
+
+    private void searchImagePrompt() {
+        CharSequence[] options = {"Search by Image ID", "Search by Observation Post ID"};
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Select Search Method");
+        builder.setItems(options, (dialog, which) -> {
+            if (which == 0) {
+                showIdInputPrompt("Image ID", true);
+            } else {
+                showIdInputPrompt("Post ID", false);
+            }
+        });
+        builder.setNegativeButton("Cancel", null);
+        builder.show();
+    }
+
+    private void showIdInputPrompt(String title, boolean isImageId) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Enter " + title);
+
+        final EditText input = new EditText(getContext());
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        builder.setView(input);
+
+        builder.setPositiveButton("OK", (dialog, which) -> {
+            Long id = null;
+            try {
+                id = Long.parseLong(input.getText().toString());
+            } catch (NumberFormatException e) {
+                Toast.makeText(getActivity(), "Please enter a valid " + title + ".", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (id != null) {
+                if (isImageId) {
+                    fetchImageById(id, isImageId);
+                } else {
+                    fetchImageByPostId(id, isImageId);
+                }
+            }
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+
+        builder.show();
+    }
+
+    private void fetchImageByPostId(Long postId, boolean isImageId) {
+        ImageApi imageApi = ApiClientFactory.GetImageApi();
+        imageApi.getImageByPostId(postId).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    Log.d("SearchImage", "Image fetched successfully for Post ID: " + postId);  // Log successful fetch
+                //  Image img =  response.body();
+                    displayImage(response.body(), isImageId, postId);
+                } else {
+                    Log.e("SearchImage", "Failed to fetch image. HTTP Status Code: " + response.code() + " Message: " + response.message());
+                    try {
+                        if (response.errorBody() != null) {
+                            Log.e("SearchImage", "Error response body: " + response.errorBody().string());  // Log error body if available
+                        }
+                    } catch (IOException e) {
+                        Log.e("SearchImage", "Error parsing error body", e);
+                    }
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.e("SearchImage", "API call failed: " + t.getMessage());
+            }
+        });
+    }
+
+    private void displayImage(ResponseBody body, boolean isImageId, Long id) {
+        try {
+            Bitmap bmp = BitmapFactory.decodeStream(body.byteStream());
+            View view = LayoutInflater.from(getContext()).inflate(R.layout.show_image,null);
+            ImageView imageView = new ImageView(getContext());
+            imageView.setImageBitmap(bmp);
+            TextView descriptionView = view.findViewById(R.id.image_description);
+            imageView.setImageBitmap(bmp);
+            if(isImageId){
+                descriptionView.setText("Image retrieved for image id: " + id);
+            }else{
+                descriptionView.setText("Image retrieved for post id: " + id);
+            }
+            descriptionView.setText("");
+            new AlertDialog.Builder(getContext())
+                    .setTitle("Found the Image")
+                    .setView(imageView)
+                    .setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss())
+                    .show();
+        } catch (Exception e) {
+            Log.e("DisplayImage", "Error displaying image", e);
+        }
+    }
+
+
+    private void fetchImageById(Long id, boolean isImageId) {
+        ImageApi imageApi = ApiClientFactory.GetImageApi();
+        Log.d("SearchImage", "Starting to fetch image with ID: " + id);
+        imageApi.getImageById(id).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    Log.d("SearchImage", "Image fetched successfully for ID: " + id);
+                    displayImage(response.body(), isImageId, id);
+                } else {
+                    Log.e("SearchImage", "Failed to fetch image. HTTP Status Code: " + response.code() + " Message: " + response.message());
+                    try {
+                        if (response.errorBody() != null) {
+                            Log.e("SearchImage", "Error response body: " + response.errorBody().string());
+                        }
+                    } catch (IOException e) {
+                        Log.e("SearchImage", "Error parsing error body", e);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                // Log complete failure including throwable details
+                Log.e("SearchImage", "API call failed: " + t.getMessage(), t);
+            }
+        });
+    }
+
 
     private void searchCommentPrompt() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
@@ -246,6 +396,32 @@ public class FeedActivity extends Fragment {
             @Override
             public void onFailure(Call<List<Comment>> call, Throwable t) {
                 Log.e("fetchAllComments", "API call failed: " + t.getMessage());
+            }
+        });
+    }
+
+    private void fetchAllImages() {
+        Log.d("fetchAllImages", "Fetching images from the server.");
+
+        ImageApi imageApi = ApiClientFactory.GetImageApi();
+        imageApi.listImageEntities().enqueue(new Callback<List<Image>>() {
+            @Override
+            public void onResponse(Call<List<Image>> call, Response<List<Image>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Log.d("fetchAllImages", "Images fetched successfully.");
+                    allImages.clear();
+                    allImages.addAll(response.body());
+                    if (adapter != null) {
+                        adapter.notifyDataSetChanged();
+                    }
+                } else {
+                    Log.e("fetchAllImages", "Failed to fetch images: " + response.code() + " - " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Image>> call, Throwable t) {
+                Log.e("fetchAllImages", "API call failed: " + t.getMessage(), t);
             }
         });
     }

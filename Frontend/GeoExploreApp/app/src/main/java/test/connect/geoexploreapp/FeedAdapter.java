@@ -1,13 +1,21 @@
 package test.connect.geoexploreapp;
+import androidx.activity.result.ActivityResultLauncher;
 
-import static android.app.PendingIntent.getActivity;
+import static androidx.activity.result.ActivityResultCallerKt.registerForActivityResult;
+import static org.json.JSONObject.NULL;
+
+import static java.security.AccessController.getContext;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.location.Address;
 import android.location.Geocoder;
+import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +23,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,19 +36,26 @@ import com.google.gson.JsonSyntaxException;
 
 import org.java_websocket.handshake.ServerHandshake;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import test.connect.geoexploreapp.api.ApiClientFactory;
 import test.connect.geoexploreapp.api.CommentApi;
+import test.connect.geoexploreapp.api.ImageApi;
 import test.connect.geoexploreapp.api.SlimCallback;
 import test.connect.geoexploreapp.model.Comment;
 import test.connect.geoexploreapp.model.EventMarker;
 import test.connect.geoexploreapp.model.FeedItem;
+import test.connect.geoexploreapp.model.Image;
 import test.connect.geoexploreapp.model.Observation;
 import test.connect.geoexploreapp.model.ReportMarker;
 import test.connect.geoexploreapp.model.User;
@@ -48,14 +64,17 @@ import test.connect.geoexploreapp.websocket.WebSocketListener;
 
 public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder> implements WebSocketListener, CommentActionListener{
     private List<FeedItem> items;
+    private List<Image> allImages;
     private EditText commentEditText;
-    private Button sendCommentButton;
-    private Button cancelCommentButton;
+    private Button cancelCommentButton, uploadImageObservation, sendCommentButton;
     private User user;
     private  FeedItem feedItem;
     private Context context;
+    private Uri selectedUri;
+    private ActivityResultLauncher<String> mFilePickerLauncher;
 
-    public FeedAdapter(List<FeedItem> items, User user, Context context) {
+
+    public FeedAdapter(List<FeedItem> items, List<Image> allImages, User user, Context context,  ActivityResultLauncher<String> mFilePickerLauncher) {
         this.items = items;
         this.user=user;
         this.context = context;
@@ -71,9 +90,45 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         return new FeedViewHolder(view);
     }
 
+
+
+
     @Override
     public void onBindViewHolder(@NonNull FeedViewHolder holder, @SuppressLint("RecyclerView") int position) {
-       feedItem = items.get(position);
+        feedItem = items.get(position);
+
+        holder.obsImage.setVisibility(View.GONE);
+        holder.deleteImage.setVisibility(View.GONE);
+        holder.updateImage.setVisibility(View.GONE);
+
+        if (feedItem.getType().equals("Observation")) {
+            fetchImageByPostId(holder, feedItem.getPostID());
+        }
+        if(feedItem.getType().equals("Observation")){
+            for(int i = 0; i< allImages.size(); i++){
+                if(allImages.get(i).getObservation()!=null){
+                    if (allImages.get(i).getObservation().getId()==feedItem.getPostID()){
+                        Image imgToShow = allImages.get(i);
+
+                        if(allImages.get(i).getObservation().getCreator().getId()==user.getId()){//image owened by user
+                            holder.deleteImage.setVisibility(View.VISIBLE);
+                            holder.updateImage.setVisibility(View.VISIBLE);
+
+                            holder.deleteImage.setOnClickListener(v -> {
+                                deleteImagePrompt(v, imgToShow, position);
+                            });
+                            holder.updateImage.setOnClickListener(v -> {
+                                UpdateImagePrompt(imgToShow, position);
+                            });
+                        }
+
+                        break;
+                    }
+                }
+
+            }
+
+        }
 
         if (feedItem.getDescription() == null || feedItem.getDescription().isEmpty()) {
             holder.description.setVisibility(View.GONE);
@@ -88,7 +143,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         getLocation(holder, feedItem.getIo_latitude(),  feedItem.getIo_longitude());
 
         holder.commentsRecyclerView.setLayoutManager(new LinearLayoutManager(holder.itemView.getContext()));
-
         List<Comment> commentsForThisItem = feedItem.getComments();
         CommentAdapter commentAdapter = new CommentAdapter(commentsForThisItem, user, this, true);
         holder.commentsRecyclerView.setAdapter(commentAdapter);
@@ -99,14 +153,173 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
                 Log.d("item check", String.valueOf(position));
             }
         });
+
+
     }
+    private void fetchImageByPostId(FeedViewHolder holder, Long postId) {
+        ImageApi imageApi = ApiClientFactory.GetImageApi();
+        imageApi.getImageByPostId(postId).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    Log.d("SearchImage", "Image fetched successfully for Post ID: " + postId);  // Log successful fetch
+                    //  Image img =  response.body();
+
+                    Bitmap bmp = BitmapFactory.decodeStream(response.body().byteStream());
+                    holder.obsImage.setImageBitmap(bmp);
+                    holder.obsImage.setVisibility(View.VISIBLE);
+
+
+                } else {
+                    Log.e("SearchImage", "Failed to fetch image. HTTP Status Code: " + response.code() + " Message: " + response.message());
+                    try {
+                        if (response.errorBody() != null) {
+                            Log.e("SearchImage", "Error response body: " + response.errorBody().string());  // Log error body if available
+                        }
+                    } catch (IOException e) {
+                        Log.e("SearchImage", "Error parsing error body", e);
+                    }
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.e("SearchImage", "API call failed: " + t.getMessage());
+            }
+        });
+    }
+
+    private void UpdateImagePrompt(Image imgToShow, int position) {
+        LayoutInflater inflater = LayoutInflater.from(context);
+        View view = inflater.inflate(R.layout.activity_image, null);
+
+        uploadImageObservation = view.findViewById(R.id.uploadImage);
+        uploadImageObservation.setOnClickListener(v -> openFileExplorer());
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setView(view)
+                .setTitle("Do you want to update the image?")
+                .setPositiveButton("Update", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+
+                        if(selectedUri!=NULL) {
+                            UpdateImage(selectedUri, imgToShow, position);
+                        }else{
+                            Toast.makeText(context, "No Uri Selected", Toast.LENGTH_SHORT).show();
+
+                        }
+
+
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+
+
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void UpdateImage(Uri selectedUri, Image imgToShow, int position) {
+
+        String filePath = FileUtils.createCopyFromUri(context, selectedUri);
+        if (filePath == null) {
+            Toast.makeText(context, "Invalid image path", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        File file = new File(filePath);
+        RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
+        MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getName(), requestFile);
+
+        ImageApi imageApi = ApiClientFactory.GetImageApi();
+        imageApi.imageUpdate(body, imgToShow.getId()).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    uploadImageObservation.setText("Image selected: "+ selectedUri.getLastPathSegment());
+                    notifyDataSetChanged();
+                    Log.d("Image Update", "Image updated successfully");
+                    Toast.makeText(context, "Image updated successfully!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Log.e("Image Update", "Failed to update image: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.e("Image Update", "Error updating image", t);
+            }
+        });
+    }
+
+    private void openFileExplorer() {
+        if (mFilePickerLauncher != null) {
+            mFilePickerLauncher.launch("image/*");
+        } else {
+            Log.e("FilePicker", "Activity Result Launcher is not initialized.");
+        }
+    }
+
+    private void deleteImagePrompt(View v, Image imageToDelete, int adapterPosition) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Confirm Delete");
+        builder.setMessage("Are you sure you want to delete this image?");
+        builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                deleteImage(imageToDelete.getId(), adapterPosition);
+            }
+        });
+        builder.setNegativeButton("Cancel", null);
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void deleteImage(Long id, int adapterPosition) {
+        ImageApi imageApi = ApiClientFactory.GetImageApi(); //
+        imageApi.deleteImage(id).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(context, "Image deleted successfully", Toast.LENGTH_SHORT).show();
+                    allImages.removeIf(img -> img.getId().equals(id));
+                    notifyItemRemoved(adapterPosition);
+                    Log.d("FeedAdapter", "Image deletion succeeded for ID: " + id);
+                } else {
+                    Toast.makeText(context, "Failed to delete image", Toast.LENGTH_SHORT).show();
+                    Log.d("FeedAdapter", "Image deletion failed with HTTP status code: " + response.code());
+                    try {
+                        Log.d("FeedAdapter", "Failed response body: " + response.errorBody().string());
+                    } catch (IOException e) {
+                        Log.e("FeedAdapter", "Error parsing error body", e);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Toast.makeText(context, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.e("FeedAdapter", "Image deletion failed", t);
+            }
+        });
+    }
+
+
+
     private void getLocation(FeedViewHolder holder, double ioLatitude, double ioLongitude) {
         Geocoder geocoder = new Geocoder(context, Locale.getDefault());
         try {
             List<Address> addresses = geocoder.getFromLocation(ioLatitude, ioLongitude, 1);
             if (addresses != null && !addresses.isEmpty()) {
                 Address address = addresses.get(0);
-                String addressText = address.getAddressLine(0); // You might adjust this based on what parts of the address you need
+                String addressText = address.getAddressLine(0);
                 holder.location.setText("Address: " + addressText);
             } else {
                 holder.location.setText("Address not found");
@@ -120,12 +333,10 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     private void showComments(Context context, int itemIndex) {
         Gson gson = new Gson();
         FeedItem item = items.get(itemIndex);
-//        String itemType = item.getType().toLowerCase() + "s";
-//        String wsUrl = "ws://coms-309-005.class.las.iastate.edu:8080/" + itemType + "/comments/" + user.getEmailId() + "/" + item.getPostID();
-//        Log.d("URL", wsUrl);
-//        WebSocketManager.getInstance().connectWebSocket(wsUrl);
-//
-//        Log.d("Websocket Connection ","connected");
+        if (user.getRole() == User.Role.BANNED) {
+            Toast.makeText(context, "You are banned from commenting.", Toast.LENGTH_LONG).show();
+            return;
+        }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -279,44 +490,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         Log.e("WebSocket Error", ex.toString());
     }
 
-//    @Override
-//    public void onDeleteComment(Long commentId, int position) {
-//        CommentApi commentApi = ApiClientFactory.GetCommentApi();
-//        Log.d("checkkk",commentId.toString());
-//       // Toast.makeText(context, "Fai delete comment", Toast.LENGTH_SHORT).show();
-//
-//        commentApi.deleteComment(commentId).enqueue(new Callback<ResponseBody>() {
-//            @Override
-//            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-//              //  JsonReader.setLenient(true);
-//                Log.d("DeleteComment",  response.body().toString());
-//
-//                if (response.isSuccessful()) {
-//                    ResponseBody responseMessage = response.body();
-//
-//                    Log.d("DeleteComment", "Successfully deleted comment: " + responseMessage.toString());
-//                    for (FeedItem item : items) {
-//                        List<Comment> comments = item.getComments();
-//                        if (comments.removeIf(comment -> comment.getId().equals(commentId))) {
-//                            notifyDataSetChanged();
-//                            Toast.makeText(context, "Comment deleted successfully", Toast.LENGTH_SHORT).show();
-//                            break;
-//                        }
-//                    }
-//                } else {
-//                    Toast.makeText(context, "Failed to delete comment", Toast.LENGTH_SHORT).show();
-//
-//                }
-//            }
-//
-//            @Override
-//            public void onFailure(Call<ResponseBody> call, Throwable t) {
-//                Toast.makeText(context, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-//                Log.d("DeleteComment", "failedt: " + t.getMessage());
-//
-//            }
-//        });
-//    }
 
     @Override
     public void onEditComment(Comment updatedComment, String newCommentText, int position) {
@@ -373,10 +546,16 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         });
     }
 
+    public void setSelectedUri(Uri uri) {
+        this.selectedUri = uri;
+    }
+
+
     static class FeedViewHolder extends RecyclerView.ViewHolder {
         public RecyclerView commentsRecyclerView;
         TextView title, description, type, date, location;
-        ImageButton commentButton;
+        ImageButton commentButton, updateImage, deleteImage;
+        ImageView obsImage;
 
         FeedViewHolder(View itemView) {
             super(itemView);
@@ -387,6 +566,10 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
             location = itemView.findViewById(R.id.itemLocation);
             commentButton = itemView.findViewById(R.id.commentButton);
             commentsRecyclerView = itemView.findViewById(R.id.commentsRecyclerView);
+            obsImage = itemView.findViewById(R.id.itemImage);
+            updateImage = itemView.findViewById(R.id.imageUpdate);
+            deleteImage = itemView.findViewById(R.id.imageDelete);
+
         }
     }
 }

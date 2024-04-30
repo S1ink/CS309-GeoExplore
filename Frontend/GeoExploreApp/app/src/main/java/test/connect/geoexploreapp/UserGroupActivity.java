@@ -56,7 +56,7 @@ public class UserGroupActivity extends Fragment {
             user = (User) getArguments().getSerializable("UserObject");
         }
         searchUserGroup=view.findViewById(R.id.searchButton);
-        if(user.getIsAdmin()){
+        if(user.getRole()== User.Role.ADMIN){
             searchUserGroup.setVisibility(View.VISIBLE);
 
             searchUserGroup.setOnClickListener(v -> {

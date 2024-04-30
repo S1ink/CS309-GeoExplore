@@ -66,7 +66,7 @@ public class UserGroupAdapter extends RecyclerView.Adapter<UserGroupAdapter.User
         }
         Log.d("UserGroupAdapter", "User: " + user);
 
-        if (user != null && user.getIsAdmin()) {
+        if (user != null && user.getRole()== User.Role.ADMIN) {
             Log.d("UserGroupAdapter", "User is admin, showing buttons.");
             holder.deleteButton.setVisibility(View.VISIBLE);
             holder.updateButton.setVisibility(View.VISIBLE);
