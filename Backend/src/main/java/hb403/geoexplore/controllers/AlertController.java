@@ -104,7 +104,29 @@ public class AlertController {
 	public @ResponseBody Set<AlertMarker> getAlertsWithinRect(@RequestBody Range range) {
 		if(range == null || range.isInvalid()) return null;
 		try {
-			final Set<AlertMarker> bounded = this.alert_repo.findSetWithin( range.getRect() );
+
+			System.out.printf(
+				"[ALERTS RECT SEARCH]: Recieved bounds object: {\n\tmin lat: %f,\n\tmin lon: %f,\n\tmax lat: %f\n\tmax lat: %f\n}\n",
+				range.min_latitude,
+				range.min_longitude,
+				range.max_latitude,
+				range.max_longitude
+			);
+
+			final Polygon rect = range.getRect();
+
+			System.out.printf(
+				"[ALERTS RECT SEARCH]: Computed search bounds:\n{\n\tWKT: %s\n}\n",
+				rect.toString()
+			);
+
+			final Set<AlertMarker> bounded = this.alert_repo.findSetWithin( rect );
+
+			System.out.printf(
+				"[ALERTS RECT SEARCH]: Recieved %d query results.",
+				bounded.size()
+			);
+
 			for(AlertMarker e : bounded) {
 				e.enforceLocationTable();
 			}
