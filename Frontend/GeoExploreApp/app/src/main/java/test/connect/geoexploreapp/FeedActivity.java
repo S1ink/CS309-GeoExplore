@@ -393,26 +393,27 @@ public class FeedActivity extends Fragment {
     }
 
     private void fetchAllImages() {
-        Log.e("fetchAllImages", "fetching images: " );
+        Log.d("fetchAllImages", "Fetching images from the server.");
 
         ImageApi imageApi = ApiClientFactory.GetImageApi();
         imageApi.listImageEntities().enqueue(new Callback<List<Image>>() {
             @Override
             public void onResponse(Call<List<Image>> call, Response<List<Image>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    Log.e("fetchAllImages", "fetching images: Successful" );
-
+                    Log.d("fetchAllImages", "Images fetched successfully.");
                     allImages.clear();
                     allImages.addAll(response.body());
+                    if (adapter != null) {
+                        adapter.notifyDataSetChanged();  // Notify any observers of the data change.
+                    }
                 } else {
-                    Log.e("fetchAllImages", "Failed to fetch images: " + response.message());
+                    Log.e("fetchAllImages", "Failed to fetch images: " + response.code() + " - " + response.message());
                 }
             }
 
             @Override
             public void onFailure(Call<List<Image>> call, Throwable t) {
-                Log.e("fetchAllImages", "API call failed: " + t.getMessage());
-
+                Log.e("fetchAllImages", "API call failed: " + t.getMessage(), t);
             }
         });
     }

@@ -3,23 +3,33 @@ package test.connect.geoexploreapp;
 import static android.app.PendingIntent.getActivity;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.io.IOException;
 import java.util.List;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import test.connect.geoexploreapp.api.ApiClientFactory;
+import test.connect.geoexploreapp.api.ReportedUserApi;
 import test.connect.geoexploreapp.api.UserApi;
+import test.connect.geoexploreapp.model.Comment;
+import test.connect.geoexploreapp.model.FeedItem;
 import test.connect.geoexploreapp.model.ReportedUser;
 import test.connect.geoexploreapp.model.User;
 
@@ -73,52 +83,148 @@ public class ReportedUserAdapter extends RecyclerView.Adapter<ReportedUserAdapte
             holder.report.append("Inappropriate Content, ");
         }
         if (holder.report.length() > 0) {
-            holder.report.setTextSize(holder.report.length() - 2);
+           // holder.report = new StringBuilder(holder.report.substring(0, reasons.length() - 2));
+
         }
 
-//
-//        // holder.commentUser.setText(commentUser.getName());
-//        holder.comment.setText(item.getComment());
-//
-//        boolean isUserCommenter = item.getUserId().equals(user.getId());
-//        boolean isAdmin =  user.getIsAdmin();
-//
-//        holder.reportButton.setVisibility(!isUserCommenter && showFeatures ? View.VISIBLE : View.GONE);
-//        holder.editButton.setVisibility(isUserCommenter && showFeatures? View.VISIBLE : View.GONE);
-//        holder.deleteButton.setVisibility((isUserCommenter || isAdmin ) &&showFeatures ? View.VISIBLE : View.GONE);
-//        holder.commentPostType.setVisibility(!showFeatures?View.VISIBLE : View.GONE);
-//        holder.commentPostType.setText("Comment made for a " + item.getPostType());
-//        holder.editButton.setOnClickListener(v -> {
-//            if (listener != null) {
-//                int pos = holder.getAdapterPosition();
-//                if(pos != RecyclerView.NO_POSITION) {
-//                    editCommentPrompt(v.getContext(), comments.get(pos), position);
-//                }
-//            }
-//        });
-//
-//        holder.deleteButton.setOnClickListener(v -> {
-//            if (listener != null) {
-//                int pos = holder.getAdapterPosition();
-//                Log.d("delete test", String.valueOf(pos));
-//                if(pos != RecyclerView.NO_POSITION) {
-//                    deleteCommentPrompt(v.getContext(), pos);
-//                }
-//            }
-//        });
-//
-//        holder.reportButton.setOnClickListener(v -> {
-//            User taggedUser = (User) holder.commentUser.getTag();
-//            if (listener != null&&taggedUser!=null) {
-//                int pos = holder.getAdapterPosition();
-//                Log.d("report test", String.valueOf(pos));
-//                if(pos != RecyclerView.NO_POSITION) {
-//                    reportCommentPrompt(v.getContext(),taggedUser, pos);
-//                }
-//            }
-//        });
+        holder.reportEdit.setOnClickListener(v->{
+            editReportPrompt(holder.itemView.getContext(), reportedUser);
+
+
+        });
+        holder.reportDelete.setOnClickListener(v->{
+            int pos = holder.getAdapterPosition();
+            deleteReportPrompt(holder.itemView.getContext(), reportedUser, pos);
+
+
+        });
+        holder.userBan.setOnClickListener(v->{
+            int pos = holder.getAdapterPosition();
+            banReportedUserPrompt(v.getContext(), reportedUser, pos);
+
+        });
+
+
 
     }
+
+    private void banReportedUserPrompt(Context context, ReportedUser reportedUser, int pos) {
+    AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Confirm Ban");
+        builder.setMessage("Are you sure you want to ban this user?");
+        builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                banUser(reportedUser.getId());
+            }
+        });
+        builder.setNegativeButton("Cancel", null);
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void banUser(Long id) {
+    }
+
+    private void deleteReportPrompt(Context context, ReportedUser reportedUser, int pos) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Confirm Delete");
+        builder.setMessage("Are you sure you want to delete this report?");
+        builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                deleteReport(reportedUser.getId(), pos);
+            }
+        });
+        builder.setNegativeButton("Cancel", null);
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+    }
+
+    private void deleteReport(Long id, int pos) {
+        ReportedUserApi reportedUserApi = ApiClientFactory.GetReportedUserApi();
+        reportedUserApi.deleteUserReport(id).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    ResponseBody responseMessage = response.body();
+                    allReportedUsers.remove(pos);
+                    notifyItemRemoved(pos);
+                    notifyItemRangeChanged(pos, allReportedUsers.size());
+                    Toast.makeText(context, "Report deleted successfully", Toast.LENGTH_SHORT).show();
+
+                } else {
+                    try {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "Unknown error";
+                        Toast.makeText(context, "Failed to delete report: " + errorBody, Toast.LENGTH_LONG).show();
+                    } catch (IOException e) {
+                        Toast.makeText(context, "Error parsing error body", Toast.LENGTH_LONG).show();
+                    }
+                }
+            }
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Toast.makeText(context, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.d("DeleteReport", "failed: " + t.getMessage());
+            }
+        });
+    }
+
+    private void editReportPrompt(Context context, ReportedUser reportedUser) {
+        LayoutInflater inflater = LayoutInflater.from(context);
+        View dialogView = inflater.inflate(R.layout.activity_report_user, null);
+        CheckBox harassmentCheck = dialogView.findViewById(R.id.harassment);
+        CheckBox misinformationCheck = dialogView.findViewById(R.id.missingInformation);
+        CheckBox spammingCheck = dialogView.findViewById(R.id.spamming);
+        CheckBox inappropriateContentCheck = dialogView.findViewById(R.id.inappropriateContent);
+
+        harassmentCheck.setChecked(reportedUser.getHarassment() != null && reportedUser.getHarassment());
+        misinformationCheck.setChecked(reportedUser.getMisinformation() != null && reportedUser.getMisinformation());
+        spammingCheck.setChecked(reportedUser.getSpamming() != null && reportedUser.getSpamming());
+        inappropriateContentCheck.setChecked(reportedUser.getInappropriateContent() != null && reportedUser.getInappropriateContent());
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setView(dialogView);
+        builder.setTitle("Edit Report");
+        builder.setPositiveButton("Update", (dialog, which) -> {
+            reportedUser.setHarassment(harassmentCheck.isChecked());
+            reportedUser.setMisinformation(misinformationCheck.isChecked());
+            reportedUser.setSpamming(spammingCheck.isChecked());
+            reportedUser.setInappropriateContent(inappropriateContentCheck.isChecked());
+            updateReportedUser(reportedUser);
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+        builder.create().show();
+    }
+
+    private void updateReportedUser(ReportedUser updatedReportedUser) {
+        ReportedUserApi reportedUserApi = ApiClientFactory.GetReportedUserApi();
+        reportedUserApi.updateReportedUser(updatedReportedUser).enqueue(new Callback<ReportedUser>() {
+            @Override
+            public void onResponse(Call<ReportedUser> call, Response<ReportedUser> response) {
+                if (response.isSuccessful()) {
+                    Log.d("UpdateReportedUser", "Report updated successfully.");
+                    notifyDataSetChanged();
+                    Toast.makeText(context, "Report updated successfully", Toast.LENGTH_SHORT).show();
+
+
+                } else {
+                    Log.e("UpdateReportedUser", "Failed to update report.");
+                    Toast.makeText(context, "Failed to update report", Toast.LENGTH_SHORT).show();
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ReportedUser> call, Throwable t) {
+                Log.e("UpdateReportedUser", "Error updating report: " + t.getMessage());
+                Toast.makeText(context, "Error updating report: " + t.getMessage(), Toast.LENGTH_LONG).show();
+
+            }
+        });
+    }
+
 
     private void getUserById(@NonNull ReportedUsersViewHolder holder, Long userId) {
         UserApi userApi = ApiClientFactory.GetUserApi();
@@ -159,7 +265,8 @@ public class ReportedUserAdapter extends RecyclerView.Adapter<ReportedUserAdapte
 
     static class ReportedUsersViewHolder extends RecyclerView.ViewHolder {
         TextView reportedUserName, report, reportedUserEmailId;
-        ImageButton reportEdit, reportDelete, userDelete;
+        ImageButton reportEdit, reportDelete;
+        Button userBan;
         ReportedUsersViewHolder(View itemView) {
             super(itemView);
             reportedUserName = itemView.findViewById(R.id.reportedUserName);
@@ -167,7 +274,7 @@ public class ReportedUserAdapter extends RecyclerView.Adapter<ReportedUserAdapte
             report = itemView.findViewById(R.id.report);
             reportEdit = itemView.findViewById(R.id.reportEdit);
             reportDelete = itemView.findViewById(R.id.reportDelete);
-            userDelete = itemView.findViewById(R.id.userDelete);
+            userBan = itemView.findViewById(R.id.userBan);
 
         }
     }

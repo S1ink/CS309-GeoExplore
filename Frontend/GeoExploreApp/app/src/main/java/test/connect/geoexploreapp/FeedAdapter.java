@@ -13,6 +13,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.net.Uri;
@@ -30,10 +31,15 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
@@ -117,7 +123,21 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
                        holder.obsImage.setVisibility(View.VISIBLE);
                        Glide.with(holder.itemView.getContext())
                                .load(imgToShow.getFilePath())
+                               .listener(new RequestListener<Drawable>() {
+                                   @Override
+                                   public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                                       Log.e("Glide", "Load failed", e);
+                                       return false;
+                                   }
+
+                                   @Override
+                                   public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                                       Log.d("Glide", "Resource ready from " + dataSource);
+                                       return false;
+                                   }
+                               })
                                .into(holder.obsImage);
+
                        if(allImages.get(i).getObservation().getCreator().getId()==user.getId()){//image owened by user
                            holder.deleteImage.setVisibility(View.VISIBLE);
                            holder.updateImage.setVisibility(View.VISIBLE);
@@ -126,10 +146,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
                                deleteImagePrompt(v, imgToShow, position);
                            });
                        }
-
-
-                       Log.d("help", "help");
-
 
                        break;
                    }

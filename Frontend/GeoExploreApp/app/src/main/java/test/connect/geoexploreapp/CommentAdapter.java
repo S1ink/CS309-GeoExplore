@@ -107,7 +107,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
 
     private void reportCommentPrompt(Context context, User commentUser, int position) {
         Comment comment = comments.get(position);
-        Log.d("testtttttttttttttt",commentUser.getName() );
+       // Log.d("testtttttttttttttt",commentUser.getName() );
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Report User");
 

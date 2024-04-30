@@ -87,11 +87,25 @@ public class ReportedUserActivity extends Fragment {
     private void searchReportedUserPrompt() {
         Context context = getActivity();
         if (context == null) return;
+        CharSequence[] options = {"Search by Report ID", "Search by Reported User's ID"};
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Select Search Method");
+        builder.setItems(options, (dialog, which) -> {
+            if (which == 0) {
+                showIdInputPrompt("Report ID", true);
+            } else {
+                showIdInputPrompt("Report User ID", false);
+            }
+        });
+        builder.setNegativeButton("Cancel", null);
+        builder.show();
+    }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle("Enter Reported User's ID: ");
+    private void showIdInputPrompt(String title, boolean isReportID) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Enter " + title);
 
-        final EditText input = new EditText(getActivity());
+        final EditText input = new EditText(getContext());
         input.setInputType(InputType.TYPE_CLASS_NUMBER);
         builder.setView(input);
 
@@ -100,11 +114,16 @@ public class ReportedUserActivity extends Fragment {
             try {
                 id = Long.parseLong(input.getText().toString());
             } catch (NumberFormatException e) {
-                Toast.makeText(getActivity(), "Please enter a valid ID.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), "Please enter a valid " + title + ".", Toast.LENGTH_SHORT).show();
+                return;
             }
 
             if (id != null) {
-                fetchReportedUserByID(id);
+                if (isReportID) {
+                    fetchReportedUserByReportID(id);
+                } else {
+                    fetchReportedUserByUserID(id);
+                }
             }
         });
         builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
@@ -112,26 +131,51 @@ public class ReportedUserActivity extends Fragment {
         builder.show();
     }
 
-    private void fetchReportedUserByID(Long id) {
+    private void fetchReportedUserByReportID(Long id) {
         ReportedUserApi reportedUserApi = ApiClientFactory.GetReportedUserApi();
-        reportedUserApi.getReported(id).enqueue(new Callback<ReportedUser>() {
+        reportedUserApi.getReportedById(id).enqueue(new Callback<ReportedUser>() {
             @Override
             public void onResponse(Call<ReportedUser> call, Response<ReportedUser> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     ReportedUser reportedUser = response.body();
-                    Log.d("fetchReportedUserByID", "Reported User fetched successfully for ID: " + id + response.body());
+                    Log.d("fetchReportedUserByReportID", "Reported User fetched successfully for ID: " + id + response.body());
                     showReportedUsersDetails(reportedUser);
 
                 } else {
                     Toast.makeText(getContext(), "Failed to fetch reported user details", Toast.LENGTH_SHORT).show();
-                    Log.e("fetchReportedUserByID", "Failed to fetch reported user. HTTP Status Code: " + response.code() + " Message: " + response.message());
+                    Log.e("fetchReportedUserByReportID", "Failed to fetch reported user. HTTP Status Code: " + response.code() + " Message: " + response.message());
                 }
             }
 
             @Override
             public void onFailure(Call<ReportedUser> call, Throwable t) {
                 Toast.makeText(getContext(), "Error fetching reported user details: " + t.getMessage(), Toast.LENGTH_LONG).show();
-                Log.e("fetchReportedUserByID", "API call failed: " + t.getMessage(), t);
+                Log.e("fetchReportedUserByReportID", "API call failed: " + t.getMessage(), t);
+            }
+        });
+
+    }
+
+    private void fetchReportedUserByUserID(Long id) {
+        ReportedUserApi reportedUserApi = ApiClientFactory.GetReportedUserApi();
+        reportedUserApi.getReported(id).enqueue(new Callback<ReportedUser>() {
+            @Override
+            public void onResponse(Call<ReportedUser> call, Response<ReportedUser> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    ReportedUser reportedUser = response.body();
+                    Log.d("fetchReportedUserByUserID", "Reported User fetched successfully for ID: " + id + response.body());
+                    showReportedUsersDetails(reportedUser);
+
+                } else {
+                    Toast.makeText(getContext(), "Failed to fetch reported user details", Toast.LENGTH_SHORT).show();
+                    Log.e("fetchReportedUserByUserID", "Failed to fetch reported user. HTTP Status Code: " + response.code() + " Message: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ReportedUser> call, Throwable t) {
+                Toast.makeText(getContext(), "Error fetching reported user details: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                Log.e("fetchReportedUserByUserID", "API call failed: " + t.getMessage(), t);
             }
         });
 
