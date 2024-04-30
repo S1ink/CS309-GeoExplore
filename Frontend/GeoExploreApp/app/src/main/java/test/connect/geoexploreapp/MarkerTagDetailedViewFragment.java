@@ -6,40 +6,40 @@ import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 
 import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import test.connect.geoexploreapp.api.ApiClientFactory;
 import test.connect.geoexploreapp.api.MarkerTagApi;
+import test.connect.geoexploreapp.model.EventMarker;
 import test.connect.geoexploreapp.model.MarkerTag;
+import test.connect.geoexploreapp.model.Observation;
+import test.connect.geoexploreapp.model.ReportMarker;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link MarkerTagDetailedViewFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class MarkerTagDetailedViewFragment extends Fragment {
 
     private static final String ARG_MARKER_TAG = "marker_tag";
     private MarkerTag markerTag;
+    private TextView nameTextView;
+    private LinearLayout linearLayoutMarkers;
 
 
     public MarkerTagDetailedViewFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     */
     public static MarkerTagDetailedViewFragment newInstance(MarkerTag markerTag) {
         MarkerTagDetailedViewFragment fragment = new MarkerTagDetailedViewFragment();
         Bundle args = new Bundle();
@@ -67,12 +67,13 @@ public class MarkerTagDetailedViewFragment extends Fragment {
 
 
         TextView idTextView = view.findViewById(R.id.idTextView);
-        TextView nameTextView = view.findViewById(R.id.nameTextView);
+        nameTextView = view.findViewById(R.id.nameTextView);
+        linearLayoutMarkers = view.findViewById(R.id.linearLayoutMarkers);
 
 
         if (markerTag != null) {
-            idTextView.setText(String.format("ID: %s", markerTag.getId()));
-            nameTextView.setText(String.format("Name: %s", markerTag.getName()));
+            idTextView.setText(String.format("Tag ID: %s", markerTag.getId()));
+            nameTextView.setText(String.format("Tag Name: %s", markerTag.getName()));
         }
 
         deleteButton.setOnClickListener(new View.OnClickListener() {
@@ -90,6 +91,10 @@ public class MarkerTagDetailedViewFragment extends Fragment {
         });
 
         backButton.setOnClickListener(v -> getParentFragmentManager().popBackStack());
+
+        fetchMarkers();
+
+
         return view;
     }
 
@@ -125,6 +130,7 @@ public class MarkerTagDetailedViewFragment extends Fragment {
                     public void onResponse(Call<Void> call, Response<Void> response) {
                         if (response.isSuccessful()) {
                             Toast.makeText(getActivity(), "Tag deleted", Toast.LENGTH_SHORT).show();
+                            getParentFragmentManager().popBackStack();
                         } else {
                             Toast.makeText(getActivity(), "Failed to delete tag", Toast.LENGTH_SHORT).show();
                         }
@@ -142,6 +148,7 @@ public class MarkerTagDetailedViewFragment extends Fragment {
     }
 
     private void updateTagByID(String newName) {
+        Log.d("MarkerTag", "" + markerTag.getId());
         String idString = "" + markerTag.getId();
 
         if (!idString.isEmpty() && !newName.isEmpty()) {
@@ -156,6 +163,7 @@ public class MarkerTagDetailedViewFragment extends Fragment {
                     public void onResponse(Call<MarkerTag> call, Response<MarkerTag> response) {
                         if (response.isSuccessful()) {
                             Toast.makeText(getActivity(), "Tag Updated", Toast.LENGTH_SHORT).show();
+                            nameTextView.setText(String.format("Name: %s", newName));
                         } else {
                             Toast.makeText(getActivity(), "Failed to update tag", Toast.LENGTH_SHORT).show();
                         }
@@ -174,5 +182,67 @@ public class MarkerTagDetailedViewFragment extends Fragment {
         }
     }
 
+    private void fetchMarkers() {
+        MarkerTagApi markerTagApi = ApiClientFactory.getMarkerTagApi();
+        Log.d("4/28", "Im inside fetchMarkers id is: " + markerTag.getId());
+        Long tagId = markerTag.getId();
+
+        markerTagApi.getReportsForTag(tagId).enqueue(new Callback<List<ReportMarker>>() {
+            @Override
+            public void onResponse(Call<List<ReportMarker>> call, Response<List<ReportMarker>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    for (ReportMarker report : response.body()) {
+                        addMarkerToLinearLayout("Report: " + report.getTitle());
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<ReportMarker>> call, Throwable t) {
+                Toast.makeText(getContext(), "Error fetching reports", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        markerTagApi.getEventsForTag(tagId).enqueue(new Callback<List<EventMarker>>() {
+            @Override
+            public void onResponse(Call<List<EventMarker>> call, Response<List<EventMarker>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    for (EventMarker event : response.body()) {
+                        addMarkerToLinearLayout("Event: " + event.getTitle());
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<EventMarker>> call, Throwable t) {
+                Toast.makeText(getContext(), "Error fetching events", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        markerTagApi.getObservationsForTag(tagId).enqueue(new Callback<List<Observation>>() {
+            @Override
+            public void onResponse(Call<List<Observation>> call, Response<List<Observation>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    for (Observation observation : response.body()) {
+                        addMarkerToLinearLayout("Observation: " + observation.getTitle());
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Observation>> call, Throwable t) {
+                Toast.makeText(getContext(), "Error fetching observations", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+    }
+
+    private void addMarkerToLinearLayout(String text) {
+        TextView textView = new TextView(getContext());
+        textView.setText(text);
+        textView.setTextSize(21);
+
+        linearLayoutMarkers.addView(textView);
+    }
 
 }

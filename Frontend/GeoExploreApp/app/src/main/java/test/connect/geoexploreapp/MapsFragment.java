@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
@@ -26,9 +27,14 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,6 +48,8 @@ import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
@@ -61,6 +69,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import android.location.Location;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -72,6 +81,7 @@ import com.google.android.gms.location.LocationServices;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import test.connect.geoexploreapp.api.AlertMarkerApi;
 import test.connect.geoexploreapp.api.ApiClientFactory;
 import test.connect.geoexploreapp.api.EventMarkerApi;
 import test.connect.geoexploreapp.api.MarkerTagApi;
@@ -81,10 +91,13 @@ import test.connect.geoexploreapp.api.SlimCallback;
 import test.connect.geoexploreapp.api.UserApi;
 import test.connect.geoexploreapp.model.AlertMarker;
 import test.connect.geoexploreapp.model.EventMarker;
+import test.connect.geoexploreapp.model.LocationProximity;
 import test.connect.geoexploreapp.model.MarkerTag;
 import test.connect.geoexploreapp.model.Observation;
+import test.connect.geoexploreapp.model.Range;
 import test.connect.geoexploreapp.model.ReportMarker;
 import test.connect.geoexploreapp.model.User;
+import test.connect.geoexploreapp.model.distanceLocation;
 import test.connect.geoexploreapp.websocket.AlertWebSocketManager;
 import test.connect.geoexploreapp.websocket.LocationWebSocketManager;
 import test.connect.geoexploreapp.websocket.WebSocketListener;
@@ -102,6 +115,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     private int reportIdStatus = 0; // For promptForReportID method. 1 to Read, 2 to Delete, 3 to Update
     private int eventIdStatus = 0; // For promptForEventID method. 1 to Read, 2 to Delete, 3 to Update
     private int observationIdStatus = 0; // For promptForReportID method. 1 to Read, 2 to Delete, 3 to Update
+    private double usersCurrentLatitude;
+    private double usersCurrentLongitude;
     private TextView reportUpdateTextView, statusMessage;
     private TextView eventUpdateTextView;
     private TextView observationUpdateTextView;
@@ -214,6 +229,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                         String jsonMessage = gson.toJson(locationData);
 
                         LocationWebSocketManager.getInstance().sendMessage(jsonMessage);
+                        usersCurrentLatitude = latitude;
+                        usersCurrentLongitude = longitude;
 
                         Log.d("MapsFragment", "Latitude: " + latitude + ", Longitude: " + longitude);
                     }
@@ -249,13 +266,23 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         observationUpdateTextView = view.findViewById(R.id.activity_maps_observation_update_text_view);
         statusMessage = view.findViewById(R.id.statusMessage);
 
-        FloatingActionButton fab = view.findViewById(R.id.fab_main);
-        fab.setOnClickListener(new View.OnClickListener() {
+        FloatingActionButton markerOpFab = view.findViewById(R.id.MarkerOperationsFab);
+        FloatingActionButton proximityMarkerFab = view.findViewById(R.id.MarkerProximityFab);
+        markerOpFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 showBottomSheetDialog();
             }
         });
+
+        proximityMarkerFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                proximityMarkerPopup();
+            }
+        });
+
+
 
         startLocationUpdates();
 
@@ -313,8 +340,25 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         UiSettings uiSettings = mMap.getUiSettings();
         uiSettings.setZoomControlsEnabled(true);
 
+        try {
+            boolean success = mMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(requireContext(), R.raw.map_style_json));
+            if (!success) {
+                Log.e("MapsFragment", "Style parsing failed.");
+            }
+        } catch (Resources.NotFoundException e) {
+            Log.e("MapsFragment", "Can't find style. Error: ", e);
+        }
+
+
         LatLng ames = new LatLng(42.026224,-93.646256);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ames,14));
+
+//        mMap.setOnCameraIdleListener(new GoogleMap.OnCameraIdleListener() {
+//            @Override
+//            public void onCameraIdle() {
+//                fetchMarkersWithinScreenBounds(true,true,true,true);
+//            }
+//        });
 
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
@@ -355,6 +399,411 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
     }
 
+
+    private void fetchMarkersWithinScreenBounds(boolean showAlerts, boolean showEvents, boolean showObservations, boolean showReports){
+        AlertMarkerApi alertApi = ApiClientFactory.getAlertMarkerApi();
+        EventMarkerApi eventMarkerApi = ApiClientFactory.getEventMarkerApi();
+        ObservationApi observationApi = ApiClientFactory.GetObservationApi();
+        ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
+        mMap.clear();
+
+
+        LatLngBounds currentScreenBounds = mMap.getProjection().getVisibleRegion().latLngBounds;
+        Log.d("4/29", "Im inside screen bouynds" + currentScreenBounds);
+
+        Range range = new Range();
+        range.setMin_latitude(currentScreenBounds.southwest.latitude);
+        range.setMin_longitude(currentScreenBounds.southwest.longitude);
+        range.setMax_latitude(currentScreenBounds.northeast.latitude);
+        range.setMax_longitude(currentScreenBounds.northeast.longitude);
+
+        if(showAlerts){
+            alertApi.getAlertsWithinRect(range).enqueue(new Callback<Set<AlertMarker>>() {
+                @Override
+                public void onResponse(Call<Set<AlertMarker>> call, Response<Set<AlertMarker>> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        Set<AlertMarker> alertSet = response.body();
+                        Log.d("4/29", "Alerts has a body response" + alertSet);
+                        List<AlertMarker> alertList = new ArrayList<>(alertSet);
+                        displayAlertsOnMap(alertList);
+                    }else{
+                        Toast.makeText(getContext(), "Failed to fetch alerts", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                @Override
+                public void onFailure(Call<Set<AlertMarker>> call, Throwable t) {
+                    Toast.makeText(getContext(), "Failed to fetch alerts", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        if(showEvents){
+            eventMarkerApi.getEventsWithinRect(range).enqueue(new Callback<Set<EventMarker>>() {
+                @Override
+                public void onResponse(Call<Set<EventMarker>> call, Response<Set<EventMarker>> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        Set<EventMarker> eventSet = response.body();
+                        List<EventMarker> eventList = new ArrayList<>(eventSet);
+                        displayEventsOnMap(eventList);
+                    }else{
+                        Toast.makeText(getContext(), "Failed to fetch events", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                @Override
+                public void onFailure(Call<Set<EventMarker>> call, Throwable t) {
+                    Toast.makeText(getContext(), "Failed to fetch events", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+
+        if(showObservations){
+            observationApi.getObservationsWithinRect(range).enqueue(new Callback<Set<Observation>>() {
+                @Override
+                public void onResponse(Call<Set<Observation>> call, Response<Set<Observation>> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        Set<Observation> observationSet = response.body();
+                        List<Observation> observationList = new ArrayList<>(observationSet);
+                        displayObservationsOnMap(observationList);
+                    }else{
+                        Toast.makeText(getContext(), "Failed to fetch observations", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                @Override
+                public void onFailure(Call<Set<Observation>> call, Throwable t) {
+                    Toast.makeText(getContext(), "Failed to fetch observations", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        if(showReports){
+            reportMarkerApi.getReportsWithinRect(range).enqueue(new Callback<Set<ReportMarker>>() {
+                @Override
+                public void onResponse(Call<Set<ReportMarker>> call, Response<Set<ReportMarker>> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        Set<ReportMarker> reportSet = response.body();
+                        List<ReportMarker> reportList = new ArrayList<>(reportSet);
+                        displayReportsOnMap(reportList);
+                    }else{
+                        Toast.makeText(getContext(), "Failed to fetch reports", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                @Override
+                public void onFailure(Call<Set<ReportMarker>> call, Throwable t) {
+                    Toast.makeText(getContext(), "Failed to fetch reports", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+    private void fetchMarkersWithinProximity(double latitude, double longitude, double range, boolean showAlerts, boolean showEvents, boolean showObservations, boolean showReports) {
+        AlertMarkerApi alertApi = ApiClientFactory.getAlertMarkerApi();
+        EventMarkerApi eventMarkerApi = ApiClientFactory.getEventMarkerApi();
+        ObservationApi observationApi = ApiClientFactory.GetObservationApi();
+        ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
+
+        LocationProximity locationProximity = new LocationProximity(latitude, longitude, range);
+
+        if(showAlerts) {
+            alertApi.getAlertsWithinProximitySorted(locationProximity).enqueue(new Callback<List<AlertMarker>>() {
+                @Override
+                public void onResponse(Call<List<AlertMarker>> call, Response<List<AlertMarker>> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        List<AlertMarker> alerts = response.body();
+                        displayAlertsOnMap(alerts);
+                    } else {
+                        Toast.makeText(getContext(), "Failed to fetch alerts", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<List<AlertMarker>> call, Throwable t) {
+                    Toast.makeText(getContext(), "Error fetching alerts: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        if(showEvents) {
+            eventMarkerApi.getEventsWithinProximitySorted(locationProximity).enqueue(new Callback<List<EventMarker>>() {
+                @Override
+                public void onResponse(Call<List<EventMarker>> call, Response<List<EventMarker>> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        List<EventMarker> events = response.body();
+                        displayEventsOnMap(events);
+                    } else {
+                        Log.d("FetchEventsProximity", "Error fetching events");
+                        Toast.makeText(getContext(), "Failed to fetch events", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<List<EventMarker>> call, Throwable t) {
+                    Log.d("FetchEventsProximity", "Error fetching events");
+                    Toast.makeText(getContext(), "Error fetching Events: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        if(showObservations) {
+            observationApi.getObservationsWithinProximitySorted(locationProximity).enqueue(new Callback<List<Observation>>() {
+                @Override
+                public void onResponse(Call<List<Observation>> call, Response<List<Observation>> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        List<Observation> observations = response.body();
+                        displayObservationsOnMap(observations);
+                    } else {
+                        Log.d("FetchEventsProximity", "Error fetching events");
+                        Toast.makeText(getContext(), "Failed to fetch events", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<List<Observation>> call, Throwable t) {
+                    Log.d("FetchObservationsProximity", "Error fetching observation");
+                    Toast.makeText(getContext(), "Error fetching Observation: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        if(showReports) {
+            reportMarkerApi.getReportsWithinProximitySorted(locationProximity).enqueue(new Callback<List<ReportMarker>>() {
+                @Override
+                public void onResponse(Call<List<ReportMarker>> call, Response<List<ReportMarker>> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        List<ReportMarker> reports = response.body();
+                        displayReportsOnMap(reports);
+                    } else {
+                        Log.d("FetchEventsProximity", "Error fetching events");
+                        Toast.makeText(getContext(), "Failed to fetch events", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<List<ReportMarker>> call, Throwable t) {
+                    Log.d("FetchReportsProximity", "Error fetching report");
+                    Toast.makeText(getContext(), "Error fetching Report: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+    }
+
+    private void displayAlertsOnMap(List<AlertMarker> alerts) {
+        AlertMarkerApi alertApi = ApiClientFactory.getAlertMarkerApi();
+
+        if (mMap != null) {
+            for (AlertMarker alert : alerts) {
+                LatLng alertLocation = new LatLng(alert.getIo_latitude(), alert.getIo_longitude());
+
+                alertApi.getDistanceToAlertById(alert.getId(), new distanceLocation(usersCurrentLatitude, usersCurrentLongitude)).enqueue(new Callback<Double>() {
+                    @Override
+                    public void onResponse(Call<Double> call, Response<Double> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            double distance = response.body();
+                            String snippetWithDistance = alert.getDescription() + " | " + String.format("%.2f", distance) + " miles";
+                            mMap.addMarker(new MarkerOptions()
+                                    .position(alertLocation)
+                                    .title(alert.getTitle())
+                                    .snippet(snippetWithDistance)
+                                    .icon(bitmapDescriptorFromVector(getContext(), R.drawable.baseline_crisis_alert_24)));
+                        } else {
+                            Toast.makeText(getContext(), "Failed to fetch distance for alert", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Double> call, Throwable t) {
+                        Toast.makeText(getContext(), "Error fetching distance for alert: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        }
+    }
+
+    private void displayEventsOnMap(List<EventMarker> events) {
+        EventMarkerApi eventMarkerApi = ApiClientFactory.getEventMarkerApi();
+        if (mMap != null) {
+            for (EventMarker event : events) {
+                LatLng eventLocation = new LatLng(event.getIo_latitude(), event.getIo_longitude());
+
+                eventMarkerApi.getDistanceToEventById(event.getId(), new distanceLocation(usersCurrentLatitude, usersCurrentLongitude)).enqueue(new Callback<Double>() {
+                    @Override
+                    public void onResponse(Call<Double> call, Response<Double> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            double distance = response.body();
+                            String snippetWithDistance =String.format("%.2f", distance) + " miles";
+                            mMap.addMarker(new MarkerOptions()
+                                    .position(eventLocation)
+                                    .title(event.getTitle())
+                                    .snippet(snippetWithDistance)
+                                    .icon(bitmapDescriptorFromVector(getContext(), R.drawable.baseline_celebration_24)));
+                        } else {
+                            Toast.makeText(getContext(), "Failed to fetch distance for event", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Double> call, Throwable t) {
+                        Toast.makeText(getContext(), "Error fetching distance for event: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        }
+    }
+
+    private void displayObservationsOnMap(List<Observation> observations) {
+        ObservationApi observationApi = ApiClientFactory.GetObservationApi();
+        if (mMap != null) {
+            for (Observation observation : observations) {
+                LatLng observationLocation = new LatLng(observation.getIo_latitude(), observation.getIo_longitude());
+
+                observationApi.getDistanceToObservationById(observation.getId(), new distanceLocation(usersCurrentLatitude, usersCurrentLongitude)).enqueue(new Callback<Double>() {
+                    @Override
+                    public void onResponse(Call<Double> call, Response<Double> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            double distance = response.body();
+                            String snippetWithDistance = observation.getDescription() + " | " + String.format("%.2f", distance) + " miles";
+                            mMap.addMarker(new MarkerOptions()
+                                    .position(observationLocation)
+                                    .title(observation.getTitle())
+                                    .snippet(snippetWithDistance)
+                                    .icon(bitmapDescriptorFromVector(getContext(), R.drawable.baseline_photo_camera_24)));
+                        } else {
+                            Toast.makeText(getContext(), "Failed to fetch distance for observation", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Double> call, Throwable t) {
+                        Toast.makeText(getContext(), "Error fetching distance for observation: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        }
+    }
+
+    private void displayReportsOnMap(List<ReportMarker> reports) {
+        ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
+        if (mMap != null) {
+            for (ReportMarker report : reports) {
+                LatLng eventLocation = new LatLng(report.getIo_latitude(), report.getIo_longitude());
+
+                reportMarkerApi.getDistanceToReportById(report.getId(), new distanceLocation(usersCurrentLatitude, usersCurrentLongitude)).enqueue(new Callback<Double>() {
+                    @Override
+                    public void onResponse(Call<Double> call, Response<Double> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            double distance = response.body();
+                            String snippetWithDistance = String.format("%.2f", distance) + " miles";
+                            mMap.addMarker(new MarkerOptions()
+                                    .position(eventLocation)
+                                    .title(report.getTitle())
+                                    .snippet(snippetWithDistance)
+                                    .icon(bitmapDescriptorFromVector(getContext(), R.drawable.baseline_report_24)));
+                        } else {
+                            Toast.makeText(getContext(), "Failed to fetch distance for report", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Double> call, Throwable t) {
+                        Toast.makeText(getContext(), "Error fetching distance for report: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        }
+    }
+
+
+    private void proximityMarkerPopup() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Show markers near me");
+
+        LinearLayout layout = new LinearLayout(getContext());
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(16, 16, 16, 16);
+
+        CheckBox alertsCheckBox = new CheckBox(getContext());
+        alertsCheckBox.setText("Alerts");
+        alertsCheckBox.setChecked(true);
+        layout.addView(alertsCheckBox);
+
+        CheckBox eventsCheckBox = new CheckBox(getContext());
+        eventsCheckBox.setText("Events");
+        eventsCheckBox.setChecked(true);
+        layout.addView(eventsCheckBox);
+
+        CheckBox observationsCheckBox = new CheckBox(getContext());
+        observationsCheckBox.setText("Observations");
+        observationsCheckBox.setChecked(true);
+        layout.addView(observationsCheckBox);
+
+        CheckBox reportsCheckBox = new CheckBox(getContext());
+        reportsCheckBox.setText("Reports");
+        reportsCheckBox.setChecked(true);
+        layout.addView(reportsCheckBox);
+
+        EditText rangeInput = new EditText(getContext());
+        rangeInput.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        rangeInput.setHint("Enter range (0.5 - 10 miles)");
+        layout.addView(rangeInput);
+
+        RadioGroup searchModeGroup = new RadioGroup(getContext());
+        searchModeGroup.setOrientation(LinearLayout.HORIZONTAL);
+
+        RadioButton useRange = new RadioButton(getContext());
+        useRange.setText("Use Range");
+        useRange.setId(View.generateViewId());
+        useRange.setChecked(true);
+
+        RadioButton useScreenBounds = new RadioButton(getContext());
+        useScreenBounds.setText("Use Screen Bounds");
+        useScreenBounds.setId(View.generateViewId());
+
+        searchModeGroup.addView(useRange);
+        searchModeGroup.addView(useScreenBounds);
+        layout.addView(searchModeGroup);
+
+        builder.setView(layout);
+
+        builder.setPositiveButton("Show", (dialog, which) -> {
+            boolean useRangeSelected = useRange.isChecked();
+            String inputText = rangeInput.getText().toString();
+            float range = 0.5f;
+
+            if (useRangeSelected) {
+                try {
+                    range = Float.parseFloat(inputText);
+                    if (range < 0.5f || range > 10f) {
+                        throw new NumberFormatException("Range out of bounds");
+                    }
+                } catch (NumberFormatException ex) {
+                    Toast.makeText(getContext(), "Please enter a valid range between 0.5 and 10 miles", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            }
+
+            boolean showAlerts = alertsCheckBox.isChecked();
+            boolean showEvents = eventsCheckBox.isChecked();
+            boolean showObservations = observationsCheckBox.isChecked();
+            boolean showReports = reportsCheckBox.isChecked();
+
+            if(useRangeSelected){
+                // show all marrkers from the users current gps position
+                fetchMarkersWithinProximity(usersCurrentLatitude, usersCurrentLongitude, range,showAlerts,showEvents,showObservations,showReports);
+            } else{
+                fetchMarkersWithinScreenBounds(showAlerts,showEvents,showObservations,showReports);
+            }
+
+        });
+
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+
+        builder.show();
+    }
+
+
+
+
     public void showEmergencyNotification(String title, String message, double latitude, double longitude) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
                 .setTitle(title)
@@ -362,7 +811,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                 .setPositiveButton("Show on map", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        displayEmergencyOnMap(latitude, longitude, title);
+                        displayEmergencyOnMap(latitude, longitude, title, message);
                     }
                 })
                 .setNegativeButton("Dismiss", null)
@@ -377,13 +826,14 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         });
     }
 
-    public void displayEmergencyOnMap(double latitude, double longitude, String emergencyTitle){
+    public void displayEmergencyOnMap(double latitude, double longitude, String emergencyTitle, String emergencyMessage){
 
         LatLng emergencyLocation = new LatLng(latitude, longitude);
 
         mMap.addMarker(new MarkerOptions()
                 .position(emergencyLocation)
                 .title(emergencyTitle)
+                .snippet(emergencyMessage)
                 .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_crisis_alert_24)));
 
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(emergencyLocation, 14));
@@ -402,7 +852,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                 // create new user marker if new
                 Marker newMarker = mMap.addMarker(new MarkerOptions()
                         .position(userLocation)
-                        .icon(bitmapDescriptorFromVector(getContext(), R.drawable.baseline_person_24)));
+                        .icon(bitmapDescriptorFromVector(getContext(), R.drawable.baseline_purple_person_24)));
 
                 userMarkersMap.put(userId, newMarker);
             }
@@ -929,6 +1379,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                     mMap.addMarker(new MarkerOptions()
                             .position(position)
                             .title(obs.getId() + " " + obs.getTitle())
+                            .snippet(obs.getDescription())
                             .icon(bitmapDescriptorFromVector(getContext(), R.drawable.baseline_photo_camera_24)));
                     showStatus("Observation created successfully!");
                 } else {
@@ -969,6 +1420,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                 mMap.addMarker(new MarkerOptions()
                         .position(position)
                         .title(obj.getId() + " " + obj.getTitle())
+                        .snippet(obj.getDescription())
                         .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_photo_camera_24)));
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 10));
                 showStatus("Observation found successfully!");
@@ -1017,8 +1469,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                 Toast.makeText(getActivity(), "Error deleting report", Toast.LENGTH_SHORT).show();
             }
         });
-
     }
+
     private void displayAllObservations() {
         ObservationApi observationApi = ApiClientFactory.GetObservationApi();
 
@@ -1029,6 +1481,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                 mMap.addMarker(new MarkerOptions()
                         .position(position)
                         .title(ob.getId() + " " + ob.getTitle())
+                        .snippet(ob.getDescription())
                         .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_photo_camera_24)));
             }
         }, "GetAllObservations"));
