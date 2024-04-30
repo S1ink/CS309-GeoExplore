@@ -69,13 +69,14 @@ public class MainActivity extends AppCompatActivity {
                 ProfileFragment profileFragment = ProfileFragment.newInstance(user);
                 replaceFragment(profileFragment);
             } else if (itemId == R.id.maps) {
+                MapsFragment mapsFragment = MapsFragment.newInstance(user);
                 replaceFragment(new MapsFragment());
             } else if(itemId == R.id.show_feed){
                 CommentWebSocketManager.getInstance().connectWebSocket("ws://coms-309-005.class.las.iastate.edu:8080/comments/"+user.getId()); //URL ADD LATER
                 FeedActivity feedActivity = FeedActivity.newInstance(user);
                 replaceFragment(feedActivity);
             } else if (itemId == R.id.settings) {
-                SettingsFragment settingsFragment = SettingsFragment.newInstance(user.getIsAdmin());
+                SettingsFragment settingsFragment = SettingsFragment.newInstance(user.getRole()== User.Role.ADMIN);
                 replaceFragment(settingsFragment);
             }else if(itemId == R.id.usergroups){
                 UserGroupActivity userGroupsFragment = UserGroupActivity.newInstance(user);

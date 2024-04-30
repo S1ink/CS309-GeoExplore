@@ -16,6 +16,13 @@ public class User  implements Serializable {
 
     public User() {
     }
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
 
     public long getId() {
         return id;
@@ -57,13 +64,12 @@ public class User  implements Serializable {
         this.encryptedPassword = encryptedPassword;
     }
 
-    public boolean getIsAdmin() {
-        return isAdmin;
+    public double getIo_latitude() {
+        return io_latitude;
     }
 
-    public void setIsAdmin(boolean isAdmin) {
-
-        this.isAdmin = isAdmin;
+    public void setIo_latitude(double io_latitude) {
+        this.io_latitude = io_latitude;
     }
 
     public double getIo_latitude() {

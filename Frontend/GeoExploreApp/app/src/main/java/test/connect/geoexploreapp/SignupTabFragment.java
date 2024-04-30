@@ -68,8 +68,13 @@ public class SignupTabFragment extends Fragment {
                     User newUser = new User();
                     newUser.setName(fullName);
                     newUser.setEmailId(email);
-                    newUser.setIsAdmin(isAdmin);
                     newUser.setPassword(password);
+                    if(isAdmin){
+                        newUser.setRole(User.Role.ADMIN);
+                    }else{
+                        newUser.setRole(User.Role.USER);
+
+                    }
 
                     createUserIfEmailNotExists(newUser);
                 }

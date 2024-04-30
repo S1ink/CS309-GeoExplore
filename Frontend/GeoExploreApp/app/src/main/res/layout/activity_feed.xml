@@ -40,10 +40,21 @@ android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
-                android:layout_marginEnd="48dp"
+                android:layout_marginEnd="45dp"
                 android:layout_marginTop="10dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/baseline_remove_red_eye_24"
+                app:tint="@color/white" />
+
+            <ImageButton
+                android:id="@+id/searchImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="82dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/baseline_image_search_24"
                 app:tint="@color/white" />
 
             <ImageButton

@@ -41,4 +41,7 @@
         android:inputType="textMultiLine"
         android:background="@drawable/edittext_bkg"/>
 
+
+
+
 </LinearLayout>

@@ -1,5 +1,6 @@
 package test.connect.geoexploreapp;
 
+import static org.json.JSONObject.NULL;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -11,9 +12,11 @@ import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
+import android.net.Uri;
 import android.os.Bundle;
 
-import androidx.core.app.ActivityCompat;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -61,6 +64,7 @@ import com.google.gson.JsonSyntaxException;
 
 import org.java_websocket.handshake.ServerHandshake;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -78,12 +82,17 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import test.connect.geoexploreapp.api.AlertMarkerApi;
 import test.connect.geoexploreapp.api.ApiClientFactory;
 import test.connect.geoexploreapp.api.EventMarkerApi;
+import test.connect.geoexploreapp.api.ImageApi;
 import test.connect.geoexploreapp.api.MarkerTagApi;
 import test.connect.geoexploreapp.api.ObservationApi;
 import test.connect.geoexploreapp.api.ReportMarkerApi;
@@ -91,7 +100,7 @@ import test.connect.geoexploreapp.api.SlimCallback;
 import test.connect.geoexploreapp.api.UserApi;
 import test.connect.geoexploreapp.model.AlertMarker;
 import test.connect.geoexploreapp.model.EventMarker;
-import test.connect.geoexploreapp.model.LocationProximity;
+import test.connect.geoexploreapp.model.Image;
 import test.connect.geoexploreapp.model.MarkerTag;
 import test.connect.geoexploreapp.model.Observation;
 import test.connect.geoexploreapp.model.Range;
@@ -131,6 +140,28 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     public MapsFragment() {
 
     }
+    public static MapsFragment newInstance(User user ) {
+        MapsFragment fragment = new MapsFragment();
+        args = new Bundle();
+        args.putSerializable("UserObject", user);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mFilePickerLauncher = registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
+            if (uri != null) {
+                selectedUri = uri;
+                uploadImageObservation.setText("Image selected: "+ uri.getLastPathSegment());
+                Log.d("File URI", "Selected File URI: " + uri.toString());
+
+            }
+        });
+    }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -240,7 +271,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map);
+        if (getArguments() != null) {
 
+            user = (User) getArguments().getSerializable("UserObject");
+        }
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
@@ -389,13 +423,14 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
             }
         });
-
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
             public void onMapLongClick(LatLng latLng) {
                 showCreatePrompt(latLng);
             }
         });
+
+
 
     }
 
@@ -916,6 +951,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     }
 
     private void showAddDialog(LatLng latLng, String type) {
+
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.activity_forms, null);
 
@@ -942,15 +978,14 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                         String markerTagsInput = editTextMarkerTag.getText().toString().trim();
 
                         List<String> markerTags = parseMarkerTags(markerTagsInput);
-                        if (title.isEmpty()) {
-                            editTextTitle.setError("Title cannot be empty");
-                            return;
-                        }
+
                         if("Report".equals(type)){
                             createNewReport(latLng, title, markerTags);
 
                         }else if("Event".equals(type)){
+
                             createNewEvent(latLng, title, markerTags);
+
 
                         }else{
                             createNewObservation(latLng, title,description, markerTags);
@@ -966,9 +1001,17 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                             }
                         });
 
+
         AlertDialog dialog = builder.create();
         dialog.show();
     }
+
+    private void openFileExplorer() {
+        mFilePickerLauncher.launch("image/*");
+
+    }
+
+
 
     private List<String> parseMarkerTags(String input) {
         List<String> markerTags = new ArrayList<>();
@@ -985,11 +1028,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     }
 
     private void showBottomSheetDialog() {
-
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(getActivity());
         bottomSheetDialog.setContentView(R.layout.bottom_sheet_menu);
-
-
 
         Button btnReportRead = bottomSheetDialog.findViewById(R.id.btn_report_read);
         Button btnReportUpdate = bottomSheetDialog.findViewById(R.id.btn_report_update);
@@ -1252,7 +1292,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     // Report CRUDL
     private void createNewReport(final LatLng latLng, String reportTitle, List<String> markerTags) {
         ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
-
+        if (reportTitle == null || reportTitle.trim().isEmpty()) {
+            showStatus("Need Title for Report.");
+            return;
+        }
         ReportMarker newReportMarker = new ReportMarker();
         newReportMarker.setIo_latitude(latLng.latitude);
         newReportMarker.setIo_longitude(latLng.longitude);
@@ -1361,7 +1404,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     // Observation CRUDL
     private void createNewObservation(final LatLng latLng, String observationTitle, String observationDescription, List<String> markerTags) {
         ObservationApi observationApi = ApiClientFactory.GetObservationApi();
-
+        if (observationTitle == null || observationTitle.trim().isEmpty()) {
+            showStatus("Need Title for Observation.");
+            return;
+        }
         Observation observation = new Observation();
         observation.setIo_latitude(latLng.latitude);
         observation.setIo_longitude(latLng.longitude);
@@ -1382,18 +1428,105 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                             .snippet(obs.getDescription())
                             .icon(bitmapDescriptorFromVector(getContext(), R.drawable.baseline_photo_camera_24)));
                     showStatus("Observation created successfully!");
+                    UploadImagePrompt(obs);
                 } else {
-                   Log.d("save obs fail", "failed " + response.errorBody());
+                    Log.d("save obs fail", "failed " + response.errorBody());
                 }
+
 
             }
 
             @Override
             public void onFailure(Call<Observation> call, Throwable t) {
-                Toast.makeText(getContext(),"Error: " + t.getMessage(),Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Error: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
+    }
 
+    private void UploadImagePrompt(Observation obs) {
+        Log.d("OBS ID", String.valueOf(obs.getPostID()));
+            LayoutInflater inflater = getActivity().getLayoutInflater();
+            View view = inflater.inflate(R.layout.activity_image, null);
+
+             uploadImageObservation = view.findViewById(R.id.uploadImage);
+            uploadImageObservation.setOnClickListener(v -> openFileExplorer());
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setView(view)
+                    .setTitle("Observation created! Do you want to add an image?")
+                    .setPositiveButton("Upload", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            if(selectedUri!=NULL) {
+
+                                UploadImage(selectedUri, obs);
+                            }else{
+                                Toast.makeText(getActivity(), "No Uri Selected", Toast.LENGTH_SHORT).show();
+
+                            }
+
+
+                        }
+                    })
+                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.cancel();
+                        }
+                    });
+
+
+
+            AlertDialog dialog = builder.create();
+            dialog.show();
+
+
+    }
+
+    private void UploadImage(Uri fileUri, Observation imgForObs) {
+        String filePath = FileUtils.createCopyFromUri(getContext(), fileUri);
+
+        if (filePath == null) {
+            Log.e("UploadImage", "Failed to get file path from URI");
+            return;
+        }
+
+        File file = new File(filePath);
+        Log.d("UploadImage", "Starting upload for file: " + filePath);
+
+        // Check if file is too large
+        long fileSizeInMB = file.length() / (1024 * 1024);
+        Log.e("UploadImage", "File size (" + fileSizeInMB + "MB)");
+
+        if (fileSizeInMB > 1) {
+            Log.e("UploadImage", "File size (" + fileSizeInMB + "MB) exceeds the maximum limit.");
+            return;
+        }
+
+        RequestBody requestFile = RequestBody.create(MediaType.parse("image/jpeg"), file);
+        MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getName(), requestFile);
+
+        ImageApi imageApi = ApiClientFactory.GetImageApi();
+        imageApi.observationFileUpload(body, imgForObs.getPostID(), "OBSERVATION").enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    Log.d("UploadImage", "Success: " + response.body());
+                } else {
+                    Log.e("UploadImage", "Upload failed with response code: " + response.code());
+                    try {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "No error body";
+                        Log.e("UploadImage", "Upload failed with error: " + errorBody);
+                    } catch (IOException e) {
+                        Log.e("UploadImage", "Error reading error body", e);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.e("UploadImage", "Upload failed", t);
+            }
+        });
     }
 
     private void showStatus(String s) {
@@ -1412,9 +1545,12 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     private void displayObservationByID(Long id) {
         ObservationApi observationApi = ApiClientFactory.GetObservationApi();
 
-        observationApi.getObs(id).enqueue(new SlimCallback<>(obj -> {
-            if (obj != null) {
-                LatLng position = new LatLng(obj.getIo_latitude(), obj.getIo_longitude());
+        observationApi.getObs(id).enqueue(new Callback<Observation>() {
+            @Override
+            public void onResponse(Call<Observation> call, Response<Observation> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Observation obj = response.body();
+                    LatLng position = new LatLng(obj.getIo_latitude(), obj.getIo_longitude());
 
                 mMap.clear();
                 mMap.addMarker(new MarkerOptions()
@@ -1425,7 +1561,13 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 10));
                 showStatus("Observation found successfully!");
             }
-        }, "getObservationByID"));
+
+            @Override
+            public void onFailure(Call<Observation> call, Throwable t) {
+                showStatus("Failed to retrieve data: " + t.getMessage());
+                showStatus("Observation ID Not Found!");
+            }
+        });
     }
     private void updateExistingObservationByID(Long id, String newTitle, LatLng latLng, String newDescription) {
         ObservationApi observationApi = ApiClientFactory.GetObservationApi();
@@ -1489,14 +1631,17 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
     // Event CRUDL
     private void createNewEvent(final LatLng latLng, String eventTitle, List<String> markerTags) {
-        EventMarkerApi reportMarkerApi = ApiClientFactory.getEventMarkerApi();
-
+        EventMarkerApi eventMarkerApi = ApiClientFactory.getEventMarkerApi();
+        if (eventTitle == null || eventTitle.trim().isEmpty()) {
+            showStatus("Need Title for Event.");
+            return;
+        }
         EventMarker newEventMarker = new EventMarker();
         newEventMarker.setIo_latitude(latLng.latitude);
         newEventMarker.setIo_longitude(latLng.longitude);
         newEventMarker.setCreator(loggedInUser);
         newEventMarker.setTitle(eventTitle);
-        reportMarkerApi.addEvent(newEventMarker).enqueue(new Callback<EventMarker>() {
+        eventMarkerApi.addEvent(newEventMarker).enqueue(new Callback<EventMarker>() {
             @Override
             public void onResponse(Call<EventMarker> call, Response<EventMarker> response) {
                 if (response.isSuccessful()) {
@@ -1509,15 +1654,14 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                             .icon(bitmapDescriptorFromVector(getContext(),R.drawable.baseline_celebration_24)));
                     showStatus("Event created successfully!");
 
-                } else {
-                    Log.d("save report fail", "failed " + response.errorBody());
-
+                }  else {
+                    showStatus("Failed to create event: " + response.errorBody()); // Display error from server if creation failed
                 }
             }
 
             @Override
             public void onFailure(Call<EventMarker> call, Throwable t) {
-                Toast.makeText(getContext(),"Error: " + t.getMessage(),Toast.LENGTH_LONG).show();
+                showStatus("Error: " + t.getMessage()); // Show error message on failure to contact server
 
             }
         });
