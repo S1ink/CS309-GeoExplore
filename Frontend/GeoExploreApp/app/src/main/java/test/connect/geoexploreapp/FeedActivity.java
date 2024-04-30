@@ -98,7 +98,7 @@ public class FeedActivity extends Fragment{
             user = (User) getArguments().getSerializable("UserObject");
         }
 
-        if(user.getIsAdmin()){
+        if(user.getRole()== User.Role.ADMIN){
             viewAllCommentsButton.setVisibility(View.VISIBLE);
             searchComment.setVisibility(View.VISIBLE);
             searchImage.setVisibility(View.VISIBLE);

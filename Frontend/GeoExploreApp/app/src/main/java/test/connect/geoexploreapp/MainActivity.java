@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
                 FeedActivity feedActivity = FeedActivity.newInstance(user);
                 replaceFragment(feedActivity);
             } else if (itemId == R.id.settings) {
-                SettingsFragment settingsFragment = SettingsFragment.newInstance(user.getIsAdmin());
+                SettingsFragment settingsFragment = SettingsFragment.newInstance(user.getRole()== User.Role.ADMIN);
                 replaceFragment(settingsFragment);
             }else if(itemId == R.id.usergroups){
                 UserGroupActivity userGroupsFragment = UserGroupActivity.newInstance(user);

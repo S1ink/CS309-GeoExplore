@@ -98,10 +98,10 @@ public class ProfileFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
         if (getArguments() != null) {
-            fetchAndSetProfileImage();
-            user = (User) getArguments().getSerializable("UserObject");
 
-            Log.d("ProfileActivity", "isAdmin: " + user.getIsAdmin());
+            user = (User) getArguments().getSerializable("UserObject");
+            fetchAndSetProfileImage();
+            Log.d("ProfileActivity", "isAdmin: " + (user.getRole()== User.Role.ADMIN));
 
             TextView userNameDisplay = view.findViewById(R.id.userNameDisplay);
             TextView userEmailDisplay = view.findViewById(R.id.userEmailDisplay);

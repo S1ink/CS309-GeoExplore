@@ -66,7 +66,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         holder.comment.setText(item.getComment());
 
         boolean isUserCommenter = item.getUserId().equals(user.getId());
-        boolean isAdmin =  user.getIsAdmin();
+        boolean isAdmin =  user.getRole()== User.Role.ADMIN;
 
         holder.reportButton.setVisibility(!isUserCommenter && showFeatures ? View.VISIBLE : View.GONE);
         holder.editButton.setVisibility(isUserCommenter && showFeatures? View.VISIBLE : View.GONE);
