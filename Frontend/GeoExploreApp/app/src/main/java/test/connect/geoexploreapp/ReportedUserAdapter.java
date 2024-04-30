@@ -28,8 +28,6 @@ import retrofit2.Response;
 import test.connect.geoexploreapp.api.ApiClientFactory;
 import test.connect.geoexploreapp.api.ReportedUserApi;
 import test.connect.geoexploreapp.api.UserApi;
-import test.connect.geoexploreapp.model.Comment;
-import test.connect.geoexploreapp.model.FeedItem;
 import test.connect.geoexploreapp.model.ReportedUser;
 import test.connect.geoexploreapp.model.User;
 
@@ -115,7 +113,7 @@ public class ReportedUserAdapter extends RecyclerView.Adapter<ReportedUserAdapte
         builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                banUser(reportedUser.getId());
+                banUser(reportedUser.getId(), pos);
             }
         });
         builder.setNegativeButton("Cancel", null);
@@ -123,7 +121,33 @@ public class ReportedUserAdapter extends RecyclerView.Adapter<ReportedUserAdapte
         dialog.show();
     }
 
-    private void banUser(Long id) {
+    private void banUser(Long id, int pos) {
+        ReportedUserApi reportedUserApi = ApiClientFactory.GetReportedUserApi();
+        reportedUserApi.deleteUser(id).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    ResponseBody responseMessage = response.body();
+                    allReportedUsers.remove(pos);
+                    notifyItemRemoved(pos);
+                    notifyItemRangeChanged(pos, allReportedUsers.size());
+                    Toast.makeText(context, "Report and User deleted successfully", Toast.LENGTH_SHORT).show();
+
+                } else {
+                    try {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "Unknown error";
+                        Toast.makeText(context, "Failed to delete report: " + errorBody, Toast.LENGTH_LONG).show();
+                    } catch (IOException e) {
+                        Toast.makeText(context, "Error parsing error body", Toast.LENGTH_LONG).show();
+                    }
+                }
+            }
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Toast.makeText(context, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Log.d("DeleteReport", "failed: " + t.getMessage());
+            }
+        });
     }
 
     private void deleteReportPrompt(Context context, ReportedUser reportedUser, int pos) {
