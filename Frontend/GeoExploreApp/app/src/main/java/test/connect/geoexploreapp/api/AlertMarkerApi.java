@@ -11,8 +11,7 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
 import test.connect.geoexploreapp.model.AlertMarker;
-import test.connect.geoexploreapp.model.EventMarker;
-import test.connect.geoexploreapp.model.Location;
+import test.connect.geoexploreapp.model.distanceLocation;
 import test.connect.geoexploreapp.model.LocationProximity;
 import test.connect.geoexploreapp.model.LocationRange;
 import test.connect.geoexploreapp.model.Range;
@@ -43,5 +42,5 @@ public interface AlertMarkerApi {
     @POST("geomap/alerts/within/rect/sorted")
     Call<List<AlertMarker>> getProxSortedAlertsWithinRect(@Body LocationRange range);
     @POST("geomap/alerts/{id}/distance")
-    Call<Double> getDistanceToAlertById(@Path("id") Long id, @Body Location src);
+    Call<Double> getDistanceToAlertById(@Path("id") Long id, @Body distanceLocation src);
 }

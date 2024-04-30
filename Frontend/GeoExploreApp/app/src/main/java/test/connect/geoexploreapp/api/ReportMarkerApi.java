@@ -10,11 +10,9 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
-import test.connect.geoexploreapp.model.EventMarker;
-import test.connect.geoexploreapp.model.Location;
+import test.connect.geoexploreapp.model.distanceLocation;
 import test.connect.geoexploreapp.model.LocationProximity;
 import test.connect.geoexploreapp.model.LocationRange;
-import test.connect.geoexploreapp.model.Observation;
 import test.connect.geoexploreapp.model.Range;
 import test.connect.geoexploreapp.model.ReportMarker;
 
@@ -53,5 +51,5 @@ public interface ReportMarkerApi {
     Call<List<ReportMarker>> getProxSortedReportsWithinRect(@Body LocationRange range);
 
     @POST("geomap/reports/{id}/distance")
-    Call<Double> getDistanceToReportById(@Path("id") Long id, @Body Location src);
+    Call<Double> getDistanceToReportById(@Path("id") Long id, @Body distanceLocation src);
 }

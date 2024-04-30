@@ -1,8 +1,13 @@
 package test.connect.geoexploreapp.model;
 
-public class Location {
+public class distanceLocation {
     public double latitude;
     public double longitude;
+
+    public distanceLocation(double latitude, double longitude) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
 
     public double getLatitude() {
         return latitude;
