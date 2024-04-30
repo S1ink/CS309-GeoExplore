@@ -1,9 +1,5 @@
 package test.connect.geoexploreapp;
-
-import static android.app.PendingIntent.getActivity;
-import static androidx.activity.result.ActivityResultCallerKt.registerForActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 
 import static androidx.activity.result.ActivityResultCallerKt.registerForActivityResult;
 import static org.json.JSONObject.NULL;
@@ -28,7 +24,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -45,10 +40,14 @@ import com.google.gson.JsonSyntaxException;
 
 import org.java_websocket.handshake.ServerHandshake;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -79,12 +78,12 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     private ActivityResultLauncher<String> mFilePickerLauncher;
 
 
-    public FeedAdapter(List<FeedItem> items, List<Image> allImages, User user, Context context) {
+    public FeedAdapter(List<FeedItem> items, List<Image> allImages, User user, Context context,  ActivityResultLauncher<String> mFilePickerLauncher) {
         this.items = items;
         this.user=user;
         this.context = context;
         this.allImages = allImages;
-      //  this.mFilePickerLauncher = filePickerLauncher;
+        this.mFilePickerLauncher = mFilePickerLauncher;
         WebSocketManager.getInstance().setWebSocketListener(this);
 
     }
@@ -93,14 +92,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     @Override
     public FeedViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.feed_item, parent, false);
-//        mFilePickerLauncher = registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
-//            if (uri != null) {
-//                selectedUri = uri;
-//                uploadImageObservation.setText("Image selected: "+ uri.getLastPathSegment());
-//                Log.d("File URI", "Selected File URI: " + uri.toString());
-//
-//            }
-//        });
+
         return new FeedViewHolder(view);
     }
 
@@ -145,6 +137,9 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
                            holder.deleteImage.setOnClickListener(v -> {
                                deleteImagePrompt(v, imgToShow, position);
                            });
+                           holder.updateImage.setOnClickListener(v -> {
+                               UpdateImagePrompt(imgToShow, position);
+                           });
                        }
 
                        break;
@@ -178,11 +173,80 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
                 Log.d("item check", String.valueOf(position));
             }
         });
-        holder.updateImage.setOnClickListener(v -> {
-            upateImagePrompt(v);
-        });
+
 
     }
+
+    private void UpdateImagePrompt(Image imgToShow, int position) {
+        LayoutInflater inflater = LayoutInflater.from(context);
+        View view = inflater.inflate(R.layout.activity_image, null);
+
+        uploadImageObservation = view.findViewById(R.id.uploadImage);
+        uploadImageObservation.setOnClickListener(v -> openFileExplorer());
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setView(view)
+                .setTitle("Do you want to update the image?")
+                .setPositiveButton("Update", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if(selectedUri!=NULL) {
+                            UploadImage(selectedUri, imgToShow, position);
+                        }else{
+                            Toast.makeText(context, "No Uri Selected", Toast.LENGTH_SHORT).show();
+
+                        }
+
+
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+
+
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void UploadImage(Uri selectedUri, Image imgToShow, int position) {
+        String filePath = FileUtils.createCopyFromUri(context, selectedUri);
+        if (filePath == null) {
+            Toast.makeText(context, "Invalid image path", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        File file = new File(filePath);
+        RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
+        MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getName(), requestFile);
+
+        ImageApi imageApi = ApiClientFactory.GetImageApi();
+        imageApi.imageUpdate(body, imgToShow.getId()).enqueue(new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                if (response.isSuccessful()) {
+                    Log.d("Image Update", "Image updated successfully");
+                    Toast.makeText(context, "Image updated successfully!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Log.e("Image Update", "Failed to update image: " + response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
+                Log.e("Image Update", "Error updating image", t);
+            }
+        });
+    }
+
+    private void openFileExplorer() {
+        if (mFilePickerLauncher != null) {
+            mFilePickerLauncher.launch("image/*");
+        }
+    }
+
 
     private void deleteImagePrompt(View v, Image imageToDelete, int adapterPosition) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -228,41 +292,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         });
     }
 
-    private void upateImagePrompt(View v) {
-//        LayoutInflater inflater = getActivity().getLayoutInflater();
-//        View view = inflater.inflate(R.layout.activity_image, null);
-//
-//        uploadImageObservation = view.findViewById(R.id.uploadImage);
-//        //uploadImageObservation.setOnClickListener(v -> openFileExplorer());
-//        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-//        builder.setView(view)
-//                .setTitle("Observation created! Do you want to add an image?")
-//                .setPositiveButton("Upload", new DialogInterface.OnClickListener() {
-//                    @Override
-//                    public void onClick(DialogInterface dialog, int which) {
-//                        if(selectedUri!=NULL) {
-//
-//                            UploadImage(selectedUri, obs);
-//                        }else{
-//                            Toast.makeText(getActivity(), "No Uri Selected", Toast.LENGTH_SHORT).show();
-//
-//                        }
-//
-//
-//                    }
-//                })
-//                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-//                    @Override
-//                    public void onClick(DialogInterface dialog, int which) {
-//                        dialog.cancel();
-//                    }
-//                });
-//
-//
-//
-//        AlertDialog dialog = builder.create();
-//        dialog.show();
-    }
 
 
     private void getLocation(FeedViewHolder holder, double ioLatitude, double ioLongitude) {
@@ -285,12 +314,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
     private void showComments(Context context, int itemIndex) {
         Gson gson = new Gson();
         FeedItem item = items.get(itemIndex);
-//        String itemType = item.getType().toLowerCase() + "s";
-//        String wsUrl = "ws://coms-309-005.class.las.iastate.edu:8080/" + itemType + "/comments/" + user.getEmailId() + "/" + item.getPostID();
-//        Log.d("URL", wsUrl);
-//        WebSocketManager.getInstance().connectWebSocket(wsUrl);
-//
-//        Log.d("Websocket Connection ","connected");
 
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -537,6 +560,8 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
             }
         });
     }
+
+
 
     static class FeedViewHolder extends RecyclerView.ViewHolder {
         public RecyclerView commentsRecyclerView;

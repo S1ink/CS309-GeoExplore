@@ -15,6 +15,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -45,7 +47,7 @@ import test.connect.geoexploreapp.model.Observation;
 import test.connect.geoexploreapp.model.ReportMarker;
 import test.connect.geoexploreapp.model.User;
 
-public class FeedActivity extends Fragment {
+public class FeedActivity extends Fragment{
     private RecyclerView recyclerView;
     private TextView noItemsDisplay;
     private ImageButton viewAllCommentsButton;
@@ -120,8 +122,12 @@ public class FeedActivity extends Fragment {
          recyclerView = view.findViewById(R.id.recyclerViewFeed);
 
          recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
-         adapter = new FeedAdapter(allItems,allImages, user, getActivity());
+        ActivityResultLauncher<String> mGetContent = registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
+            if (uri != null) {
+                Log.d("File URI", "Selected File URI: " + uri.toString());
+            }
+        });
+         adapter = new FeedAdapter(allItems,allImages, user, getActivity(), mGetContent);
          recyclerView.setAdapter(adapter);
 
 
