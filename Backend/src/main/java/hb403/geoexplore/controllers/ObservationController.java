@@ -145,7 +145,22 @@ public class ObservationController {
 	public @ResponseBody Set<ObservationMarker> getObservationsWithinBounds(@RequestBody Range range) {	// takes in 'well known text' for the bounding geometry --> may define special json formats for predefined bounds later
         if(range == null || range.isInvalid()) return null;
         try {
-			final Set<ObservationMarker> bounded = this.obs_repo.findSetWithin( range.getRect() );
+
+			final Polygon rect = range.getRect();
+			final Set<ObservationMarker> bounded = this.obs_repo.findSetWithin( rect );
+
+			System.out.printf(
+				"[OBSERVATIONS RECT SEARCH]: Recieved bounds object: {\n\tmin lat: %f,\n\tmin lon: %f,\n\tmax lat: %f,\n\tmax lat: %f\n}\n" +
+				"[OBSERVATIONS RECT SEARCH]: Recieved %d query results.\n" +
+				"[OBSERVATIONS RECT SEARCH]: Computed search bounds:\n{\n\tWKT: %s\n}\n",
+				range.min_latitude,
+				range.min_longitude,
+				range.max_latitude,
+				range.max_longitude,
+				bounded.size(),
+				rect.toString()
+			);
+
 			// System.out.println("Recieved " + bounded.size() + " bounded events");
 			for(ObservationMarker o : bounded) {
 				o.enforceLocationTable();
@@ -163,9 +178,27 @@ public class ObservationController {
 	public @ResponseBody List<ObservationMarker> getProxSortedObservationsWithinRect(@RequestBody LocationRange range) {
 		if(range == null || range.isInvalid()) return null;
 		try {
-			final List<ObservationMarker> bounded = this.obs_repo.findListWithin( range.getRect() );
+			
+			final Polygon rect = range.getRect();
+			final List<ObservationMarker> bounded = this.obs_repo.findListWithin( rect );
+
+			System.out.printf(
+				"[OBSERVATIONS RECT SORTED SEARCH]: Recieved bounds object: {\n\tmin lat: %f,\n\tmin lon: %f,\n\tmax lat: %f,\n\tmax lat: %f,\n\tsrc lat: %f,\n\tsrc lat: %f\n}\n" +
+				"[OBSERVATIONS RECT SORTED SEARCH]: Recieved %d query results.\n" +
+				"[OBSERVATIONS RECT SORTED SEARCH]: Computed search bounds:\n{\n\tWKT: %s\n}\n",
+				range.min_latitude,
+				range.min_longitude,
+				range.max_latitude,
+				range.max_longitude,
+				range.src_latitude,
+				range.src_longitude,
+				bounded.size(),
+				rect.toString()
+			);
+
 			MarkerBase.sortByProximityAsc(bounded, range.src_latitude, range.src_longitude, true);
 			return bounded;
+
 		} catch(Exception e) {
 			System.out.println("ObservationController.getProxSortedObservationsWithinRect(): Encountered exception! -- " + e.getMessage());
 			// continue >>> (return null)
@@ -234,7 +267,7 @@ public class ObservationController {
 
     /** */
 	@Operation(summary = "Get the distance to an observation from a specified location (IN MILES)")
-	@PostMapping(path = "geomap/observation/{id}/distance")
+	@PostMapping(path = "geomap/observations/{id}/distance")
 	public @ResponseBody Double getDistanceToMarkerById(@PathVariable Long id, @RequestBody Location src) {
 		if(id != null && src != null && src.isValid()) {
 			final ObservationMarker m = this.getObs(id);

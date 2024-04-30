@@ -104,11 +104,27 @@ public class AlertController {
 	public @ResponseBody Set<AlertMarker> getAlertsWithinRect(@RequestBody Range range) {
 		if(range == null || range.isInvalid()) return null;
 		try {
-			final Set<AlertMarker> bounded = this.alert_repo.findSetWithin( range.getRect() );
+
+			final Polygon rect = range.getRect();
+			final Set<AlertMarker> bounded = this.alert_repo.findSetWithin( rect );
+
+			System.out.printf(
+				"[ALERTS RECT SEARCH]: Recieved bounds object: {\n\tmin lat: %f,\n\tmin lon: %f,\n\tmax lat: %f,\n\tmax lat: %f\n}\n" +
+				"[ALERTS RECT SEARCH]: Recieved %d query results.\n" +
+				"[ALERTS RECT SEARCH]: Computed search bounds:\n{\n\tWKT: %s\n}\n",
+				range.min_latitude,
+				range.min_longitude,
+				range.max_latitude,
+				range.max_longitude,
+				bounded.size(),
+				rect.toString()
+			);
+
 			for(AlertMarker e : bounded) {
 				e.enforceLocationTable();
 			}
 			return bounded;
+
 		} catch(Exception e) {
 			System.out.println("AlertController.getAlertsWithinRect(): Encountered exception! -- " + e.getMessage());
 			// continue >>> (return null)
@@ -121,9 +137,27 @@ public class AlertController {
 	public @ResponseBody List<AlertMarker> getProxSortedAlertsWithinRect(@RequestBody LocationRange range) {
 		if(range == null || range.isInvalid()) return null;
 		try {
-			final List<AlertMarker> bounded = this.alert_repo.findListWithin( range.getRect() );
+
+			final Polygon rect = range.getRect();
+			final List<AlertMarker> bounded = this.alert_repo.findListWithin( rect );
+
+			System.out.printf(
+				"[ALERTS RECT SORTED SEARCH]: Recieved bounds object: {\n\tmin lat: %f,\n\tmin lon: %f,\n\tmax lat: %f,\n\tmax lat: %f,\n\tsrc lat: %f,\n\tsrc lat: %f\n}\n" +
+				"[ALERTS RECT SORTED SEARCH]: Recieved %d query results.\n" +
+				"[ALERTS RECT SORTED SEARCH]: Computed search bounds:\n{\n\tWKT: %s\n}\n",
+				range.min_latitude,
+				range.min_longitude,
+				range.max_latitude,
+				range.max_longitude,
+				range.src_latitude,
+				range.src_longitude,
+				bounded.size(),
+				rect.toString()
+			);
+
 			MarkerBase.sortByProximityAsc(bounded, range.src_latitude, range.src_longitude, true);
 			return bounded;
+
 		} catch(Exception e) {
 			System.out.println("AlertController.getProxSortedAlertsWithinRect(): Encountered exception! -- " + e.getMessage());
 			// continue >>> (return null)
