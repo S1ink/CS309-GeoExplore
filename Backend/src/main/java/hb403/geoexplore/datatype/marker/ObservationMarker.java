@@ -53,7 +53,7 @@ public class ObservationMarker extends MarkerBase {
 	@JsonIgnore
 	@ManyToMany
 	@JoinTable(
-			name = "Observations->Group",
+			name = "Observations_Group",
 			joinColumns = @JoinColumn(name = "marker_id"),
 			inverseJoinColumns = @JoinColumn(name = "group_id"))
 	private Set<UserGroup> pertainsGroup = new HashSet<>();
