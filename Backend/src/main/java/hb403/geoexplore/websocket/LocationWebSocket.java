@@ -64,10 +64,11 @@ public class LocationWebSocket extends WebSocketBase {
 		final User u = super.onMessageVerifySession(session);
 		if(u == null) return;
 		super.printMessage("Recieved message: " + message);
-		if(u.getLocation_privacy().value > 0) {
-			super.printMessage("Recieved message from user sharing their location. Continueing to parse...");
+		final LocationSharing p = u.getLocation_privacy();
+		if(p.value > 0) {
+			super.printMessage(String.format("Recieved message from user sharing their location (%s). Continueing to parse...", p.toString()));
 		} else {
-			super.printMessage("Recieved message from user NOT sharing their location. Discontinuing parsing...");
+			super.printMessage(String.format("Recieved message from user NOT sharing their location (%s). Discontinuing parsing...", p.toString()));
 			return;
 		}
 		final ObjectMapper mapper = new ObjectMapper();
@@ -108,7 +109,7 @@ public class LocationWebSocket extends WebSocketBase {
 
 						}
 					}
-					System.out.println(b.append("}"));
+					System.out.println(b.append("}\t<< EMERGENCY MESSAGE <<"));
 					break;
 				}
 				case GROUP: {
@@ -135,7 +136,7 @@ public class LocationWebSocket extends WebSocketBase {
 							}
 						}
 					);
-					System.out.println(b.append("}"));
+					System.out.println(b.append("}\t << GROUP-ONLY MESSAGE <<"));
 					break;
 				}
 				case PUBLIC: {
@@ -146,7 +147,7 @@ public class LocationWebSocket extends WebSocketBase {
 				case DISABLED:
 				default:
 				{
-					// internal error
+					super.printMessage("Disbanned message broadcase due to user privacy settings!\n");
 				}
 			}
 		}

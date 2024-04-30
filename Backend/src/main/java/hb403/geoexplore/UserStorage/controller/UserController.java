@@ -84,7 +84,7 @@ public class UserController {
                 deleted.enforceLocationTable();
                 return deleted;
             } catch(Exception e) {
-
+                throw e;
             }
         }
         return null;

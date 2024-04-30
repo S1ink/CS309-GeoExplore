@@ -1,5 +1,6 @@
 package hb403.geoexplore.controllers;
 
+import hb403.geoexplore.UserStorage.entity.User;
 import hb403.geoexplore.UserStorage.repository.UserRepository;
 import hb403.geoexplore.datatype.Image;
 import hb403.geoexplore.datatype.marker.ObservationMarker;
@@ -33,7 +34,7 @@ public class ImageController {
 
     //FOR ACTUAL IMAGE FILE STORING
     //for local testing in backend String directory = "C:\\Users\\Ethan\\OneDrive\\Documents\\Se-309\\hb4_3\\hb4_3\\Backend\\images\\"
-    //On server String directory = "\\hb403\\images\\";
+    //On server String directory = "/hb403/images/";
     private static final String directory = "/hb403/images/";
 
     @Autowired
@@ -44,14 +45,22 @@ public class ImageController {
     private UserRepository userRepository;
 
 
-    @Operation(summary = "Upload an image to an observation")
-    @PostMapping("observation/image/{postId}")
-    public String observationFileUpload(@RequestParam("image") MultipartFile imageFile, @PathVariable long postId) {
+    @Operation(summary = "Upload an image to an observation or image profile")
+    @PostMapping("image/{Id}")
+    public String observationFileUpload(@RequestParam("image") MultipartFile imageFile, @PathVariable long Id,@RequestParam("type") String imageType) {
         try {
-            ObservationMarker tempObs = observationRepository.findById(postId).get(); //Checks if post id is null or invalid
+            ObservationMarker tempObs = new ObservationMarker();
+            User temp = new User();
+            if (imageType.equals("OBSERVATION")) {
+                 tempObs = observationRepository.findById(Id).get(); //Checks if post id is null or invalid
+            }
+            else if (imageType.equals("PROFILE")) {
+                temp = userRepository.findById(Id).get();
+            }
+
             if (imageFile == null) {
                 System.out.println("[Post] Image file is null");
-            } else if (postId == 0) {
+            } else if (Id == 0) {
                 System.out.println("[Post] Post Id is invalid");
             }
             /*else if (!imageFile.toString().contains("jpg")){ //Might try to implement this enforcement but it didn't work at first, I'll look into it a bit more though
@@ -68,10 +77,18 @@ public class ImageController {
                     imageFile.transferTo(destinationFile);  // save file to disk only if image is not a repeat
 
                 }
+                if (imageType.equals("OBSERVATION")) {
+                    image.setImageType(Image.Type.OBSERVATION);
+                    tempObs.setImage(image);
+                    image.setObservation(tempObs);
+                    observationRepository.save(tempObs);
+                }else if (imageType.equals("PROFILE")) {
+                    image.setImageType(Image.Type.PROFILE);
+                    temp.setImage(image);
+                    image.setUser(temp);
+                    userRepository.save(temp);
+                }
 
-                tempObs.setImage(image);
-                image.setObservation(tempObs);
-                observationRepository.save(tempObs);
                 return "File uploaded successfully: " + destinationFile.getAbsolutePath();
             }
         } catch (Exception e) {
@@ -153,14 +170,14 @@ public class ImageController {
         }
     }
 
-    /*@Operation(summary = "gets image from repository using user id")
-    @GetMapping(value = "/observation/images/{user_id}", produces = MediaType.IMAGE_JPEG_VALUE)
+    @Operation(summary = "gets image from repository using user id")
+    @GetMapping(value = "/user/image/{user_id}", produces = MediaType.IMAGE_JPEG_VALUE)
     byte[] getImageByUserId(@PathVariable long user_id) throws IOException {
         User temp = userRepository.findById(user_id).get();
         Image image = temp.getImage();
         File imageFile = new File(image.getFilePath());
         return Files.readAllBytes(imageFile.toPath());
-    }*/
+    }
 
 
     @PutMapping("/observation/image/{id}")
@@ -196,9 +213,16 @@ public class ImageController {
                 }*/
                 image.setFilePath(destinationFile.getAbsolutePath());
                 System.out.println(isRepeat.get());//expected false
-                ObservationMarker tempObs = image.getObservation();
-                tempObs.setImage(image);
-                observationRepository.save(tempObs);
+                if(image.getImageType().equals(Image.Type.OBSERVATION)) {
+                    ObservationMarker tempObs = image.getObservation();
+                    tempObs.setImage(image);
+                    observationRepository.save(tempObs);
+                }
+                else if (image.getImageType().equals(Image.Type.PROFILE)){
+                    User  tempUser = image.getUser();
+                    tempUser.setImage(image);
+                    userRepository.save(tempUser);
+                }
                 imageRepository.save(image);
                 return "File uploaded successfully: " + destinationFile.getAbsolutePath();
             }
@@ -218,11 +242,18 @@ public class ImageController {
             Image temp = imageRepository.findById(Id).get();
 
             findRepeat(temp);
-
-            ObservationMarker tempObs = temp.getObservation();
-            tempObs.setImage(null);
-            temp.setObservation(null);
-            observationRepository.save(tempObs);
+            if (temp.getImageType().equals(Image.Type.OBSERVATION)) {
+                ObservationMarker tempObs = temp.getObservation();
+                tempObs.setImage(null);
+                temp.setObservation(null);
+                observationRepository.save(tempObs);
+            }
+            else if (temp.getImageType().equals(Image.Type.PROFILE)){
+                User tempUser = temp.getUser();
+                tempUser.setImage(null);
+                temp.setUser(null);
+                userRepository.save(tempUser);
+            }
             imageRepository.save(temp);
             imageRepository.deleteById(Id);
             return temp.toString();
