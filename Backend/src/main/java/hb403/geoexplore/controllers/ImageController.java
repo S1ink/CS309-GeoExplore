@@ -180,7 +180,7 @@ public class ImageController {
     }
 
 
-    @PutMapping("/observation/image/{id}")
+    @PutMapping("/image/{id}")
     public String imageUpdate(@RequestParam("image") MultipartFile imageFile, @PathVariable long id) { //this one is complicated for image file management
         try {
             if (imageFile == null || id == 0) {
