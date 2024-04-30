@@ -61,6 +61,7 @@ public class ProfileFragment extends Fragment {
     private static User user;
     private Uri selectedUri;
     private Button uploadProfileImg;
+    private Boolean uploaded=false;
 
     public ProfileFragment() {
     }
@@ -128,13 +129,49 @@ public class ProfileFragment extends Fragment {
         buttonChangePassword.setOnClickListener(v -> showChangePasswordDialog(v.getContext()));
 
          uploadProfileImg = view.findViewById(R.id.uploadImageProfile);
-        uploadProfileImg.setOnClickListener(v->{
+        uploadProfileImg.setOnClickListener(v -> {
             UploadImagePrompt();
 
         });
         fetchAndSetProfileImage();
         return view;
 
+    }
+
+    private void UpdateImagePrompt() {
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        View view = inflater.inflate(R.layout.activity_image, null);
+
+        uploadProfileImg = view.findViewById(R.id.uploadImage);
+        uploadProfileImg.setOnClickListener(v -> openFileExplorer());
+        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(getActivity());
+        builder.setView(view)
+                .setTitle("Do you want to add a profile picture?")
+                .setPositiveButton("Upload", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if(selectedUri!=NULL) {
+
+                            uploadProfImage(selectedUri);
+                        }else{
+                            Toast.makeText(getActivity(), "No Uri Selected", Toast.LENGTH_SHORT).show();
+
+                        }
+
+
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+
+
+
+        android.app.AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     private void UploadImagePrompt() {
@@ -145,7 +182,7 @@ public class ProfileFragment extends Fragment {
         uploadProfileImg.setOnClickListener(v -> openFileExplorer());
         android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(getActivity());
         builder.setView(view)
-                .setTitle("Observation created! Do you want to add an image?")
+                .setTitle("Do you want to add a profile picture?")
                 .setPositiveButton("Upload", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -207,6 +244,8 @@ public class ProfileFragment extends Fragment {
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
                     Log.d("UploadImage", "Success: " + response.body());
+                    uploadProfileImg.setText("Update Image");
+                    uploaded=true;
                     fetchAndSetProfileImage();
                 } else {
                     Log.e("UploadImage", "Upload failed with response code: " + response.code());

@@ -31,7 +31,7 @@ public interface ImageApi {
     Call<ResponseBody> getImageByUserId(@Path("user_id") Long user_id);
 
     @Multipart
-    @PUT("observation/image/{id}")
+    @PUT("image/{id}")
     Call<ResponseBody> imageUpdate( @Part MultipartBody.Part image,@Path("id") Long id);
 
 
