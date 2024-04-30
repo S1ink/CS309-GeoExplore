@@ -19,7 +19,6 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,11 +27,10 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import test.connect.geoexploreapp.api.ApiClientFactory;
-import test.connect.geoexploreapp.api.CommentApi;
 import test.connect.geoexploreapp.api.ReportedUserApi;
-import test.connect.geoexploreapp.api.SlimCallback;
-import test.connect.geoexploreapp.model.Comment;
+import test.connect.geoexploreapp.api.UserApi;
 import test.connect.geoexploreapp.model.ReportedUser;
+import test.connect.geoexploreapp.model.User;
 
 public class ReportedUserActivity extends Fragment {
 
@@ -101,6 +99,30 @@ public class ReportedUserActivity extends Fragment {
         builder.show();
     }
 
+    private void getUserById(ReportedUser reportedUser) {
+        UserApi userApi = ApiClientFactory.GetUserApi();
+        userApi.getUser(reportedUser.getReportedUserId()).enqueue(new Callback<User>(){
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                if(response.isSuccessful()){
+                    User user = response.body();
+                    showReportedUsersDetails(user, reportedUser);
+
+
+                    Log.d("getting a user",  "got  user");
+                } else{
+
+
+                    Log.d("getting a user",  "Failed to get user");
+                }
+            }
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                Log.d("getting a user",  "Failed");
+            }
+        });
+
+    }
     private void showIdInputPrompt(String title, boolean isReportID) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Enter " + title);
@@ -139,8 +161,7 @@ public class ReportedUserActivity extends Fragment {
                 if (response.isSuccessful() && response.body() != null) {
                     ReportedUser reportedUser = response.body();
                     Log.d("fetchReportedUserByReportID", "Reported User fetched successfully for ID: " + id + response.body());
-                    showReportedUsersDetails(reportedUser);
-
+                    getUserById(reportedUser);
                 } else {
                     Toast.makeText(getContext(), "Failed to fetch reported user details", Toast.LENGTH_SHORT).show();
                     Log.e("fetchReportedUserByReportID", "Failed to fetch reported user. HTTP Status Code: " + response.code() + " Message: " + response.message());
@@ -164,8 +185,7 @@ public class ReportedUserActivity extends Fragment {
                 if (response.isSuccessful() && response.body() != null) {
                     ReportedUser reportedUser = response.body();
                     Log.d("fetchReportedUserByUserID", "Reported User fetched successfully for ID: " + id + response.body());
-                    showReportedUsersDetails(reportedUser);
-
+                    getUserById(reportedUser);
                 } else {
                     Toast.makeText(getContext(), "Failed to fetch reported user details", Toast.LENGTH_SHORT).show();
                     Log.e("fetchReportedUserByUserID", "Failed to fetch reported user. HTTP Status Code: " + response.code() + " Message: " + response.message());
@@ -181,7 +201,7 @@ public class ReportedUserActivity extends Fragment {
 
     }
 
-    private void showReportedUsersDetails(ReportedUser reportedUser) {
+    private void showReportedUsersDetails(User user, ReportedUser reportedUser) {
         Context context = getActivity();
         if (context == null) return;
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
@@ -203,8 +223,8 @@ public class ReportedUserActivity extends Fragment {
             reasons.setLength(reasons.length() - 2);
         }
 
-//        String message = "User Name: " + reportedUser.getReportedUser().getName() + "\nUser Email: " + reportedUser.getReportedUser().getEmailId() + "\nReasons: " + reasons.toString();
-//        builder.setMessage(message);
+        String message = "User Name: " + user.getName() + "\nUser Email: " + user.getEmailId() + "\nReasons: " + reasons.toString();
+        builder.setMessage(message);
 
         builder.setPositiveButton(android.R.string.ok, (dialog, which) -> dialog.dismiss());
 

@@ -1,6 +1,10 @@
 package test.connect.geoexploreapp;
 
 import static android.app.PendingIntent.getActivity;
+import static android.view.View.GONE;
+
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -54,13 +58,6 @@ public class ReportedUserAdapter extends RecyclerView.Adapter<ReportedUserAdapte
         ReportedUser reportedUser = allReportedUsers.get(position);
         Log.d("getting report for user", "getting user for" + reportedUser.getReportedUserId());
         getUserById(holder,reportedUser.getReportedUserId());
-//        if (reportedUser.getReportedUser() != null) {
-//            holder.reportedUserName.setText("Reported User: " + reportedUser.getReportedUser().getName());
-//            holder.reportedUserEmailId.setText("Email: " + reportedUser.getReportedUser().getEmailId());
-//        } else {
-//            holder.reportedUserName.setText("Reported User: Unknown");
-//            holder.reportedUserEmailId.setText("Email: Unknown");
-//        }
 
         holder.report.setText("Reported for: ");
 
@@ -96,24 +93,23 @@ public class ReportedUserAdapter extends RecyclerView.Adapter<ReportedUserAdapte
 
 
         });
-        holder.userBan.setOnClickListener(v->{
+
+        holder.userBan.setOnClickListener(v -> {
             int pos = holder.getAdapterPosition();
-            banReportedUserPrompt(v.getContext(), reportedUser, pos);
-
+            banReportedUserPrompt(holder, v.getContext(), reportedUser, pos);
         });
-
 
 
     }
 
-    private void banReportedUserPrompt(Context context, ReportedUser reportedUser, int pos) {
+    private void banReportedUserPrompt(ReportedUsersViewHolder holder, Context context, ReportedUser reportedUser, int pos) {
     AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Confirm Ban");
         builder.setMessage("Are you sure you want to ban this user?");
         builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                banUser(reportedUser.getId(), pos);
+                banUser(holder, reportedUser, pos);
             }
         });
         builder.setNegativeButton("Cancel", null);
@@ -121,22 +117,25 @@ public class ReportedUserAdapter extends RecyclerView.Adapter<ReportedUserAdapte
         dialog.show();
     }
 
-    private void banUser(Long id, int pos) {
+    private void banUser(ReportedUsersViewHolder holder, ReportedUser reportedUser, int pos) {
         ReportedUserApi reportedUserApi = ApiClientFactory.GetReportedUserApi();
-        reportedUserApi.deleteUser(id).enqueue(new Callback<ResponseBody>() {
+        reportedUserApi.deleteUser(reportedUser.getId()).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
                     ResponseBody responseMessage = response.body();
-                    allReportedUsers.remove(pos);
+                   // allReportedUsers.remove(pos);
                     notifyItemRemoved(pos);
                     notifyItemRangeChanged(pos, allReportedUsers.size());
                     Toast.makeText(context, " User banned successfully", Toast.LENGTH_SHORT).show();
+                    holder.userBan.setText("BANNED");
+                    holder.userBan.setEnabled(FALSE);
+
 
                 } else {
                     try {
                         String errorBody = response.errorBody() != null ? response.errorBody().string() : "Unknown error";
-                        Toast.makeText(context, "Failed to ban user: " + errorBody, Toast.LENGTH_LONG).show();
+                        Toast.makeText(context, "Failed to ban user-: " + errorBody, Toast.LENGTH_LONG).show();
                     } catch (IOException e) {
                         Toast.makeText(context, "Error parsing error body", Toast.LENGTH_LONG).show();
                     }
@@ -228,23 +227,30 @@ public class ReportedUserAdapter extends RecyclerView.Adapter<ReportedUserAdapte
             @Override
             public void onResponse(Call<ReportedUser> call, Response<ReportedUser> response) {
                 if (response.isSuccessful()) {
-                    Log.d("UpdateReportedUser", "Report updated successfully.");
+                    if (response.body() != null) {
+                        Log.d("UpdateReportedUser", "Report updated successfully. Response: " + response.body());
+                        Toast.makeText(context, "Report updated successfully", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Log.d("UpdateReportedUser", "Report updated successfully but no content returned.");
+                        Toast.makeText(context, "Report updated but no data returned.", Toast.LENGTH_SHORT).show();
+                    }
                     notifyDataSetChanged();
-                    Toast.makeText(context, "Report updated successfully", Toast.LENGTH_SHORT).show();
-
-
                 } else {
-                    Log.e("UpdateReportedUser", "Failed to update report.");
-                    Toast.makeText(context, "Failed to update report", Toast.LENGTH_SHORT).show();
-
+                    try {
+                        String errorResponse = response.errorBody() != null ? response.errorBody().string() : "Unknown error body";
+                        Log.e("UpdateReportedUser", "Failed to update report: " + errorResponse);
+                        Toast.makeText(context, "Failed to update report: " + errorResponse, Toast.LENGTH_SHORT).show();
+                    } catch (IOException e) {
+                        Log.e("UpdateReportedUser", "Error parsing error body", e);
+                        Toast.makeText(context, "Error parsing error body", Toast.LENGTH_LONG).show();
+                    }
                 }
             }
-
             @Override
             public void onFailure(Call<ReportedUser> call, Throwable t) {
-                Log.e("UpdateReportedUser", "Error updating report: " + t.getMessage());
-                Toast.makeText(context, "Error updating report: " + t.getMessage(), Toast.LENGTH_LONG).show();
-
+                Log.e("UpdateReportedUser", "Error updating report: " + t.getMessage(), t);
+                notifyDataSetChanged();
+               // Toast.makeText(context, "Error updating report: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -259,8 +265,11 @@ public class ReportedUserAdapter extends RecyclerView.Adapter<ReportedUserAdapte
                     User user = response.body();
                     holder.reportedUserName.setText("Reported User: " + user.getName());
                 holder.reportedUserEmailId.setText("Email: " + user.getEmailId());
-
                     Log.d("getting a user",  "got  user");
+                    if(user.getRole()== User.Role.BANNED){
+                        holder.userBan.setText("BANNED");
+                        holder.userBan.setEnabled(FALSE);
+                    }
                 } else{
                     holder.reportedUserName.setText("Anonymous");
                     holder.reportedUserEmailId.setText("Anonymous");

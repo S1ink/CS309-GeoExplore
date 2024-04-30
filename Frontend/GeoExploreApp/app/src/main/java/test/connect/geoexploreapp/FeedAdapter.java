@@ -227,6 +227,8 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
                 if (response.isSuccessful()) {
+                    uploadImageObservation.setText("Image selected: "+ selectedUri.getLastPathSegment());
+
                     Log.d("Image Update", "Image updated successfully");
                     Toast.makeText(context, "Image updated successfully!", Toast.LENGTH_SHORT).show();
                 } else {

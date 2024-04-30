@@ -100,10 +100,20 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
     private TextView observationUpdateTextView;
     private User loggedInUser;
     private Uri selectedUri;
+    private static User user;
     private Button uploadImageObservation;
+    private static Bundle args;
+
 
     public MapsFragment() {
 
+    }
+    public static MapsFragment newInstance(User user ) {
+        MapsFragment fragment = new MapsFragment();
+        args = new Bundle();
+        args.putSerializable("UserObject", user);
+        fragment.setArguments(args);
+        return fragment;
     }
 
 
@@ -131,7 +141,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map);
+        if (getArguments() != null) {
 
+            user = (User) getArguments().getSerializable("UserObject");
+        }
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
@@ -235,13 +248,14 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
 
             }
         });
-
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
             @Override
             public void onMapLongClick(LatLng latLng) {
                 showCreatePrompt(latLng);
             }
         });
+
+
 
     }
 
@@ -335,11 +349,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
                         String markerTagsInput = editTextMarkerTag.getText().toString().trim();
 
                         List<String> markerTags = parseMarkerTags(markerTagsInput);
-//                        if (title.isEmpty()) {
-//                            editTextTitle.setError("Title cannot be empty");
-//
-//                            return;
-//                        }
+
                         if("Report".equals(type)){
                             createNewReport(latLng, title, markerTags);
 
@@ -368,8 +378,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback, WebSoc
     }
 
     private void openFileExplorer() {
-        mFilePickerLauncher.launch("*/*");
-        }
+        mFilePickerLauncher.launch("image/*");
+
+    }
 
 
 

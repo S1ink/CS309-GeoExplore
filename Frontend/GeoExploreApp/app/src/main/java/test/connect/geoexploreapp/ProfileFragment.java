@@ -86,10 +86,14 @@ public class ProfileFragment extends Fragment {
         mFilePickerLauncher = registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
             if (uri != null) {
                 selectedUri = uri;
-                uploadProfileImg.setText("Image selected: "+ uri.getLastPathSegment());
+                uploadProfileImg.setText("Image selected: " + uri.getLastPathSegment());
                 Log.d("File URI", "Selected File URI: " + uri.toString());
+            } else {
+                selectedUri = null;
+                Log.e("File Picker", "No file was selected or an error occurred.");
             }
         });
+
     }
 
     @Override
@@ -100,7 +104,7 @@ public class ProfileFragment extends Fragment {
         if (getArguments() != null) {
 
             user = (User) getArguments().getSerializable("UserObject");
-            fetchAndSetProfileImage();
+
             Log.d("ProfileActivity", "isAdmin: " + (user.getRole()== User.Role.ADMIN));
 
             TextView userNameDisplay = view.findViewById(R.id.userNameDisplay);
@@ -113,63 +117,70 @@ public class ProfileFragment extends Fragment {
         buttonChangePassword.setOnClickListener(v -> showChangePasswordDialog(v.getContext()));
 
          uploadProfileImg = view.findViewById(R.id.uploadImageProfile);
-        uploadProfileImg.setOnClickListener(v -> openFileExplorer());
+       // uploadProfileImg.setOnClickListener(v -> openFileExplorer());
         uploadProfileImg.setOnClickListener(v->{
             if(selectedUri!=NULL) {
-                uploadProfImage(selectedUri);            }else{
+                openFileExplorer();
+            }else{
+                uploadProfImage(selectedUri);
+                Log.e("Upload Triggered", "But no URI selected.");
+
                 Toast.makeText(getActivity(), "No Uri Selected", Toast.LENGTH_SHORT).show();
 
             }
         });
+        fetchAndSetProfileImage();
         return view;
 
     }
 
     private void uploadProfImage(Uri selectedUri) {
-        String filePath = FileUtils.createCopyFromUri(getContext(), selectedUri);
+        Log.d("UploadImage", "Attempting to upload image. URI: " + selectedUri);
 
-        if (filePath == null) {
-            Log.e("UploadImage", "Failed to get file path from URI");
-            return;
-        }
-
-        File file = new File(filePath);
-        Log.d("UploadImage", "Starting upload for file: " + filePath);
-
-        // Check if file is too large
-        long fileSizeInMB = file.length() / (1024 * 1024);
-        Log.e("UploadImage", "File size (" + fileSizeInMB + "MB)");
-
-        if (fileSizeInMB > 1) {
-            Log.e("UploadImage", "File size (" + fileSizeInMB + "MB) exceeds the maximum limit.");
-            return;
-        }
-
-        RequestBody requestFile = RequestBody.create(MediaType.parse("image/jpeg"), file);
-        MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getName(), requestFile);
-
-        ImageApi imageApi = ApiClientFactory.GetImageApi();
-        imageApi.observationFileUpload(body, user.getId(), "PROFILE").enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                if (response.isSuccessful()) {
-                    Log.d("UploadImage", "Success: " + response.body());
-                } else {
-                    Log.e("UploadImage", "Upload failed with response code: " + response.code());
-                    try {
-                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "No error body";
-                        Log.e("UploadImage", "Upload failed with error: " + errorBody);
-                    } catch (IOException e) {
-                        Log.e("UploadImage", "Error reading error body", e);
-                    }
-                }
-            }
-
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Log.e("UploadImage", "Upload failed", t);
-            }
-        });
+//        String filePath = FileUtils.createCopyFromUri(getContext(), selectedUri);
+//
+//        if (filePath == null) {
+//            Log.e("UploadImage", "Failed to get file path from URI");
+//            return;
+//        }
+//
+//        File file = new File(filePath);
+//        Log.d("UploadImage", "Starting upload for file: " + filePath);
+//
+//        // Check if file is too large
+//        long fileSizeInMB = file.length() / (1024 * 1024);
+//        Log.e("UploadImage", "File size (" + fileSizeInMB + "MB)");
+//
+//        if (fileSizeInMB > 1) {
+//            Log.e("UploadImage", "File size (" + fileSizeInMB + "MB) exceeds the maximum limit.");
+//            return;
+//        }
+//
+//        RequestBody requestFile = RequestBody.create(MediaType.parse("image/jpeg"), file);
+//        MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getName(), requestFile);
+//
+//        ImageApi imageApi = ApiClientFactory.GetImageApi();
+//        imageApi.observationFileUpload(body, user.getId(), "PROFILE").enqueue(new Callback<ResponseBody>() {
+//            @Override
+//            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+//                if (response.isSuccessful()) {
+//                    Log.d("UploadImage", "Success: " + response.body());
+//                } else {
+//                    Log.e("UploadImage", "Upload failed with response code: " + response.code());
+//                    try {
+//                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "No error body";
+//                        Log.e("UploadImage", "Upload failed with error: " + errorBody);
+//                    } catch (IOException e) {
+//                        Log.e("UploadImage", "Error reading error body", e);
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<ResponseBody> call, Throwable t) {
+//                Log.e("UploadImage", "Upload failed", t);
+//            }
+//        });
     }
 
     private void fetchAndSetProfileImage() {

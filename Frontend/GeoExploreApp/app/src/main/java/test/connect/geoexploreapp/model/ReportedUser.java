@@ -9,6 +9,7 @@ public class ReportedUser {
     private Boolean inappropriateContent;
 
 
+
     public ReportedUser(Long userId, Boolean harass, Boolean misInfo, Boolean spam, Boolean inappropriate){
 
         this.reportedUserId = userId;
@@ -68,4 +69,5 @@ public class ReportedUser {
     public void setInappropriateContent(Boolean inappropriateContent) {
         this.inappropriateContent = inappropriateContent;
     }
+
 }
