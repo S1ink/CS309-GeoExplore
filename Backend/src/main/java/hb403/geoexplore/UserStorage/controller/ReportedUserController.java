@@ -114,8 +114,11 @@ public class ReportedUserController {
         }
         try {
             ReportedUser temp = reportedUserRepository.findById(updated.getId()).get();
+            User tempUser = temp.getReportedUser();
+            tempUser.setUser(temp);
             updated.setReportedUser(temp.getReportedUser());
             updated.setNumReports(temp.getNumReports());
+            userRepository.save(tempUser);
             reportedUserRepository.save(updated);
         }
         catch (Exception e){
