@@ -4,8 +4,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import static androidx.activity.result.ActivityResultCallerKt.registerForActivityResult;
 import static org.json.JSONObject.NULL;
 
-import static java.security.AccessController.getContext;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -38,6 +36,7 @@ import org.java_websocket.handshake.ServerHandshake;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Locale;
 
@@ -121,7 +120,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
                                 deleteImagePrompt(v, imgToShow, position);
                             });
                             holder.updateImage.setOnClickListener(v -> {
-                                UpdateImagePrompt(imgToShow, position);
+                                UpdateImagePrompt(imgToShow, position, feedItem.getPostID());
                             });
                         }
 
@@ -164,36 +163,47 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         imageApi.getImageByPostId(postId).enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                if (response.isSuccessful()) {
-                    Log.d("SearchImage", "Image fetched successfully for Post ID: " + postId);  // Log successful fetch
-                    //  Image img =  response.body();
+                if (response.isSuccessful() && response.body() != null) {
+                    try {
+                        // Read the InputStream from ResponseBody
+                        InputStream inputStream = response.body().byteStream();
+                        // Convert InputStream to Bitmap
+                        Bitmap bmp = BitmapFactory.decodeStream(inputStream);
 
-                    Bitmap bmp = BitmapFactory.decodeStream(response.body().byteStream());
-                    holder.obsImage.setImageBitmap(bmp);
-                    holder.obsImage.setVisibility(View.VISIBLE);
+                        if (bmp != null) {
+                            holder.obsImage.setImageBitmap(bmp);
+                            holder.obsImage.setVisibility(View.VISIBLE);
+                            Log.d("SearchImage", "Image displayed successfully for Post ID: " + postId);
+                        } else {
+                            Log.e("SearchImage", "No image data found for Post ID: " + postId);
+                            holder.obsImage.setVisibility(View.GONE);
+                        }
 
-
+                    } catch (Exception e) {
+                        Log.e("SearchImage", "Error processing image data", e);
+                    }
                 } else {
                     Log.e("SearchImage", "Failed to fetch image. HTTP Status Code: " + response.code() + " Message: " + response.message());
                     try {
                         if (response.errorBody() != null) {
-                            Log.e("SearchImage", "Error response body: " + response.errorBody().string());  // Log error body if available
+                            Log.e("SearchImage", "Error response body: " + response.errorBody().string());
                         }
                     } catch (IOException e) {
                         Log.e("SearchImage", "Error parsing error body", e);
                     }
+                    holder.obsImage.setVisibility(View.GONE);
                 }
-
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 Log.e("SearchImage", "API call failed: " + t.getMessage());
+                holder.obsImage.setVisibility(View.GONE);
             }
         });
     }
 
-    private void UpdateImagePrompt(Image imgToShow, int position) {
+    private void UpdateImagePrompt(Image imgToShow, int position, Long postID) {
         LayoutInflater inflater = LayoutInflater.from(context);
         View view = inflater.inflate(R.layout.activity_image, null);
 
@@ -208,7 +218,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
 
 
                         if(selectedUri!=NULL) {
-                            UpdateImage(selectedUri, imgToShow, position);
+                            UpdateImage(selectedUri, imgToShow, position, postID);
                         }else{
                             Toast.makeText(context, "No Uri Selected", Toast.LENGTH_SHORT).show();
 
@@ -239,7 +249,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         this.listener = listener;
     }
 
-    private void UpdateImage(Uri selectedUri, Image imgToShow, int position) {
+    private void UpdateImage(Uri selectedUri, Image imgToShow, int position, Long postID) {
 
         String filePath = FileUtils.createCopyFromUri(context, selectedUri);
         if (filePath == null) {
@@ -247,7 +257,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
             return;
         }
         File file = new File(filePath);
-        RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
+        RequestBody requestFile = RequestBody.create(MediaType.parse("image/jpeg"), file);
         MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getName(), requestFile);
 
         ImageApi imageApi = ApiClientFactory.GetImageApi();
