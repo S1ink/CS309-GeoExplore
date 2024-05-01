@@ -546,6 +546,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         ObservationApi observationApi = ApiClientFactory.GetObservationApi();
         ReportMarkerApi reportMarkerApi = ApiClientFactory.getReportMarkerApi();
 
+        mMap.clear();
+
         LocationProximity locationProximity = new LocationProximity(latitude, longitude, range);
 
         if(showAlerts) {
