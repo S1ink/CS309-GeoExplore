@@ -92,7 +92,7 @@ public class ImageController {
                 return "File uploaded successfully: " + destinationFile.getAbsolutePath();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+
             return "Failed to upload file: " + e.getMessage();
         }
         return null;
@@ -126,7 +126,7 @@ public class ImageController {
             //imageRepository.save(image);
             return "File uploaded successfully: " + destinationFile.getAbsolutePath();
         } catch (Exception e) {
-            e.printStackTrace();
+            e.
             return "Failed to upload file: " + e.getMessage();
         }
     }*/
@@ -141,7 +141,7 @@ public class ImageController {
                 File imageFile = new File(image.getFilePath());
                 return Files.readAllBytes(imageFile.toPath());
             } catch (Exception e) {
-                e.printStackTrace();
+
                 return null;
             }
         } else {
@@ -161,8 +161,7 @@ public class ImageController {
                 File imageFile = new File(image.getFilePath());
                 return Files.readAllBytes(imageFile.toPath());
             } catch (Exception e) {
-                e.printStackTrace();
-                return null;
+               return null;
             }
         } else {
             System.out.println("[GET] Id is null");
@@ -180,7 +179,7 @@ public class ImageController {
     }
 
 
-    @PutMapping("observation/image/{post_id}")
+   /* @PutMapping("observation/image/{post_id}")
     public String imageUpdate(@RequestParam("image") MultipartFile imageFile, @PathVariable long post_id) { //this one is complicated for image file management
         try {
             if (imageFile == null || post_id == 0) {
@@ -204,7 +203,7 @@ public class ImageController {
                         isRepeat.set(true);
                     }
                 });*/
-                if (!directory.contains(imageFile.toString())) { //checks just the file itself
+                /*if (!directory.contains(imageFile.toString())) { //checks just the file itself
                     imageFile.transferTo(destinationFile);  // save file to disk only if image is not a repeat
 
                 }
@@ -212,7 +211,7 @@ public class ImageController {
                 /*if (!isRepeat.get()) {
                     imageFile.transferTo(destinationFile);  // save file to disk only if image is not a repeat
                 }*/
-                image.setFilePath(destinationFile.getAbsolutePath());
+                /*image.setFilePath(destinationFile.getAbsolutePath());
                 System.out.println(isRepeat.get());//expected false
 
 
@@ -224,27 +223,25 @@ public class ImageController {
                 return "File uploaded successfully: " + destinationFile.getAbsolutePath();
             }
         } catch (Exception e) {
-            System.out.println(e);
-            return e.toString();
+
         }
         return null;
-    }
-    @PutMapping("user/image/{user_id}")
-    public String imageUpdateUser(@RequestParam("image") MultipartFile imageFile, @PathVariable long user_id) { //this one is complicated for image file management
-        try {
-            if (imageFile == null || user_id == 0) {
-                System.out.println("[PUT] imageFile is null or id is invalid");
-            } else {
-                userRepository.findById(user_id).isPresent();
-                User tempUser = userRepository.findById(user_id).get();
-                AtomicBoolean isRepeat = new AtomicBoolean(false);
-                File destinationFile = new File(directory + Objects.requireNonNull(imageFile.getOriginalFilename()));
-                System.out.println(destinationFile);
-                Image image;
+    }*/
+   @PutMapping("/observation/image/{id}")
+   public String imageUpdate(@RequestParam("image") MultipartFile imageFile, @PathVariable long id) { //this one is complicated for image file management
+       try {
+           if (imageFile == null || id == 0) {
+               System.out.println("[PUT] imageFile is null or id is invalid");
+           } else {
+               imageRepository.findById(id).isPresent();
+               AtomicBoolean isRepeat = new AtomicBoolean(false);
+               File destinationFile = new File(directory + Objects.requireNonNull(imageFile.getOriginalFilename()));
+               System.out.println(destinationFile);
+               Image image;
 
-                image = imageRepository.findById(tempUser.getImage().getId()).get();
-                findRepeat(image);
-                isRepeat.set(false);
+               image = imageRepository.findById(id).get();
+               findRepeat(image);
+               isRepeat.set(false);
 
                 /*sort.forEach(imageInRepo -> { // checks if the new image is
                     if (imageInRepo.getFilePath().equals(destinationFile.getAbsolutePath())) {
@@ -253,29 +250,35 @@ public class ImageController {
                         isRepeat.set(true);
                     }
                 });*/
-                if (!directory.contains(imageFile.toString())) { //checks just the file itself
-                    imageFile.transferTo(destinationFile);  // save file to disk only if image is not a repeat
+               if (!directory.contains(imageFile.toString())) { //checks just the file itself
+                   imageFile.transferTo(destinationFile);  // save file to disk only if image is not a repeat
 
-                }
-                System.out.println(isRepeat.get());
+               }
+               System.out.println(isRepeat.get());
                 /*if (!isRepeat.get()) {
                     imageFile.transferTo(destinationFile);  // save file to disk only if image is not a repeat
                 }*/
-                image.setFilePath(destinationFile.getAbsolutePath());
-                System.out.println(isRepeat.get());//expected false
+               image.setFilePath(destinationFile.getAbsolutePath());
+               System.out.println(isRepeat.get());//expected false
+               if (image.getImageType() == Image.Type.OBSERVATION) {
+                   ObservationMarker tempObs = image.getObservation();
+                   tempObs.setImage(image);
+                   observationRepository.save(tempObs);
+               }
+               else if (image.getImageType() == Image.Type.PROFILE) {
+                   User tempUser = image.getUser();
+                   tempUser.setImage(image);
+                   userRepository.save(tempUser);
+               }
+               imageRepository.save(image);
+               return "File uploaded successfully: " + destinationFile.getAbsolutePath();
+           }
+       } catch (Exception e) {
 
-                tempUser.setImage(image);
-                userRepository.save(tempUser);
+       }
+       return null;
+   }
 
-                imageRepository.save(image);
-                return "File uploaded successfully: " + destinationFile.getAbsolutePath();
-            }
-        } catch (Exception e) {
-            System.out.println(e);
-            return e.toString();
-        }
-        return null;
-    }
 
     @Operation(summary = "Deletes the image using the image ID")
     @DeleteMapping("/image/{Id}")
@@ -301,8 +304,8 @@ public class ImageController {
             imageRepository.deleteById(Id);
             return temp.toString();
         } catch (Exception e) {
-            e.printStackTrace();
-            return e.toString();
+
+            return null;
         }
 
     }
@@ -328,7 +331,7 @@ public class ImageController {
                 File imageFileDelete = new File(image.getFilePath());
                 Files.delete(imageFileDelete.toPath());
             } catch (IOException e) {
-                throw new RuntimeException(e);
+
             }
         }
     }
