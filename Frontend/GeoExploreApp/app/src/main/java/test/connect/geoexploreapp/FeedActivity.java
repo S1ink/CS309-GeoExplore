@@ -197,14 +197,14 @@ public class FeedActivity extends Fragment implements FeedAdapter.OnShowAllImage
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
-                    Log.d("SearchImage", "Image fetched successfully for Post ID: " + postId);  // Log successful fetch
+                    Log.d("SearchImage", "Image fetched successfully for Post ID: " + postId);
                 //  Image img =  response.body();
                     displayImage(response.body(), isImageId, postId);
                 } else {
                     Log.e("SearchImage", "Failed to fetch image. HTTP Status Code: " + response.code() + " Message: " + response.message());
                     try {
                         if (response.errorBody() != null) {
-                            Log.e("SearchImage", "Error response body: " + response.errorBody().string());  // Log error body if available
+                            Log.e("SearchImage", "Error response body: " + response.errorBody().string());
                         }
                     } catch (IOException e) {
                         Log.e("SearchImage", "Error parsing error body", e);
@@ -268,7 +268,6 @@ public class FeedActivity extends Fragment implements FeedAdapter.OnShowAllImage
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                // Log complete failure including throwable details
                 Log.e("SearchImage", "API call failed: " + t.getMessage(), t);
             }
         });
@@ -328,7 +327,7 @@ public class FeedActivity extends Fragment implements FeedAdapter.OnShowAllImage
 
             @Override
             public void onFailure(Call<Comment> call, Throwable t) {
-                Log.e("fetchCommentById", "Fetch failed", t); // Debug log for failure
+                Log.e("fetchCommentById", "Fetch failed", t);
 
             }
         });

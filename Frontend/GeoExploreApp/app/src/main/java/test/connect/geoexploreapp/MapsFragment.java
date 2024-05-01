@@ -1656,13 +1656,13 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
                     showStatus("Event created successfully!");
 
                 }  else {
-                    showStatus("Failed to create event: " + response.errorBody()); // Display error from server if creation failed
+                    showStatus("Failed to create event: " + response.errorBody());
                 }
             }
 
             @Override
             public void onFailure(Call<EventMarker> call, Throwable t) {
-                showStatus("Error: " + t.getMessage()); // Show error message on failure to contact server
+                showStatus("Error: " + t.getMessage());
 
             }
         });
