@@ -167,7 +167,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|center_horizontal"
                 android:layout_marginBottom="8dp"
-                android:text="Reported Users"
+                android:text="Reports"
                 android:textSize="14sp" />
         </FrameLayout>
 
