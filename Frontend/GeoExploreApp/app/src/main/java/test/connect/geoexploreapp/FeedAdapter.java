@@ -2,7 +2,10 @@ package test.connect.geoexploreapp;
 import androidx.activity.result.ActivityResultLauncher;
 
 import static androidx.activity.result.ActivityResultCallerKt.registerForActivityResult;
+import static com.google.android.material.internal.ContextUtils.getActivity;
 import static org.json.JSONObject.NULL;
+
+import static java.security.AccessController.getContext;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -209,6 +212,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
 
         uploadImageObservation = view.findViewById(R.id.uploadImage);
         uploadImageObservation.setOnClickListener(v -> openFileExplorer());
+
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setView(view)
                 .setTitle("Do you want to update the image?")
@@ -218,6 +222,9 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
 
 
                         if(selectedUri!=NULL) {
+
+                            uploadImageObservation.setText("Image selected: "+ selectedUri.getLastPathSegment());
+
                             UpdateImage(selectedUri, imgToShow, position, postID);
                         }else{
                             Toast.makeText(context, "No Uri Selected", Toast.LENGTH_SHORT).show();
@@ -265,7 +272,6 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
-                    uploadImageObservation.setText("Image selected: "+ selectedUri.getLastPathSegment());
                     notifyDataSetChanged();
                     Log.d("Image Update", "Image updated successfully");
                     Toast.makeText(context, "Image updated successfully!", Toast.LENGTH_SHORT).show();
@@ -281,12 +287,11 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.FeedViewHolder
         });
     }
 
-    private void openFileExplorer() {
+    public void openFileExplorer() {
         if (mFilePickerLauncher != null) {
             mFilePickerLauncher.launch("image/*");
-        } else {
-            Log.e("FilePicker", "Activity Result Launcher is not initialized.");
         }
+
     }
 
     private void deleteImagePrompt(View v, Image imageToDelete, int adapterPosition) {

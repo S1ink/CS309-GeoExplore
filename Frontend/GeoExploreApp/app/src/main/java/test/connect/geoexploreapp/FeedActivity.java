@@ -130,7 +130,8 @@ public class FeedActivity extends Fragment implements FeedAdapter.OnShowAllImage
          recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         ActivityResultLauncher<String> mGetContent = registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
             if (uri != null) {
-                adapter.setSelectedUri(uri);  // Update the adapter with the new URI
+                adapter.setSelectedUri(uri);
+                Toast.makeText(getContext(), "Image selected.", Toast.LENGTH_SHORT).show();
 
                 Log.d("File URI", "Selected File URI: " + uri.toString());
             }

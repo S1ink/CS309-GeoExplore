@@ -2,6 +2,8 @@ package test.connect.geoexploreapp;
 
 import static org.json.JSONObject.NULL;
 
+import static java.lang.Boolean.FALSE;
+
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
@@ -274,6 +276,9 @@ public class ProfileFragment extends Fragment {
                     Bitmap bitmap = BitmapFactory.decodeStream(response.body().byteStream());
                     ImageView profileImage = getView().findViewById(R.id.profilePic);
                     profileImage.setImageBitmap(bitmap);
+                    uploadProfileImg.setEnabled(FALSE);
+                    uploadProfileImg.setText("Uploaded");
+
                 } else {
                     Log.e("ProfileFragment", "Failed to load image");
                 }
